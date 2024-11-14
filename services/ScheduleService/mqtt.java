@@ -1,4 +1,4 @@
-package services.ScheduleService;
+package services.java.ScheduleService;
 
 public class mqtt {
     
