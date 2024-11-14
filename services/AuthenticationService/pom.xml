@@ -7,7 +7,7 @@
         <groupId>com.yourcompany</groupId> 
         <artifactId>YourProjectName</artifactId> 
         <version>1.0-SNAPSHOT</version> 
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>AuthenticationService</artifactId>
 
@@ -19,7 +19,6 @@
         </dependency>
     </dependencies>
 
-    <packaging>pom</packaging>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
