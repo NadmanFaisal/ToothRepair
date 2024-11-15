@@ -9,13 +9,9 @@
 
     <modules>
         <module>services/AuthenticationService</module>
-        
-        <!--
-        <module>ClinicService<module>
-        <module>NotificationService<module>
-        <module>AuthenticationService<module>
-        <module>AuthenticationService<module>
-        -->
+        <module>services/ClinicService</module>
+        <module>services/NotificationService</module>
+        <module>services/ScheduleService</module>
     </modules>
 
     <dependencies>
