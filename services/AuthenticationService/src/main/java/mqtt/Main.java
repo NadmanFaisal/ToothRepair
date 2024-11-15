@@ -6,24 +6,15 @@ public class Main {
     public static void main(String[] args) {
         try {
         
-
             // Keep the client running to listen for incoming messages
-            MQTTSubscriber mqttServices = new MQTTSubscriber();
-            mqttServices.connect();
-            mqttServices.subscribe();
+            new MQTTSubscriber();
             // Keep the client running to listen for incoming messages
 
-            MQTTPublisher mqttService = new MQTTPublisher();
-            mqttService.connect();
-            mqttService.publish("Hello this is the Authentication Service");
+            new MQTTPublisher();
             
             Thread.sleep(5000);
         
-
-            mqttService.disconnect();
-
-            mqttService.disconnect();
-        } catch (MqttException | InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
