@@ -20,6 +20,7 @@ client.on('connect', () => {
 
   // Publish a message to the topic
   client.publish('test/topic', 'Hello from mqtt.js!');
+  client.publish('test/Authentication', 'Trying to reach authentication service');
 });
 
 // Handle incoming messages
