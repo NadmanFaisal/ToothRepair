@@ -4,7 +4,7 @@ stages:
 # Build the Vue frontend
 frontend-build:
   stage: build
-  image: node
+  image: node:20-alpine
   script:
     - cd client
     - npm install
@@ -16,7 +16,7 @@ frontend-build:
 # Build the Express backend
 backend-build:
   stage: build
-  image: node
+  image: node:20-alpine
   script:
     - cd server
     - npm install
