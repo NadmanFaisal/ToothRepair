@@ -1,18 +1,19 @@
-image: node:20-alpine
-
-# Cache modules in between jobs per-branch
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - server/node_modules/
-
 stages:
   - build
 
-build:
+# Build the frontend
+frontend-build:
   stage: build
-  tags:
-    - docker
+  image: node:20-alpine
+  script:
+    - cd client
+    - npm install
+    - npm run build
+
+# Build th backend
+backend-build:
+  stage: build
+  image: node:20-alpine
   script:
     - cd server
     - npm install
