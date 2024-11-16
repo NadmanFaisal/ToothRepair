@@ -2,8 +2,8 @@ stages:
   - build
 
 variables:
-  DOCKER_REGISTRY: "your-docker-registry-url"
-  DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  DOCKER_REGISTRY: "registry.gitlab.com"
+  DOCKER_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
 
 # Build stage
 build:
@@ -11,9 +11,9 @@ build:
   image: docker:latest
   services:
     - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_JOB_TOKEN" $DOCKER_REGISTRY
   script:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
-    - docker build -t $DOCKER_REGISTRY/client:$DOCKER_IMAGE_TAG ./client
-    - docker build -t $DOCKER_REGISTRY/server:$DOCKER_IMAGE_TAG ./server
-    - docker push $DOCKER_REGISTRY/client:$DOCKER_IMAGE_TAG
-    - docker push $DOCKER_REGISTRY/server:$DOCKER_IMAGE_TAG
+    - docker build -t $DOCKER_IMAGE_TAG ./client
+    - docker build -t $DOCKER_IMAGE_TAG ./server
+    - docker push $DOCKER_IMAGE_TAG
