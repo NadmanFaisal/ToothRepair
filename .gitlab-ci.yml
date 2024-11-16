@@ -2,16 +2,13 @@ stages:
   - build
 
 variables:
-  DOCKER_REGISTRY: "registry.gitlab.com"
+  DOCKER_REGISTRY: "registry.git.chalmers.se"
   IMAGE_PATH: "courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20"
   DOCKER_IMAGE_TAG: "$DOCKER_REGISTRY/$IMAGE_PATH:$CI_COMMIT_SHORT_SHA"
 
-# Build stage
 build:
   stage: build
-  image: docker:latest
-  services:
-    - docker:dind
+  image: docker:20.10.16-dind
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $DOCKER_REGISTRY
   script:
