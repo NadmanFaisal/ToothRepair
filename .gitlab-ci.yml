@@ -1,0 +1,21 @@
+stages:
+  - build
+
+variables:
+  DOCKER_REGISTRY: "your-docker-registry-url"
+  DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+
+# Build stage
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" $DOCKER_REGISTRY
+    - docker build -t $DOCKER_REGISTRY/client:$DOCKER_IMAGE_TAG ./client
+    - docker build -t $DOCKER_REGISTRY/server:$DOCKER_IMAGE_TAG ./server
+    - docker push $DOCKER_REGISTRY/client:$DOCKER_IMAGE_TAG
+    - docker push $DOCKER_REGISTRY/server:$DOCKER_IMAGE_TAG
+  only:
+    - main
