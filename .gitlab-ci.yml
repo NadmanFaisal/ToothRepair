@@ -1,25 +1,28 @@
 stages:
   - build
 
-variables:
-  DOCKER_REGISTRY: "registry.git.chalmers.se"
-  IMAGE_PATH_CLIENT: "courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/client"
-  IMAGE_PATH_SERVER: "courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/server"
-  CLIENT_IMAGE_TAG: "$DOCKER_REGISTRY/$IMAGE_PATH_CLIENT:$CI_COMMIT_SHORT_SHA"
-  SERVER_IMAGE_TAG: "$DOCKER_REGISTRY/$IMAGE_PATH_SERVER:$CI_COMMIT_SHORT_SHA"
-
-build:
+# Build the Vue frontend
+frontend-build:
   stage: build
-  image: docker:latest
-  services:
-    - name: docker:dind
-  before_script:
-    # Login to the GitLab Container Registry
-    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin $DOCKER_REGISTRY
+  image: node:16
   script:
-    # Build and push the client image
-    - docker build -t $CLIENT_IMAGE_TAG ./client
-    - docker push $CLIENT_IMAGE_TAG
-    # Build and push the server image
-    - docker build -t $SERVER_IMAGE_TAG ./server
-    - docker push $SERVER_IMAGE_TAG
+    - cd client
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - client/dist
+  only:
+    - main
+
+# Build the Express backend
+backend-build:
+  stage: build
+  image: node:16
+  script:
+    - cd server
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - server
