@@ -1,22 +1,28 @@
+image: node:20-alpine
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - client/node_modules/
+    - server/node_modules/
+
 stages:
   - build
 
-# Build the client
+# Build the frontend
 frontend-build:
   stage: build
-  image: node:20-alpine
   script:
     - cd client
     - npm install
     - npm run build
   artifacts:
     paths:
-      - client
+      - client/dist
 
-# Build the server
+# Build the backend
 backend-build:
   stage: build
-  image: node:20-alpine
   script:
     - cd server
     - npm install
