@@ -1,9 +1,25 @@
-build site:
- image: node:6
- stage: build
- script:
-  - npm install --progress=false
-  - npm run build
- artifacts:
-  paths:
-   - dist
+stages:
+  - build
+
+# Build the Vue frontend
+frontend-build:
+  stage: build
+  image: node
+  script:
+    - cd client
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - client
+
+# Build the Express backend
+backend-build:
+  stage: build
+  image: node
+  script:
+    - cd server
+    - npm install
+  artifacts:
+    paths:
+      - server
