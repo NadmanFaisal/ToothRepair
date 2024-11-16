@@ -4,17 +4,13 @@ stages:
 variables:
   DOCKER_REGISTRY: "your-docker-registry-url"
   DOCKER_IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
 
 # Build stage
 build:
   stage: build
   image: docker:latest
   services:
-    - name: docker:dind
-      command: ["--experimental"]
-      privileged: true
+    - docker:dind
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
     - docker build -t $DOCKER_REGISTRY/client:$DOCKER_IMAGE_TAG ./client
