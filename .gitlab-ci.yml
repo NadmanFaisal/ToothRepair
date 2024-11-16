@@ -1,7 +1,7 @@
 stages:
   - build
 
-# Build the Vue frontend
+# Build the client
 frontend-build:
   stage: build
   image: node:20-alpine
@@ -13,7 +13,7 @@ frontend-build:
     paths:
       - client
 
-# Build the Express backend
+# Build the server
 backend-build:
   stage: build
   image: node:20-alpine
