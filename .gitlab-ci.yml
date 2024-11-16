@@ -22,7 +22,6 @@ backend-build:
   script:
     - cd server
     - npm install
-    - npm run build
   artifacts:
     paths:
       - server
