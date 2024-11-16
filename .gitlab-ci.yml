@@ -9,6 +9,7 @@ cache:
 
 stages:
   - build
+  - test
 
 # Build the frontend
 frontend-build:
