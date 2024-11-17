@@ -19,8 +19,9 @@ public class MQTTPublisher {
             System.out.println("MQTTPublisher has been connected!");
 
             //Publish the payload as bytes to the topic.
-            client.publish(PUBLISHED_TOPIC, "banana".getBytes(), 0, false);
+            client.publish(PUBLISHED_TOPIC, "{name: Vanis}".getBytes(), 0, false);
             System.out.println("banana was published!");
+            
 
         } catch (MqttException e) {
             e.printStackTrace();

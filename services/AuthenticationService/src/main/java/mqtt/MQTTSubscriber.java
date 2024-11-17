@@ -21,7 +21,7 @@ public class MQTTSubscriber {
 
     @Autowired
     private PatientController patientController;
-
+   
     // Method to subscribe to a topic
     public MQTTSubscriber() {
         try {
@@ -71,4 +71,5 @@ public class MQTTSubscriber {
             System.out.println("Failed");
         }
     }
+    
 }
