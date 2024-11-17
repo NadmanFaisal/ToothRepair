@@ -1,7 +1,8 @@
-FROM node:16
+# src: https://medium.com/@muhammadnaqeeb/dockerizing-a-node-js-and-express-js-app-9cb31cf9139e
+
+FROM node
 WORKDIR /app
-COPY package*.json ./
+COPY package.json /app
 RUN npm install
-COPY . .
-EXPOSE 3000
-CMD ["node", "index.js"]
+COPY . /app
+CMD ["node","index.js"]

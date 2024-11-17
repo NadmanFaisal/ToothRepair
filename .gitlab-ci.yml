@@ -1,12 +1,21 @@
 image: node:20-alpine
 
+# Cache modules in between jobs per-branch
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - client/node_modules/
+    - server/node_modules/
+
 stages:
   - build
+  - test
 
-# Build the Vue frontend
+# Build the frontend
 frontend-build:
   stage: build
-  image: node:16
+  tags:
+    - docker
   script:
     - cd client
     - npm install
@@ -14,16 +23,16 @@ frontend-build:
   artifacts:
     paths:
       - client/dist
-  only:
-    - main
 
-# Build the Express backend
+# Build the backend
 backend-build:
   stage: build
-  image: node:16
+  tags:
+    - docker
   script:
     - cd server
     - npm install
   artifacts:
     paths:
       - server
+
