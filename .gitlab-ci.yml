@@ -70,3 +70,17 @@ Notification-service-build:
   artifacts:
     paths:
       - services/NotificationService/target/
+
+# Builds the schedule service
+Schedule-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/ScheduleService
+    - echo "Building Schedule Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/ScheduleService/target/
