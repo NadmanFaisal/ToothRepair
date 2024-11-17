@@ -1,12 +1,3 @@
-# Cache modules in between jobs per-branch
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - client/node_modules/
-    - server/node_modules/
-    - services/AuthenticationService/.m2/
-    - services/AuthenticationService/.m2/
-
 stages:
   - build
   - test
