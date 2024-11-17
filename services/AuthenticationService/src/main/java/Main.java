@@ -1,6 +1,10 @@
-package main.java.mqtt;
+package main.java;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+import main.java.mqtt.MQTTPublisher;
+import main.java.mqtt.MQTTSubscriber;
 
 @SpringBootApplication
 public class Main {

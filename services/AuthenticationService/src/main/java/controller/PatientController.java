@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import main.java.db.PatientSchema;
+import main.java.service.PatientService;
 
 import java.util.List;
 
@@ -14,12 +15,12 @@ public class PatientController {
     @Autowired
     private PatientService patientService;
 
-    //@GetMapping
+    @GetMapping
     public List<PatientSchema> getAllPatients() {
         return patientService.getAllPatients();
     }
 
-    //@PostMapping
+    @PostMapping
     public PatientSchema createpatient(@RequestBody PatientSchema patient) {
         return patientService.createPatient(patient);
     }

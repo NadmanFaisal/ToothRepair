@@ -1,17 +1,18 @@
-package main.java.controller;
+package main.java.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import main.java.db.PatientRepository;
 import main.java.db.PatientSchema;
 
 @Service
 public class PatientService{
 
-    private PatientServiceInterface patientRepository;
+    private PatientRepository patientRepository;
 
-    public PatientService(PatientServiceInterface patientRepository) {
+    public PatientService(PatientRepository patientRepository) {
         this.patientRepository = patientRepository;
     }
 
