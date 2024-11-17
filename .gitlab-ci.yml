@@ -52,7 +52,7 @@ Authentication-service-build:
     paths:
       - services/AuthenticationService/target/
 
-# Builds the authentication service
+# Builds the clinic service
 Clinic-service-build:
   stage: build
   image: maven:3.9.4-eclipse-temurin-17
@@ -64,4 +64,4 @@ Clinic-service-build:
     - mvn clean package
   artifacts:
     paths:
-      - services/Clinic/target/
+      - services/ClinicService/target/
