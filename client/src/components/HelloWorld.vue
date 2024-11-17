@@ -1,6 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <button>TEST MQTT Button</button>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
@@ -31,11 +32,24 @@
 </template>
 
 <script>
+import {patientApi} from "../api/PatientApi"
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  patients:{},
+
+  methods:{
+    async getTestValue(){
+      const response = await patientApi.getTestInfo();
+      console.log(response.data)
+      this.patients = response.data;
+    }
+
+
   }
+
 }
 </script>
 
