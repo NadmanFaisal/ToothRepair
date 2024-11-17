@@ -1,27 +1,26 @@
 package main.java.controller;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import main.java.db.PatientSchema;
 
-@Service
-public class PatientController{
+import java.util.List;
 
-    private PatientControllerInterface patientRepository;
+@RestController
+@RequestMapping("/patients")
+public class PatientController {
+    
+    @Autowired
+    private PatientService patientService;
 
-    public PatientController(PatientControllerInterface patientRepository) {
-        this.patientRepository = patientRepository;
-    }
-
+    //@GetMapping
     public List<PatientSchema> getAllPatients() {
-        return patientRepository.findAll();
+        return patientService.getAllPatients();
     }
 
-    public PatientSchema createPatient(PatientSchema patient) {
-        return patientRepository.save(patient);
+    //@PostMapping
+    public PatientSchema createpatient(@RequestBody PatientSchema patient) {
+        return patientService.createPatient(patient);
     }
-
 }
-
