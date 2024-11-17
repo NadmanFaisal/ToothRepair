@@ -36,3 +36,15 @@ backend-build:
     paths:
       - server
 
+# Builds the authentication service
+authentication-service-build:
+  stage: build
+  tags:
+    - docker
+  script:
+    - cd services/AuthenticationService
+    - echo "Building Authentication Service"
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/AuthenticationService/target/
