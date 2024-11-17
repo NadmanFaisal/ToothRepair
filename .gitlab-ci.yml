@@ -4,6 +4,7 @@ cache:
   paths:
     - client/node_modules/
     - server/node_modules/
+    - services/AuthenticationService/.m2/
 
 stages:
   - build
@@ -44,7 +45,7 @@ authentication-service-build:
     - docker
   script:
     - cd services/AuthenticationService
-    - echo "Building Authentication Service"
+    - echo "Building Authentication Service..."
     - mvn clean package
   artifacts:
     paths:
