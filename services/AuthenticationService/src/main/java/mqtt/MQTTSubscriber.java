@@ -1,10 +1,16 @@
 package main.java.mqtt;
 
+import java.util.List;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import main.java.controller.PatientController;
+import main.java.db.PatientSchema;
 
 
 public class MQTTSubscriber {
@@ -12,6 +18,9 @@ public class MQTTSubscriber {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
     private static final String SUBSCRIBED_TOPIC = "test/Authentication";
+
+    @Autowired
+    private PatientController patientController;
 
     // Method to subscribe to a topic
     public MQTTSubscriber() {
@@ -31,8 +40,21 @@ public class MQTTSubscriber {
 
                 // Method to save message from the MQTT broker into the JSON file
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    System.out.println("Message recieved: " + message.toString());
                     
-                    System.out.println(message);
+                    if (topic.equals(SUBSCRIBED_TOPIC)) {
+                        List<PatientSchema> allPatients = patientController.getAllPatients();
+
+                        StringBuilder patientListResponse = new StringBuilder();
+                        for (PatientSchema patient: allPatients) {
+                            patientListResponse
+                                .append("ID: ").append(patient.getId())
+                                .append(", Name: ").append(patient.getName()).append("\n");
+                        }
+                        MqttMessage responseMessage = new MqttMessage(patientListResponse.toString().getBytes());
+                        client.publish("test/patientList", responseMessage);
+                        System.out.println("Patient list sent to response topic");
+                    }
 
                 }
 
@@ -43,6 +65,7 @@ public class MQTTSubscriber {
             });
             // Subscribe to different topics to receive message
             client.subscribe(SUBSCRIBED_TOPIC);
+            System.out.println("Subscribed to topic: " + SUBSCRIBED_TOPIC);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed");
