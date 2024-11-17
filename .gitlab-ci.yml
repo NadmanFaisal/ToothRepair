@@ -56,3 +56,17 @@ Clinic-service-build:
   artifacts:
     paths:
       - services/ClinicService/target/
+      
+# Builds the notification service
+Notification-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/NotificationService
+    - echo "Building Notification Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/NotificationService/target/
