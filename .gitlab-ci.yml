@@ -1,0 +1,86 @@
+stages:
+  - build
+  - test
+
+# Build the frontend
+frontend-build:
+  stage: build
+  image: node:20-alpine
+  tags:
+    - docker
+  script:
+    - cd client
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - client/dist
+
+# Build the backend
+backend-build:
+  stage: build
+  image: node:20-alpine
+  tags:
+    - docker
+  script:
+    - cd server
+    - npm install
+  artifacts:
+    paths:
+      - server
+
+# Builds the authentication service
+Authentication-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/AuthenticationService
+    - echo "Building Authentication Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/AuthenticationService/target/
+
+# Builds the clinic service
+Clinic-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/ClinicService
+    - echo "Building Clinic Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/ClinicService/target/
+      
+# Builds the notification service
+Notification-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/NotificationService
+    - echo "Building Notification Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/NotificationService/target/
+
+# Builds the schedule service
+Schedule-service-build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  tags:
+    - docker
+  script:
+    - cd services/ScheduleService
+    - echo "Building Schedule Service..."
+    - mvn clean package
+  artifacts:
+    paths:
+      - services/ScheduleService/target/

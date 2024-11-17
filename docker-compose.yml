@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+    ports:
+      - "8080:80" # Vue.js frontend exposed on port 8080
+
+  backend:
+    build:
+      context: ./server
+    ports:
+      - "3000:3000" # Backend API exposed on port 3000
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017" # MongoDB exposed on default port 27017
