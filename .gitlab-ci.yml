@@ -40,7 +40,7 @@ backend-build:
 # Builds the authentication service
 authentication-service-build:
   stage: build
-  image: maven:3.9.4-openjdk-17
+  image: maven:3.9.4-eclipse-temurin-17
   tags:
     - docker
   script:
