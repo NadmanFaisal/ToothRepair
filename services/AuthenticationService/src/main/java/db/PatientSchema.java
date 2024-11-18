@@ -18,4 +18,11 @@ public class PatientSchema {
         this.name = name;
     }
 
+    public String toString(){
+        String patientRepresentation = "";
+        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ "}";
+        return patientRepresentation;
+
+    }
+
 }

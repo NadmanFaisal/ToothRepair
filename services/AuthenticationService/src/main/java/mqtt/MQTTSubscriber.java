@@ -8,11 +8,12 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import main.java.controller.PatientController;
 import main.java.db.PatientSchema;
 
-
+@Component
 public class MQTTSubscriber {
 
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
