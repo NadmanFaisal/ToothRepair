@@ -34,8 +34,13 @@ function publishToTopic(topic){
 function handleIncomingMessage(topic){
   client.on('message', (topic, message) => {
     console.log(`Received message: ${message.toString()} on topic: ${topic}`);
-    message = JSON.parse(message);
-    return message;
+    try{
+      message = JSON.parse(message.toString());
+      console.log("This is the JSON format of the patient list" + message)
+      return message;
+    }catch(error){
+      console.error('Error Parsing the Patient list', error)
+    }
   });
 }
 
