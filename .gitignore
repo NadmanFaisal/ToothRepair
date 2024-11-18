@@ -4,3 +4,5 @@ target/
 .settings
 .project
 .classpath
+client/node_modules/
+server/node_modules/
