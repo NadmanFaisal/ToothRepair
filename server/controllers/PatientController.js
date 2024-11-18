@@ -1,16 +1,20 @@
+//const mqtt = require('mqtt');
 const mqtt = require('../mqtt/mqtt')
-const PATIENT_SUB_TOPIC = 'test/patientList'
-const mqtt = require('mqtt');
+const PATIENT_SUB_TOPIC = "test/patientList"
 
 
 
-
-exports.getPatients = async (req, res, next) => {
+module.exports.getPatients = async (req, res, next) => {
     try{
-        mqtt.connectToTopic(PATIENT_SUB_TOPIC)
-        mqtt.publishToTopic("test/Authentication")
-        const patients =  await mqtt.handleIncomingMessage(PATIENT_SUB_TOPIC);
+        
+        //mqtt.publishToTopic("test/Authentication")
+        console.log("Please give some kind of sign");
+        mqtt.client.connect();
+        const patients = await mqtt.connectToTopic(PATIENT_SUB_TOPIC);
+        console.log("something before patients")
+        console.log(patients)
         if(!patients){
+            console.log("That sucks")
             return res.status(404).json({error: 'No Patients found'})
         }
         return res.status(200).json(patients);
