@@ -1,30 +1,24 @@
 package main.java;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.ApplicationContext;
 
 import main.java.mqtt.MQTTPublisher;
 import main.java.mqtt.MQTTSubscriber;
+import main.java.service.PatientService;
+
 
 @SpringBootApplication
 public class Main {
-    public static void main(String[] args) {
-        try {
-            SpringApplication.run(Main.class, args);
-            // Keep the client running to listen for incoming messages
-            new MQTTSubscriber();
-            // Keep the client running to listen for incoming messages
-
-            new MQTTPublisher();
-            
-            Thread.sleep(5000);
-
-                   
-        
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+    private static PatientService patientService;
+    
+        public static void main(String[] args) {
+    
+                ApplicationContext context = SpringApplication.run(Main.class, args);
+                context.getBean(MQTTSubscriber.class);
+                context.getBean(MQTTPublisher.class);
+                new MQTTSubscriber();
+                new MQTTPublisher(patientService);
     }
     
 }
