@@ -3,7 +3,7 @@ import axios from 'axios'
 axios.defaults.withCredentials = true
 
 export const Api = axios.create({
-    baseURL: import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000/v1/api',
+    baseURL:'http://localhost:5001',
     withCredentials: true // for the axios to push cookies, incase the defaulter didnt work
   })
 

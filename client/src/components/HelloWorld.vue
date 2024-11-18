@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <button>TEST MQTT Button</button>
+    <button @click="getTestValue">TEST MQTT Button</button>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
@@ -42,9 +42,13 @@ export default {
 
   methods:{
     async getTestValue(){
+      try{
       const response = await patientApi.getTestInfo();
       console.log(response.data)
-      this.patients = response.data;
+      this.patients = response.data.patients;
+      }catch(error){
+        console.error("This bombaclaat wont work");
+      }
     }
 
 

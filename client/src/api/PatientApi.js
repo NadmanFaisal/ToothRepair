@@ -3,6 +3,6 @@ import { Api } from "./Api"
 export const patientApi = {
 
     getTestInfo(){
-        return Api.get(`/Patients/`)
+        return Api.get(`/patients/`)
     },
 }
