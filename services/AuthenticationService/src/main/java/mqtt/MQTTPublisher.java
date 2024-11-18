@@ -23,18 +23,18 @@ public class MQTTPublisher {
         publishPatientList();
     }
 
+    //Note: Needs to publish after waiting for a set amount of time (probably done in the spring boot main file)
     private void publishPatientList(){
         try {
              
             MqttClient client = new MqttClient(BROKER_URL, CLIENT_ID);
             client.connect();
-            System.out.println("MQTTPublisher has been connected!");
+            System.out.println("MQTTPublisher has been connected to: " + PUBLISHED_TOPIC);
 
             //Publish the payload as bytes to the topic.
             client.publish(PUBLISHED_TOPIC, this.patientService.getAllPatients().toString().getBytes(), 0, false);
             System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
             
-
         } catch (MqttException e) {
             e.printStackTrace();
         }

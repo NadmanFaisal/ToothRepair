@@ -32,25 +32,24 @@
 </template>
 
 <script>
-import {patientApi} from "../api/PatientApi"
+import { patientApi } from '../api/PatientApi'
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
   },
-  patients:{},
+  patients: {},
 
-  methods:{
-    async getTestValue(){
-      try{
-      const response = await patientApi.getTestInfo();
-      console.log(response.data)
-      this.patients = response.data.patients;
-      }catch(error){
-        console.error("This bombaclaat wont work");
+  methods: {
+    async getTestValue() {
+      try {
+        const response = await patientApi.getTestInfo()
+        console.log(response.data)
+        this.patients = response.data.patients
+      } catch (error) {
+        console.error('This bombaclaat wont work' + error)
       }
     }
-
 
   }
 

@@ -23,7 +23,7 @@ public class MQTTSubscriber {
     @Autowired
     private PatientController patientController;
    
-    // Method to subscribe to a topic
+    //Note: Redo this file, would make sense for subscriber to always be subscribed to topic since start of program
     public MQTTSubscriber() {
         try {
             // Initialise MQTT client and connect to broker using broker and client id

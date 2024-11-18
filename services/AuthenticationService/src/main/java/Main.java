@@ -17,8 +17,6 @@ public class Main {
                 ApplicationContext context = SpringApplication.run(Main.class, args);
                 context.getBean(MQTTSubscriber.class);
                 context.getBean(MQTTPublisher.class);
-                new MQTTSubscriber();
-                new MQTTPublisher(patientService);
     }
     
 }
