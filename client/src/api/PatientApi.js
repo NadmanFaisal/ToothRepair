@@ -1,8 +1,8 @@
-import { Api } from "./Api"
+import { Api } from './Api'
 
 export const patientApi = {
 
-    getTestInfo(){
-        return Api.get(`/patients/`)
-    },
+  getTestInfo() {
+    return Api.get('/patients')
+  }
 }
