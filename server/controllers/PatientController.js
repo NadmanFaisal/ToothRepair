@@ -9,7 +9,6 @@ module.exports.getPatients = async (req, res, next) => {
         
         //mqtt.publishToTopic("test/Authentication")
         console.log("Please give some kind of sign");
-        mqtt.client.connect();
         const patients = await mqtt.connectToTopic(PATIENT_SUB_TOPIC);
         console.log("something before patients")
         console.log(patients)
