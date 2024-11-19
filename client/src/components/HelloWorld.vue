@@ -2,6 +2,7 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
+    <p>{{ this.patients }}</p>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
@@ -38,14 +39,17 @@ export default {
   props: {
     msg: String
   },
-  patients: {},
-
+  data() {
+    return {
+      patients: []
+    }
+  },
   methods: {
     async getTestValue() {
       try {
         const response = await patientApi.getTestInfo()
         console.log(response.data)
-        this.patients = response.data.patients
+        this.patients = response.data
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
