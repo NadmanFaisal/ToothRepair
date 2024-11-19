@@ -5,6 +5,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import main.java.service.PatientService;
 import main.java.db.PatientRepository;
 @Component
@@ -31,11 +33,15 @@ public class MQTTPublisher {
             client.connect();
             System.out.println("MQTTPublisher has been connected to: " + PUBLISHED_TOPIC);
 
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
+
             //Publish the payload as bytes to the topic.
-            client.publish(PUBLISHED_TOPIC, this.patientService.getAllPatients().toString().getBytes(), 0, false);
+            client.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 0, false);
             System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
             
-        } catch (MqttException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     } 
