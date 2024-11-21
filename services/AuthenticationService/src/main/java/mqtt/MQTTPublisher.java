@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.java.service.PatientService;
 import main.java.db.PatientRepository;
+
 @Component
 public class MQTTPublisher {
 
@@ -38,7 +39,7 @@ public class MQTTPublisher {
             String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
 
             //Publish the payload as bytes to the topic.
-            client.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 0, false);
+            client.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 0, true);
             System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
             
         } catch (Exception e) {

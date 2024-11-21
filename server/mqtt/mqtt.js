@@ -29,9 +29,14 @@ function connectToTopic(topic){
     client.on('message', (topic, message) => {
       console.log(`Received message: ${message.toString()} on topic: ${topic}`);
       try{
+        
+        if(topic === "test/patientList"){
         message = JSON.parse(message.toString());
         console.log("This is the JSON format of the patient list" + message)
         resolve(message)
+        }else{
+        resolve(message.toString());
+        }
       }catch(error){
         console.error('Error Parsing the Patient list', error)
         reject(error)
@@ -41,10 +46,10 @@ function connectToTopic(topic){
   })
 }
 
-function publishToTopic(topic){ 
-  client.on('connect', () => {
-    client.publish(topic , 'Hello from mqtt.js!');
-  });
+function publishToTopic(topic){
+  console.log("Im trying to publish to the broker");
+  client.publish(topic , "Get Patients");
+  console.log("I have published get patients to the broker");
 }
 
 // Handle errors

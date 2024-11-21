@@ -1,6 +1,8 @@
 package main.java.mqtt;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -9,7 +11,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import main.java.mqtt.MQTTPublisher;
+import main.java.service.PatientService;
 import main.java.controller.PatientController;
 import main.java.db.PatientSchema;
 
@@ -18,7 +21,8 @@ public class MQTTSubscriber {
 
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
-    private static final String SUBSCRIBED_TOPIC = "test/Authentication";
+    private static final String SUBSCRIBED_TOPIC = "test/patientAlert";
+    private ExecutorService thread = Executors.newSingleThreadExecutor();
 
     @Autowired
     private PatientController patientController;
@@ -41,21 +45,13 @@ public class MQTTSubscriber {
 
                 // Method to save message from the MQTT broker into the JSON file
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    System.out.println("Message recieved: " + message.toString());
+                    String stringMessage = message.toString();
                     
-                    if (topic.equals(SUBSCRIBED_TOPIC)) {
-                        List<PatientSchema> allPatients = patientController.getAllPatients();
-
-                        StringBuilder patientListResponse = new StringBuilder();
-                        for (PatientSchema patient: allPatients) {
-                            patientListResponse
-                                .append("ID: ").append(patient.getId())
-                                .append(", Name: ").append(patient.getName()).append("\n");
-                        }
-                        MqttMessage responseMessage = new MqttMessage(patientListResponse.toString().getBytes());
-                        client.publish("test/patientList", responseMessage);
-                        System.out.println("Patient list sent to response topic");
+                    System.out.println("Message recieved: " + stringMessage);
+                    if(stringMessage.equals("Get Patients")){
+                        new MQTTPublisher(PatientService patientService);
                     }
+                  
 
                 }
 
