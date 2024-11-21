@@ -1,4 +1,10 @@
-package main.java.mqtt;
+package main.java;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+
+import main.java.mqtt.MQTTPublisher;
+import main.java.mqtt.MQTTSubscriber;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
