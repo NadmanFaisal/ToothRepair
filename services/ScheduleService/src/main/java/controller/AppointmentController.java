@@ -13,7 +13,7 @@ public class AppointmentController {
     private BookingService bookingService;
 
     @GetMapping
-    public List<AppointmentSchema> getAllAppointmentSchemas() {
+    public List<AppointmentSchema> getAllAppointments() {
         return bookingService.getAllAppointments();
     }
 
