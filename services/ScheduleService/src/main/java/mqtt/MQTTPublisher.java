@@ -21,6 +21,7 @@ public class MQTTPublisher {
     @Autowired
     public MQTTPublisher(BookingService bookingService) {
         this.bookingService = bookingService;
+        publishAppointmentList();
     }
 
     private void publishAppointmentList() {
@@ -42,5 +43,22 @@ public class MQTTPublisher {
             e.printStackTrace();
         }
     } 
+
+
+    public MQTTPublisher() {
+        try {
+            MqttClient client = new MqttClient(BROKER_URL, CLIENT_ID);
+            client.connect();
+            System.out.println("MQTTPublisher has been connected!");
+
+            //Publish the payload as bytes to the topic.
+            client.publish(PUBLISHED_TOPIC, "banana".getBytes(), 0, false);
+            System.out.println("banana was published!");
+            System.out.println("banana");
+
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
