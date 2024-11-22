@@ -12,7 +12,7 @@ public class MQTTPublisher {
 
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "test/Schedule";
+    private static final String PUBLISHED_TOPIC = "test/ScheduleList";
     private final BookingService bookingService;
 
     //Put them in a JSON format for the payload. (might be useful in the future)
