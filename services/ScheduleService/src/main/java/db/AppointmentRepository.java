@@ -1,5 +1,6 @@
 package main.java.db;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public class AppointmentRepository {
-    
+public interface AppointmentRepository extends MongoRepository<AppointmentSchema, String> {
+
 }
