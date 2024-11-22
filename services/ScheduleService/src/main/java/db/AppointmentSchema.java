@@ -90,6 +90,7 @@ public class AppointmentSchema {
         this.endTime = endTime;
     }
 
+    // Stringyfies the appointment data
     public String toString() {
         String appointmentRepresentation = "";
         appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + ", start_time: " + this.startTime + ", end_time: " + this.endTime + " }";
