@@ -13,6 +13,7 @@
     "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^0.24.9",
+    "mqtt": "^5.10.2",
     "unplugin-vue-components": "^0.27.4",
     "vue": "^3.4.38",
     "vue-router": "^4.4.3"
@@ -28,4 +29,3 @@
     "vite": "^5.4.1"
   }
 }
-

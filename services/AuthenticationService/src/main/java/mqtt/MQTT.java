@@ -18,7 +18,7 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
+    private static final String BROKER_URL = "ws://test.mosquitto.org:8081";  // Replace with your broker address
     private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/patientList";
     private final PatientService patientService; // CRUD Operations for the patient database
@@ -88,13 +88,16 @@ public class MQTT implements MqttCallback {
     private void publishPatientList(){
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String patientListJson = "My Name is Vaibhav and here are the objects...."+ objectMapper.writeValueAsString(this.patientService.getAllPatients());
-
+            String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
+            String emptyMessage = "";
             //Publish the payload as bytes to the topic.
-            middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 1, false);
-            System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
             
-        } catch (MqttException e) {
+            middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 1, false);
+            //System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
+            //mosquitto_sub -v -h test.mosquitto.org -p 1883 -t test/patientList
+            //mosquitto_pub -v -h test.mosquitto.org -p 1883 -t test/patientAlert
+            // mosquitto_pub -h test.mosquitto.org -t test/patientList -m null -r 
+        } catch (Exception e) {
             e.printStackTrace();
         }
     } 

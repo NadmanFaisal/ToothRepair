@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { patientApi } from '../api/PatientApi'
+import {subscribeToTopic, messageArrived, publishToTopic } from '../mqtt/mqtt.js';
 export default {
   name: 'HelloWorld',
   props: {
@@ -47,14 +47,19 @@ export default {
   methods: {
     async getTestValue() {
       try {
-        const response = await patientApi.getTestInfo()
-        console.log(response.data)
-        this.patients = response.data
+        await subscribeToTopic("test/patientList");
+        publishToTopic("test/patientAlert");
+        messageArrived((topic, message) => {
+          this.patients.push(`${message}`);
+          if(topic === "test/patientList"){
+            console.log('Received patient list:', message);
+            this.patients.push(message);
+          }
+        });
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
-    }
-
+    },
   }
 
 }

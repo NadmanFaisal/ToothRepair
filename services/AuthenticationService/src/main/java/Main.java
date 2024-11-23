@@ -12,20 +12,10 @@ import main.java.service.PatientService;
 public class Main {
     private static PatientService patientService;
     
-        public static void main(String[] args) {
+    public static void main(String[] args) {
     
-                SpringApplication.run(Main.class, args);
-                
-                
-                /* 
-                context.getBean(MQTT.class);
-                try {
-                    new MQTT(patientService);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                */
-               
+        SpringApplication.run(Main.class, args);
+
     }
     
 }
