@@ -1,4 +1,6 @@
 package main.java.db;
+import java.util.ArrayList;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -7,6 +9,8 @@ public class PatientSchema {
     @Id
     private String id;
     private String name;
+    private String email;
+    private String password;
 
     public String getId() {
         return id;
@@ -18,9 +22,24 @@ public class PatientSchema {
         this.name = name;
     }
 
+    public String getEmail() {
+        return email;
+    }    
+    public void setEmail(String newEmail){
+        this.email = newEmail;
+    }
+
+    public String getPassword(){
+        return this.password;
+    }
+
+    public void setPassword(String newPassword){
+        this.password = newPassword;
+    }
+
     public String toString(){
         String patientRepresentation = "";
-        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ "}";
+        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
         return patientRepresentation;
 
     }
