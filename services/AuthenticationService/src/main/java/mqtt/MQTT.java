@@ -93,10 +93,6 @@ public class MQTT implements MqttCallback {
             //Publish the payload as bytes to the topic.
             
             middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 1, false);
-            //System.out.println(this.patientService.getAllPatients().toString()+ "Has been published");
-            //mosquitto_sub -v -h test.mosquitto.org -p 1883 -t test/patientList
-            //mosquitto_pub -v -h test.mosquitto.org -p 1883 -t test/patientAlert
-            // mosquitto_pub -h test.mosquitto.org -t test/patientList -m null -r 
         } catch (Exception e) {
             e.printStackTrace();
         }
