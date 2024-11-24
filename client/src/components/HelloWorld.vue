@@ -3,6 +3,10 @@
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
     <p>{{ this.patients }}</p>
+    <div class="mapCompContainer">
+      <p>This is the Leaflet map</p>
+      <MapComponent></MapComponent>
+    </div>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
@@ -34,10 +38,14 @@
 
 <script>
 import { subscribeToTopic, messageArrived, publishToTopic } from '../mqtt/mqtt.js'
+import MapComponent from '../components/Map.vue'
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  components: {
+    MapComponent
   },
   data() {
     return {
@@ -69,6 +77,11 @@ export default {
 <style scoped>
 h3 {
   margin: 40px 0 0;
+}
+.mapCompContainer {
+  display: flex;
+  align-items: center;
+  height: 50vh;
 }
 ul {
   list-style-type: none;
