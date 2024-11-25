@@ -73,5 +73,13 @@ export function publishToTopic(topic) {
     console.log('Im trying to publish to the broker')
     client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
     console.log('I have published get patients to the broker')
-  }
+    }
+}
+export function publishValue(topic, payload){
+    if(client.connected){
+        console.log('Publishing '+ payload + "to " + topic);
+        client.publish(topic, payload)
+        console.log(payload+" Has been published to " + topic);
+    }
+
 }

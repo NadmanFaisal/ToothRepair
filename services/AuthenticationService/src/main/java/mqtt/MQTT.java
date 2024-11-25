@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import main.java.db.PatientSchema;
 import main.java.service.PatientService;
 
 @Component
@@ -23,6 +24,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOPIC = "test/patientList";
     private final PatientService patientService; // CRUD Operations for the patient database
     private static final String SUBSCRIBED_TOPIC = "test/patientAlert"; 
+    private static final String SUBSCRIBED_SIGNUP_TOPIC = "patient/authentication/signup";
+    private static final String PUBLISHED_STATUS_TOPIC = "patient/authentication/status";
     private ExecutorService thread = Executors.newSingleThreadExecutor(); // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -62,6 +65,7 @@ public class MQTT implements MqttCallback {
         thread.submit(()-> {
             try {
                 middleware.subscribe(SUBSCRIBED_TOPIC, 0); //Subscribe to topic
+                middleware.subscribe(SUBSCRIBED_SIGNUP_TOPIC, 0);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -136,11 +140,17 @@ public class MQTT implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) {
         
         try {
-            String stringMessage = message.toString(); 
-                   
+            
+            String stringMessage = message.toString();        
             System.out.println("Message recieved: " + stringMessage);
             if(stringMessage.equals("Get Patients")){
                 this.publishPatientList();
+            }else if(topic.equals(SUBSCRIBED_SIGNUP_TOPIC)){
+                System.out.println("Message recieved: " + stringMessage);
+                ObjectMapper objectMap = new ObjectMapper();
+                PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
+                patientService.createPatient(patient);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, "A patient has been created".getBytes(), 0, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
