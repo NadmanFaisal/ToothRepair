@@ -52,7 +52,7 @@ public class ClinicSchema {
         return contact_info;
     }
 
-    public List<String> getDentistIDs() {
+    public List<String> getDentists() {
         return dentists;
     }
 
