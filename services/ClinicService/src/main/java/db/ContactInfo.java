@@ -4,6 +4,9 @@ public class ContactInfo {
     private String number;
     private String email;
 
+    public ContactInfo() {
+        
+    }
 
     public ContactInfo(String number, String email) {
         this.number = number;
