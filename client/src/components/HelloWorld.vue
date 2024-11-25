@@ -3,6 +3,8 @@
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
     <p>{{ this.patients }}</p>
+    <button @click="getAppointments">Test appointments</button>
+    <p>{{ this.appointments }}</p>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
