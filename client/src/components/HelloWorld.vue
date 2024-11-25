@@ -2,7 +2,9 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
+    <button @click="getAllClinics">TEST GET CLINICS</button>
     <p>{{ this.patients }}</p>
+    <p>{{ this.clinics }}</p>
     <div class="mapCompContainer">
       <p>This is the Leaflet map</p>
       <MapComponent></MapComponent>
@@ -49,7 +51,8 @@ export default {
   },
   data() {
     return {
-      patients: []
+      patients: [],
+      clinics: []
     }
   },
   methods: {
@@ -66,6 +69,20 @@ export default {
         })
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
+      }
+    },
+    async getAllClinics() {
+      try {
+        await subscribeToTopic('test/clinicList')
+        publishToTopic('test/clinicAlert')
+        messageArrived((topic, message) => {
+          if (topic === 'test/clinicList') {
+            console.log('Recieved clinic list: ', message)
+            this.clinics.push(message)
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve all clinics: ', error)
       }
     }
   }
