@@ -22,7 +22,7 @@
     <p>{{ this.clinics }}</p>
     <div class="mapCompContainer">
       <p>This is the Leaflet map</p>
-      <MapComponent></MapComponent>
+      <MapComponent :clinics="clinics"></MapComponent>
     </div>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
@@ -99,7 +99,7 @@ export default {
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
             console.log('Recieved clinic list: ', message)
-            this.clinics.push(message)
+            this.clinics = message
           }
         })
       } catch (error) {
@@ -109,7 +109,7 @@ export default {
     async createClinic() {
       const newClinic = {
         name: this.clinicName,
-        coordinate: { latitude: this.coordinates.latitude, longitude: this.coordinates.longitude },
+        coordinate: { latitude: this.latitude, longitude: this.longitude },
         address: this.address,
         open_hours: this.openHours,
         contact_info: { number: this.number, email: this.email },
