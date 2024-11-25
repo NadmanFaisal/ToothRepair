@@ -81,3 +81,15 @@ export function publishToTopic(topic) {
     }
   }
 }
+
+/**
+ * This function sends a message to the topic which is provided
+ *
+ * @param {*} topic specifies the topic that the message is being sent to
+ * @param {*} message the message that is sent through the topic
+ */
+export function publishMsgToTopic(topic, message) {
+  if (client.connected) {
+    client.publish(topic, message)
+  }
+}
