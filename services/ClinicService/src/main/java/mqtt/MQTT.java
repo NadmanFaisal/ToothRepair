@@ -14,16 +14,17 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import main.java.db.ClinicSchema;
 import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org:1883";
+    private static final String BROKER_URL = "tcp://test.mosquitto.org";
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/clinicList";
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String SUBSCRIBED_TOPIC = "test/clinicAlert"; 
-    private ExecutorService thread = Executors.newSingleThreadExecutor(); // thread to handle each subscribed topic
+    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "test/createClinic"}; 
+    private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
     /**
@@ -37,6 +38,7 @@ public class MQTT implements MqttCallback {
     @Autowired
     public MQTT(ClinicService clinicService){
         try {
+            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.clinicService = clinicService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
@@ -59,20 +61,21 @@ public class MQTT implements MqttCallback {
      */
     private void subscribeToTopics() {
         while(middleware.isConnected()){ // while client is connected
-        thread.submit(()-> {
-            try {
-                middleware.subscribe(SUBSCRIBED_TOPIC, 1); //Subscribe to topic
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            for (String topic : SUBSCRIBED_TOPICS) {
+                threadPool.submit(()-> {
+                    try {
+                        middleware.subscribe(topic, 0); //Subscribe to topic
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
-        });
-        try {
-            Thread.sleep(1000); // 1 second interval
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                Thread.sleep(1000); // 1 second interval
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-    }
-
     }
 
     /**
@@ -97,6 +100,11 @@ public class MQTT implements MqttCallback {
             e.printStackTrace();
         }
     } 
+
+    public void createClinic(ClinicSchema clinicInformation) {
+        System.out.println("ClinicInfo has been saved into the database: " + clinicInformation);
+        this.clinicService.createClinic(clinicInformation);
+    }
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -137,11 +145,18 @@ public class MQTT implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) {
         
         try {
-            String stringMessage = message.toString(); 
+            String stringMessage = new String(message.getPayload()); 
                    
             System.out.println("Message recieved: " + stringMessage);
-            if(stringMessage.equals("Get Clinics")){
-                this.publishClinicList();
+            if (topic.equals("test/clinicAlert")) {
+                if(stringMessage.equals("Get Clinics")){
+                    this.publishClinicList();
+                }
+            } else if (topic.equals("test/createClinic") ) {
+                System.out.println("Entered createClinic if statement");
+                ObjectMapper objectMapper = new ObjectMapper();
+                ClinicSchema clinicInfo = objectMapper.readValue(stringMessage, ClinicSchema.class);
+                clinicService.createClinic(clinicInfo);
             }
         } catch (Exception e) {
             e.printStackTrace();
