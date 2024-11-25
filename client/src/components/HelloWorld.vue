@@ -41,7 +41,8 @@ export default {
   },
   data() {
     return {
-      patients: []
+      patients: [],
+      appointments: []
     }
   },
   methods: {
@@ -54,6 +55,21 @@ export default {
           if (topic === 'test/patientList') {
             console.log('Received patient list:', message)
             this.patients.push(message)
+          }
+        })
+      } catch (error) {
+        console.error('This bombaclaat wont work' + error)
+      }
+    },
+    async getAppointments() {
+      try {
+        await subscribeToTopic('test/appointmentList')
+        publishToTopic('test/appointmentAlert')
+        messageArrived((topic, message) => {
+          this.appointments.push(`${message}`)
+          if (topic === 'test/appointmentList') {
+            console.log('Received Appointment list:', message)
+            this.appointments.push(message)
           }
         })
       } catch (error) {
