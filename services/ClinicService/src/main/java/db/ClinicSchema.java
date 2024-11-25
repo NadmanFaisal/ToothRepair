@@ -4,6 +4,8 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 @Document(collection = "clinics") 
 public class ClinicSchema {
@@ -13,13 +15,16 @@ public class ClinicSchema {
     private String name;
     
     private Coordinate coordinate;
-    
+
     private String address;
     
+    @JsonProperty("open_hours")
     private String open_hours;
     
+    @JsonProperty("contact_info")
     private ContactInfo contact_info;
     
+    @JsonProperty("dentists")
     private List<String> dentists;
 
     //Getters
@@ -31,7 +36,7 @@ public class ClinicSchema {
         return name;
     }
     
-    public Coordinate getCoordinates() {
+    public Coordinate getCoordinate() {
         return coordinate;
     }
     
