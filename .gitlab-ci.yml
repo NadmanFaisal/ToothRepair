@@ -16,19 +16,6 @@ frontend-build:
     paths:
       - client/dist
 
-# Build the backend
-backend-build:
-  stage: build
-  image: node:20-alpine
-  tags:
-    - docker
-  script:
-    - cd server
-    - npm install
-  artifacts:
-    paths:
-      - server
-
 # Builds the authentication service
 Authentication-service-build:
   stage: build
