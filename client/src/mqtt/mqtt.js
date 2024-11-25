@@ -2,7 +2,7 @@
 import mqtt from 'mqtt'
 
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export const client = mqtt.connect('ws://test.mosquitto.org:8081')
+export const client = mqtt.connect('wss://test.mosquitto.org:8081')
 
 // On connection to client,  print connected
 client.on('connect', () => {
@@ -52,9 +52,9 @@ export function messageArrived(callback) {
   client.on('message', (topic, message) => {
     console.log(`Received message: ${message.toString()} on topic: ${topic}`)
     try {
-      const parsedMessage = JSON.parse(message.toString())
+      
       console.log('This is the JSON format of the patient list' + message)
-      callback(topic, parsedMessage)
+      callback(topic, message)
     } catch (error) {
       console.error('Error Parsing the Patient list', error)
       callback(topic, message.toString())

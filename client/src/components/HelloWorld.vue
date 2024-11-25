@@ -50,10 +50,9 @@ export default {
         await subscribeToTopic('test/patientList')
         publishToTopic('test/patientAlert')
         messageArrived((topic, message) => {
-          this.patients.push(`${message}`)
           if (topic === 'test/patientList') {
             console.log('Received patient list:', message)
-            this.patients.push(message)
+            this.patients.push(JSON.parse(message))
           }
         })
       } catch (error) {

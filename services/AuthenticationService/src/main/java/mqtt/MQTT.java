@@ -20,13 +20,12 @@ import main.java.service.PatientService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
-    private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
+    private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/patientList";
     private final PatientService patientService; // CRUD Operations for the patient database
-    private static final String SUBSCRIBED_TOPIC = "test/patientAlert"; 
-    private static final String SUBSCRIBED_SIGNUP_TOPIC = "patient/authentication/signup";
     private static final String PUBLISHED_STATUS_TOPIC = "patient/authentication/status";
-    private ExecutorService thread = Executors.newSingleThreadExecutor(); // thread to handle each subscribed topic
+    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup"};
+    private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
     /**
@@ -40,6 +39,7 @@ public class MQTT implements MqttCallback {
     @Autowired
     public MQTT(PatientService patientService){
         try {
+            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.patientService = patientService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
@@ -62,22 +62,24 @@ public class MQTT implements MqttCallback {
      */
     private void subscribeToTopics() {
         while(middleware.isConnected()){ // while client is connected
-        thread.submit(()-> {
-            try {
-                middleware.subscribe(SUBSCRIBED_TOPIC, 0); //Subscribe to topic
-                middleware.subscribe(SUBSCRIBED_SIGNUP_TOPIC, 0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            for (String topic : SUBSCRIBED_TOPICS) {
+                threadPool.submit(()-> {
+                    try {
+                        middleware.subscribe(topic, 0); //Subscribe to topic
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
-        });
-        try {
-            Thread.sleep(1000); // 1 second interval
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                Thread.sleep(1000); // 1 second interval
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-    }
 
     }
+
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -141,16 +143,18 @@ public class MQTT implements MqttCallback {
         
         try {
             
-            String stringMessage = message.toString();        
-            System.out.println("Message recieved: " + stringMessage);
+            String stringMessage = new String(message.getPayload());
+
+            
             if(stringMessage.equals("Get Patients")){
+                System.out.println("Message recieved: " + stringMessage);
                 this.publishPatientList();
-            }else if(topic.equals(SUBSCRIBED_SIGNUP_TOPIC)){
+            }else if(topic.equals(SUBSCRIBED_TOPICS[1])){
                 System.out.println("Message recieved: " + stringMessage);
                 ObjectMapper objectMap = new ObjectMapper();
                 PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
                 patientService.createPatient(patient);
-                middleware.publish(PUBLISHED_STATUS_TOPIC, "A patient has been created".getBytes(), 0, false);
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
