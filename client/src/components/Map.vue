@@ -25,8 +25,8 @@ export default {
 </script>
 <style>
     .mapContainer {
-        width: 800px;
-        height: 500px;
+        width: 400px;
+        height: 250px;
         position: relative;
         overflow: hidden;
         border-style: solid;
