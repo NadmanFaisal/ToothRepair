@@ -70,8 +70,14 @@ export function messageArrived(callback) {
  */
 export function publishToTopic(topic) {
   if (client.connected) {
-    console.log('Im trying to publish to the broker')
-    client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
-    console.log('I have published get patients to the broker')
+    if (topic === 'test/clinicAlert') {
+      console.log('Im trying to publish to the "test/clinicAlert" topic')
+      client.publish(topic, 'Get Clinics') // publishes Get Patients as a message to recieve all patients
+      console.log('I have published "Get Clinics" to the "test/clinicAlert" topic')
+    } else if (topic === 'test/patientAlert') {
+      console.log('Im trying to publish to the broker')
+      client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
+      console.log('I have published get patients to the broker')
+    }
   }
 }
