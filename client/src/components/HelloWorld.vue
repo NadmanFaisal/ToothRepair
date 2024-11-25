@@ -3,6 +3,21 @@
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
     <button @click="getAllClinics">TEST GET CLINICS</button>
+    <div class="createClinicContainer">
+      <label for="">Name of Clinic:</label>
+      <input type="text" v-model="clinicName" placeholder="Enter clinic name...">
+      <label for="">Coordinates:</label>
+      <input type="number" v-model="latitude" placeholder="Enter clinic latitude here...">
+      <input type="number" v-model="longitude" placeholder="Enter clinic longitude here...">
+      <label for="">Address:</label>
+      <input type="text" v-model="address" placeholder="Enter clinic address...">
+      <label for="">Open Hours:</label>
+      <input type="text" v-model="openHours" placeholder="Enter clinic openhours...">
+      <label for="">ContactInfo:</label>
+      <input type="text" v-model="number" placeholder="Enter clinic phone number...">
+      <input type="text" v-model="email" placeholder="Enter clinic email...">
+      <button @click="createClinic">Add new Clinic</button>
+    </div>
     <p>{{ this.patients }}</p>
     <p>{{ this.clinics }}</p>
     <div class="mapCompContainer">
@@ -39,7 +54,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishToTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
 import MapComponent from '../components/Map.vue'
 export default {
   name: 'HelloWorld',
@@ -52,7 +67,13 @@ export default {
   data() {
     return {
       patients: [],
-      clinics: []
+      clinics: [],
+      clinicName: '',
+      coordinates: { latitude: null, longitude: null },
+      address: '',
+      openHours: '',
+      contactInfo: { number: '', email: '' },
+      dentists: []
     }
   },
   methods: {
@@ -83,6 +104,23 @@ export default {
         })
       } catch (error) {
         console.error('Tried to retrieve all clinics: ', error)
+      }
+    },
+    async createClinic() {
+      const newClinic = {
+        name: this.clinicName,
+        coordinate: { latitude: this.coordinates.latitude, longitude: this.coordinates.longitude },
+        address: this.address,
+        open_hours: this.openHours,
+        contact_info: { number: this.number, email: this.email },
+        dentists: this.dentists
+
+      }
+      try {
+        console.log('Publishing clinic information to test/createClinic')
+        publishMsgToTopic('test/createClinic', JSON.stringify(newClinic))
+      } catch (error) {
+        console.error('Tried to create a clinic: ', error)
       }
     }
   }
