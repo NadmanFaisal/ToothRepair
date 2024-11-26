@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "appointments") 
+@Document(collection = "Schedule") 
 public class AppointmentSchema {
     @Id
     private String id;
@@ -22,11 +22,11 @@ public class AppointmentSchema {
     // @DBRef
     // private DentistSchema dentist;
     
-    private LocalDate date;
+    // private LocalDate date;
     
-    private LocalTime startTime;
+    // private LocalTime startTime;
     
-    private LocalTime endTime;
+    // private LocalTime endTime;
 
     // Getter methods to return attribute values
     public String getId() {
@@ -49,17 +49,17 @@ public class AppointmentSchema {
     //     return this.dentist;
     // }
 
-    public LocalDate getDate() {
-        return this.date;
-    }
+    // public LocalDate getDate() {
+    //     return this.date;
+    // }
 
-    public LocalTime getStartTime() {
-        return this.startTime;
-    }
+    // public LocalTime getStartTime() {
+    //     return this.startTime;
+    // }
 
-    public LocalTime getEndTime() {
-        return this.endTime;
-    }
+    // public LocalTime getEndTime() {
+    //     return this.endTime;
+    // }
 
     // Setter method to set values for attributes
     public void setStatus(String status) {
@@ -78,22 +78,22 @@ public class AppointmentSchema {
     //     this.dentist = dentist;
     // }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
+    // public void setDate(LocalDate date) {
+    //     this.date = date;
+    // }
 
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
+    // public void setStartTime(LocalTime startTime) {
+    //     this.startTime = startTime;
+    // }
 
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
-    }
+    // public void setEndTime(LocalTime endTime) {
+    //     this.endTime = endTime;
+    // }
 
     // Stringyfies the appointment data
     public String toString() {
         String appointmentRepresentation = "";
-        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + ", start_time: " + this.startTime + ", end_time: " + this.endTime + " }";
+        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + " }";
 
         return appointmentRepresentation;
     }

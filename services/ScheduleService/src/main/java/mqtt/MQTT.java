@@ -91,7 +91,7 @@ public class MQTT implements MqttCallback {
             String appointmentListJson = objectMapper.writeValueAsString(this.bookingService.getAllAppointments());
             //Publish the payload as bytes to the topic.
             
-            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 0, false);
+            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 1, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
