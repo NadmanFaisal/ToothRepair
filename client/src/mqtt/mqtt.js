@@ -69,9 +69,13 @@ export function messageArrived(callback) {
  * @param {*} topic requires a topic to publish a value
  */
 export function publishToTopic(topic) {
-  if (client.connected) {
+  if (client.connected && topic === 'test/patientAlert') {
     console.log('Im trying to publish to the broker')
     client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
+    console.log('I have published get patients to the broker')
+  } else if (client.connected && topic === 'test/appointmentAlert') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, 'Get Appointments') // publishes Get Appointments as a message to recieve all patients
     console.log('I have published get patients to the broker')
   }
 }
