@@ -19,7 +19,7 @@ import main.java.service.BookingService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
-    private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
+    private static final String CLIENT_ID = "AppointmentService";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/appointmentList";
     private final BookingService bookingService; // CRUD Operations for the appointment database
     private static final String SUBSCRIBED_TOPIC = "test/appointmentAlert"; 
