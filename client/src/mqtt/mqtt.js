@@ -76,6 +76,6 @@ export function publishToTopic(topic) {
   } else if (client.connected && topic === 'test/appointmentAlert') {
     console.log('Im trying to publish to the broker')
     client.publish(topic, 'Get Appointments') // publishes Get Appointments as a message to recieve all patients
-    console.log('I have published get patients to the broker')
+    console.log(`I have published get appointments to ${topic}`)
   }
 }

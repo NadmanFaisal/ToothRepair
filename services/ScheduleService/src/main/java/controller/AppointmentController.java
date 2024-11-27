@@ -3,23 +3,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import main.java.db.AppointmentSchema;
-import main.java.service.BookingService;
+import main.java.service.AppointmentService;
 
 import java.util.List;
 
 public class AppointmentController {
 
     @Autowired
-    private BookingService bookingService;
+    private AppointmentService appointmentService;
 
     @GetMapping
     public List<AppointmentSchema> getAllAppointments() {
-        return bookingService.getAllAppointments();
+        return appointmentService.getAllAppointments();
     }
 
     @PostMapping
     public AppointmentSchema createAppointment(@RequestBody AppointmentSchema appointment) {
-        return bookingService.createAppointment(appointment);
+        return appointmentService.createAppointment(appointment);
     }
     
 }

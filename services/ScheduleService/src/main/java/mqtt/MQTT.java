@@ -14,30 +14,32 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import main.java.service.BookingService;
+import main.java.db.AppointmentSchema;
+import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
-    private static final String CLIENT_ID = "AppointmentService";      // Unique client ID
+    private static final String BROKER_URL = "tcp://test.mosquitto.org";
+    private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/appointmentList";
-    private final BookingService bookingService; // CRUD Operations for the appointment database
-    private static final String SUBSCRIBED_TOPIC = "test/appointmentAlert"; 
-    private ExecutorService thread = Executors.newSingleThreadExecutor(); // thread to handle each subscribed topic
+    private final AppointmentService appointmentService; // CRUD Operations for the schedule database
+    private static final String[] SUBSCRIBED_TOPICS = {"test/appointmentAlert"}; 
+    private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
      * 
-     * @param bookingService Connection to the database, where it interacts withe the MongoDB database using CRUD operators
+     * @param appointmentService Connection to the database, where it interacts withe the MongoDB database using CRUD operators
      * @throws MqttException throws a RuntimeException showing the error
      */
 
     @Autowired
-    public MQTT(BookingService bookingService){
+    public MQTT(AppointmentService appointmentService){
         try {
-            this.bookingService = bookingService;
+            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
+            this.appointmentService = appointmentService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
             middleware.setCallback(this);
@@ -59,20 +61,20 @@ public class MQTT implements MqttCallback {
      */
     private void subscribeToTopics() {
         while(middleware.isConnected()){ // while client is connected
-        thread.submit(()-> {
+                threadPool.submit(()-> {
+                    try {
+                        middleware.subscribe(SUBSCRIBED_TOPIC[0], 0); //Subscribe to topic
+                        System.out.println("subscribed to" + topic)
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             try {
-                middleware.subscribe(SUBSCRIBED_TOPIC, 0); //Subscribe to topic
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                Thread.sleep(1000); // 1 second interval
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
-        try {
-            Thread.sleep(1000); // 1 second interval
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-    }
-
     }
 
     /**
@@ -88,7 +90,8 @@ public class MQTT implements MqttCallback {
     private void publishAppointmentList(){
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String appointmentListJson = objectMapper.writeValueAsString(this.bookingService.getAllAppointments());
+            String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+            String emptyMessage = "";
             //Publish the payload as bytes to the topic.
             
             middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 1, false);
@@ -96,6 +99,11 @@ public class MQTT implements MqttCallback {
             e.printStackTrace();
         }
     } 
+
+    public void createAppointment(AppointmentSchema appointmentInformation) {
+        System.out.println("AppointmentInfo has been saved into the database: " + appointmentInformation);
+        this.appointmentService.createAppointment(appointmentInformation);
+    }
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -136,11 +144,18 @@ public class MQTT implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) {
         
         try {
-            String stringMessage = message.toString(); 
+            String stringMessage = new String(message.getPayload()); 
                    
             System.out.println("Message recieved: " + stringMessage);
-            if(stringMessage.equals("Get Appointments")){
-                this.publishAppointmentList();
+            if (topic.equals("test/appointmentAlert")) {
+                if(stringMessage.equals("Get Appointments")){
+                    this.publishAppointmentList();
+                }
+            } else if (topic.equals("test/createAppointment") ) {
+                System.out.println("Entered createAppointment if statement");
+                ObjectMapper objectMapper = new ObjectMapper();
+                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                appointmentService.createAppointment(appointmentInfo);
             }
         } catch (Exception e) {
             e.printStackTrace();

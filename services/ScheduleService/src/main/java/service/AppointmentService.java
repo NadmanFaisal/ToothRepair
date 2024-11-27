@@ -8,11 +8,11 @@ import main.java.db.AppointmentRepository;
 import main.java.db.AppointmentSchema;
 
 @Service
-public class BookingService {
+public class AppointmentService {
 
     private AppointmentRepository appointmentRepository;
     @Autowired
-    public BookingService(AppointmentRepository appointmentRepository) {
+    public AppointmentService(AppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
 
