@@ -42,6 +42,16 @@ export function subscribeToTopic(topic) {
   )
 }
 
+export function unSubscribeFromTopic(topic) {
+  client.unsubscribe(topic, (err) => {
+    if (err) {
+      console.error('Failed to unsubscribe from topic: ', topic, err)
+    } else {
+      console.log('Unsubscribed from: ', topic)
+    }
+  })
+}
+
 /**
  * This function handles recieved message by parsing it to JSON.
  *
