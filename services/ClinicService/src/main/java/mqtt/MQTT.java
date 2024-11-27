@@ -1,5 +1,7 @@
 package main.java.mqtt;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.java.db.ClinicSchema;
@@ -173,6 +176,8 @@ public class MQTT implements MqttCallback {
                 handleCreateClinic(stringMessage);
             } else if (topic.equals("dentist/clinicAlert")) {
                 handleDentistAlert(stringMessage);
+            } else if (topic.equals("dentist/clinicService/addDentist")) {
+                handleAddingDentist(stringMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -198,8 +203,31 @@ public class MQTT implements MqttCallback {
             ClinicSchema clinicInfo = objectMapper.readValue(message, ClinicSchema.class);
             clinicService.createClinic(clinicInfo);
             
+            middleware.unsubscribe("test/createClinic");
         } catch (Exception e) {
             System.err.println("Error creating clinic: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void handleAddingDentist(String message) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, String> messageData = objectMapper.readValue(message, new TypeReference<Map<String, String>>() {});
+
+            String clinicId = messageData.get("clinicId");
+            String dentistId = messageData.get("dentistId");
+
+            Optional<ClinicSchema> updatedClinic = clinicService.addDentist(clinicId, dentistId);
+
+            if (updatedClinic.isPresent()) {
+               System.out.println("Dentist added: " + updatedClinic.get());
+            } else {
+                System.out.println("Clinic not found with Id: " + clinicId);
+            }
+            middleware.unsubscribe("dentist/clinicService/addDentist");
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
