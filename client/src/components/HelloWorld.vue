@@ -1,10 +1,12 @@
 <template>
   <div class="hello">
+    <img alt="Vue logo" src="../assets/logo.png">
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
     <p>{{ this.patients }}</p>
     <button @click="getAppointments">Test appointments</button>
     <p>{{ this.appointments }}</p>
+    <button @click="pushPatientHomePage">Move to homepage</button>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
       check out the
@@ -77,6 +79,9 @@ export default {
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
+    },
+    pushPatientHomePage() {
+      this.$router.push('/homePage')
     }
   }
 
