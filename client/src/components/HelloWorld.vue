@@ -47,10 +47,10 @@ export default {
   methods: {
     async getTestValue() {
       try {
-        await subscribeToTopic('test/patientList')
+        await subscribeToTopic('authentication/patientList')
         publishToTopic('test/patientAlert')
         messageArrived((topic, message) => {
-          if (topic === 'test/patientList') {
+          if (topic === 'authentication/patientList') {
             console.log('Received patient list:', message)
             this.patients.push(JSON.parse(message))
           }

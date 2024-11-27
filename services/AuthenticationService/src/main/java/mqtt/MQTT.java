@@ -23,7 +23,9 @@ import main.java.service.PatientService;
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
-    private static final String PUBLISHED_PATIENT_TOPIC = "test/patientList";
+    private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
+    private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
+    
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup"};
@@ -151,9 +153,12 @@ public class MQTT implements MqttCallback {
                 System.out.println("Message recieved: " + stringMessage);
                 PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
                 if(!patientService.checkDuplicatePatient(patient)){
+                   
                     patientService.createPatient(patient);
                 }else{
-                    //middleware.publish()
+                    String errorMessage = "Error: An account with this email already exists";
+                    System.out.println(errorMessage);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
                 }
 
             } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
@@ -162,7 +167,9 @@ public class MQTT implements MqttCallback {
                 if(!dentistService.checkDuplicateDentist(dentist)){
                     dentistService.createDentist(dentist);
                 }else{
-                    //middleware.publish()
+                    String errorMessage = "Error: An account with this email already exists";
+                    System.out.println(errorMessage);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
                 }
                 
             }

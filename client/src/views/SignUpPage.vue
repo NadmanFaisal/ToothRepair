@@ -45,7 +45,7 @@
 
 <script>
 import SignUpForm from '@/components/SignUpForm.vue'
-import { subscribeToTopic, publishValue } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishValue, messageArrived } from '../mqtt/mqtt.js'
 
 
 export default {
@@ -70,6 +70,8 @@ export default {
     async submitSignUp({ username, email, password, clinic}) {
         const PUBLISH_PATIENT_TOPIC ="patient/authentication/signup";
         const PUBLISH_DENTIST_TOPIC="dentist/authentication/signup";
+        const SUBCRIBE_AUTHENTICATION_TOPIC = "authentication/status";
+        await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC);
         try {
         if(!clinic){
         
@@ -78,7 +80,6 @@ export default {
                 "email": email,
                 "password": password
             }
-            
             publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient));
         }else{
             const newDentist = {
@@ -91,6 +92,12 @@ export default {
             publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist));    
         }
         
+        messageArrived((topic, message) => {
+          if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
+            console.log(message);
+            alert(message);
+          }
+        })
         // waits a while to display the Sign Up Successful message to user until we move him to login
         setTimeout(() => {
           this.$router.push('/login')

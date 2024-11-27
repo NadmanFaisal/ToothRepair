@@ -28,7 +28,7 @@ public class DentistService {
     }
     public Boolean checkDuplicateDentist(DentistSchema dentist ) {
         
-        if(DentistRepository.findByEmail(dentist.getEmail()) != null){
+        if(dentistRepository.findByEmail(dentist.getEmail()) != null){
             return true;
         }
         return false;
