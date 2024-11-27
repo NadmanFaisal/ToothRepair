@@ -93,7 +93,7 @@ export default {
     async getAllClinics() {
       try {
         await subscribeToTopic('test/clinicList')
-        publishToTopic('test/clinicAlert')
+        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
             console.log('Recieved clinic list: ', message)
@@ -106,6 +106,8 @@ export default {
       }
     },
     async createClinic() {
+      publishMsgToTopic('test/clinicAlert', 'Subscribe To Clinic Info Topic')
+      setTimeout(2000)
       const newClinic = {
         name: this.clinicName,
         coordinate: { latitude: this.latitude, longitude: this.longitude },
