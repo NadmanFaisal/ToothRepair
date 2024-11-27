@@ -14,17 +14,19 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import main.java.db.DentistSchema;
 import main.java.db.PatientSchema;
+import main.java.service.DentistService;
 import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "test/patientList";
+    private static final String PUBLISHED_PATIENT_TOPIC = "test/patientList";
     private final PatientService patientService; // CRUD Operations for the patient database
-    private static final String PUBLISHED_STATUS_TOPIC = "patient/authentication/status";
-    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup"};
+    private final DentistService dentistService; // CRUD Operations for the dentist  database
+    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -37,10 +39,11 @@ public class MQTT implements MqttCallback {
      */
 
     @Autowired
-    public MQTT(PatientService patientService){
+    public MQTT(PatientService patientService, DentistService dentistService){
         try {
             this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.patientService = patientService;
+            this.dentistService = dentistService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
             middleware.setCallback(this);
@@ -82,7 +85,7 @@ public class MQTT implements MqttCallback {
 
 
     /**
-     * Publishes the topic as a String in JSON notation.
+     * Publishes all patients in the patient topic as a String in JSON notation.
      * 
      * Publishing happening with QoS 1.
      * 
@@ -95,23 +98,19 @@ public class MQTT implements MqttCallback {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
+
             //Publish the payload as bytes to the topic.
-            
-            middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 0, false);
+            middleware.publish(PUBLISHED_PATIENT_TOPIC, patientListJson.getBytes(), 0, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    } 
+    }
 
     /**
-     * Publishes the topic as a String in JSON notation.
+     * Reconnects to the client and subscribes to the topics
      * 
-     * Publishing happening with QoS 1.
-     * 
-     * It publishes with the conected client
-     * 
-     * @param N/A no params needed
-     * @throws MqttException prints the Error Stack trace
+     * @param cause to throw the error stack trace
+     * @throws Exception prints the Error Stack trace
      */
     @Override
     public void connectionLost(Throwable cause) {
@@ -142,19 +141,20 @@ public class MQTT implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) {
         
         try {
-            
             String stringMessage = new String(message.getPayload());
+            ObjectMapper objectMap = new ObjectMapper();
 
-            
             if(stringMessage.equals("Get Patients")){
                 System.out.println("Message recieved: " + stringMessage);
                 this.publishPatientList();
-            }else if(topic.equals(SUBSCRIBED_TOPICS[1])){
+            } else if(topic.equals(SUBSCRIBED_TOPICS[1])){
                 System.out.println("Message recieved: " + stringMessage);
-                ObjectMapper objectMap = new ObjectMapper();
                 PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
                 patientService.createPatient(patient);
-                
+            } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
+                System.out.println("Message recieved: " + stringMessage);
+                DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
+                dentistService.createDentist(dentist);
             }
         } catch (Exception e) {
             e.printStackTrace();
