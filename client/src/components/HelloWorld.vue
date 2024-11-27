@@ -18,8 +18,6 @@
       <input type="text" v-model="email" placeholder="Enter clinic email...">
       <button @click="createClinic">Add new Clinic</button>
     </div>
-    <p>{{ this.patients }}</p>
-    <p>{{ this.clinics }}</p>
     <div class="mapCompContainer">
       <p>This is the Leaflet map</p>
       <MapComponent :clinics="clinics"></MapComponent>
