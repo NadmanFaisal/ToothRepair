@@ -7,10 +7,10 @@
                 <label class="logo-label">TEETH REPAIR</label>
             </div>
 
-            <div class="col-7 router-container">
+            <div class="col-6 router-container">
             </div>
 
-            <div class="col-2 settings-container">
+            <div class="col-3 settings-container">
                 <img src="../assets/notifications.png" class="notification-label">
                 <img src="../assets/profile-picture.png" class="profile-picture">
                 <label class="patient-name-label"> Name of Patient</label>
@@ -30,11 +30,18 @@ export default {
 </script>
 
 <style scoped>
+
+.row {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
 .top-bar-container {
     display: flex;
     flex-direction: row;
     background-color: white;
-    height: 70px;
+    height:7%;
 }
 
 .logo-container {
@@ -61,13 +68,13 @@ export default {
 }
 
 .settings-container {
-    margin-left: 15px;
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
 .notification-label {
+    margin-left: 150px;
     height: 35px;
     width: 35px;
 }
@@ -92,7 +99,8 @@ export default {
 .content-section {
     display: flex;
     flex-direction: row;
-    height: 100vh;
-    background-color: black;
+    height: 93%;
+    background-image: linear-gradient(rgba(62, 180, 137, 0.5), rgba(62, 180, 137, 0.5)), url('@/assets/patient-home-bg-image.jpeg');
+    background-size: cover;
 }
 </style>
