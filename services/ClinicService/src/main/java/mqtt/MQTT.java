@@ -23,7 +23,7 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/clinicList";
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "test/createClinic"}; 
+    private static final String[] SUBSCRIBED_ALERTS = {"test/clinicAlert", "dentist/clinicAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -38,12 +38,12 @@ public class MQTT implements MqttCallback {
     @Autowired
     public MQTT(ClinicService clinicService){
         try {
-            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
+            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_ALERTS.length);
             this.clinicService = clinicService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
             middleware.setCallback(this);
-            this.subscribeToTopics();
+            this.subscribeToAlerts();
         } catch (MqttException e) {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
@@ -59,23 +59,42 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws InterruptedException prints Error Stack trace
      */
-    private void subscribeToTopics() {
-        while(middleware.isConnected()){ // while client is connected
-            for (String topic : SUBSCRIBED_TOPICS) {
-                threadPool.submit(()-> {
-                    try {
+    private void subscribeToAlerts() {
+        for (String topic : SUBSCRIBED_ALERTS) {
+            threadPool.submit(()-> {
+                try {
+                    if (middleware.isConnected()) {
                         middleware.subscribe(topic, 0); //Subscribe to topic
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    } else {
+                        System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
                     }
-                });
-            }
+                } catch (Exception e) {
+                    System.out.println("Failed to subscribe to topic " + topic + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+        }
+        try {
+            Thread.sleep(1000); // 1 second interval
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    private void subscribeToTopic(String topic) {
+        threadPool.submit(()-> {
             try {
-                Thread.sleep(1000); // 1 second interval
-            } catch (InterruptedException e) {
+                if (middleware.isConnected()) {
+                    middleware.subscribe(topic, 0);
+                } else {
+                    System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
+                }
+            } catch (Exception e) {
+                System.out.println("Failed to subscribe to topic " + topic + ": " + e.getMessage());
                 e.printStackTrace();
             }
-        }
+        });
     }
 
     /**
@@ -123,7 +142,7 @@ public class MQTT implements MqttCallback {
         try {
             System.out.println("Attempting to reconnect...");
             middleware.reconnect();
-            this.subscribeToTopics();
+            this.subscribeToAlerts();
         } catch (Exception e) {
             System.err.println("Reconnection failed. Retrying...");
             cause.printStackTrace();
@@ -147,21 +166,44 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload()); 
                    
-            System.out.println("Message recieved: " + stringMessage);
+            System.out.println("Message recieved: " + stringMessage + "\nTopic: " + topic);
             if (topic.equals("test/clinicAlert")) {
-                if(stringMessage.equals("Get Clinics")){
-                    this.publishClinicList();
-                }
+                handleClinicAlert(stringMessage);
             } else if (topic.equals("test/createClinic") ) {
-                System.out.println("Entered createClinic if statement");
-                ObjectMapper objectMapper = new ObjectMapper();
-                ClinicSchema clinicInfo = objectMapper.readValue(stringMessage, ClinicSchema.class);
-                clinicService.createClinic(clinicInfo);
+                handleCreateClinic(stringMessage);
+            } else if (topic.equals("dentist/clinicAlert")) {
+                handleDentistAlert(stringMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private void handleClinicAlert(String message) {
+        if(message.equals("Get Clinics")){
+            this.publishClinicList();
+        } else if (message.equals("Subscribe To Clinic Info Topic")) {
+            this.subscribeToTopic("test/createClinic");
+        }
+    }
+    private void handleDentistAlert(String message) {
+        if(message.equals("Recieve Dentist")) {
+            this.subscribeToTopic("dentist/clinicService/addDentist");
+        }
+    }
+
+    private void handleCreateClinic(String message) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ClinicSchema clinicInfo = objectMapper.readValue(message, ClinicSchema.class);
+            clinicService.createClinic(clinicInfo);
+            
+        } catch (Exception e) {
+            System.err.println("Error creating clinic: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Delivery Method which shows that the delivery has been completed 
