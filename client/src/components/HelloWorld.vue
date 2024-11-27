@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishToTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, publishMsgToTopic, unSubscribeFromTopic } from '../mqtt/mqtt.js'
 import MapComponent from '../components/Map.vue'
 export default {
   name: 'HelloWorld',
@@ -98,6 +98,7 @@ export default {
           if (topic === 'test/clinicList') {
             console.log('Recieved clinic list: ', message)
             this.clinics = message
+            unSubscribeFromTopic('test/clinicList')
           }
         })
       } catch (error) {
