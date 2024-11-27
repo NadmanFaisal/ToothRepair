@@ -15,9 +15,9 @@ public class ClinicSchema {
     private String name;
     
     private Coordinate coordinate;
-
-    private String address;
     
+    private String address;
+
     @JsonProperty("open_hours")
     private String open_hours;
     
@@ -40,7 +40,7 @@ public class ClinicSchema {
         return coordinate;
     }
     
-    public String getAdress() {
+    public String getAddress() {
         return address;
     }
     
