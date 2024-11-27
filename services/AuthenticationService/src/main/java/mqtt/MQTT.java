@@ -150,11 +150,21 @@ public class MQTT implements MqttCallback {
             } else if(topic.equals(SUBSCRIBED_TOPICS[1])){
                 System.out.println("Message recieved: " + stringMessage);
                 PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
-                patientService.createPatient(patient);
+                if(!patientService.checkDuplicatePatient(patient)){
+                    patientService.createPatient(patient);
+                }else{
+                    //middleware.publish()
+                }
+
             } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
                 System.out.println("Message recieved: " + stringMessage);
                 DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
-                dentistService.createDentist(dentist);
+                if(!dentistService.checkDuplicateDentist(dentist)){
+                    dentistService.createDentist(dentist);
+                }else{
+                    //middleware.publish()
+                }
+                
             }
         } catch (Exception e) {
             e.printStackTrace();

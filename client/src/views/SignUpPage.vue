@@ -69,7 +69,7 @@ export default {
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp({ username, email, password, clinic}) {
         const PUBLISH_PATIENT_TOPIC ="patient/authentication/signup";
-        const PUBLISH_DENTIST_TOPIC="denist/authentication/signup";
+        const PUBLISH_DENTIST_TOPIC="dentist/authentication/signup";
         try {
         if(!clinic){
         

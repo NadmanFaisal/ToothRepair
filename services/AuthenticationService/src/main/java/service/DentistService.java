@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import main.java.db.DentistRepository;
 import main.java.db.DentistSchema;
 
+
 @Service
 public class DentistService {
 
@@ -24,6 +25,13 @@ public class DentistService {
 
     public DentistSchema createDentist(DentistSchema dentist) {
         return dentistRepository.save(dentist);
+    }
+    public Boolean checkDuplicateDentist(DentistSchema dentist ) {
+        
+        if(DentistRepository.findByEmail(dentist.getEmail()) != null){
+            return true;
+        }
+        return false;
     }
 
 }

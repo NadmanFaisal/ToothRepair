@@ -26,5 +26,16 @@ public class PatientService{
         return patientRepository.save(patient);
     }
 
+    public Boolean checkDuplicatePatient(PatientSchema patient ) {
+        
+        if(patientRepository.findByEmail(patient.getEmail()) != null){
+            return true;
+        }
+        return false;
+    }
+
+    
+
+
 }
 
