@@ -6,6 +6,8 @@
 
             <!-- Navigable Login/SignUp page-->
             <b-col class="login-signup-button-container">
+                <BButton type="button" class="login-button" @click="setDenistFalse()">I am a Patient</BButton>
+                <BButton type="button" class="login-button" @click="setDenistTrue()">I am a Dentist</BButton>
               <BButton type="button" class="login-button" @click="goToLoginPage()">Log In</BButton>
               <BButton type="button" class="signup-button" @click="goToSignupPage()">Sign up</BButton>
             </b-col>
@@ -18,6 +20,8 @@
                 :username="username"
                 :email="email"
                 :password="password"
+                :clinic="clinic"
+                :isDentist="isDentist"
                 @submit="submitSignUp"
               />
 
@@ -49,28 +53,43 @@ export default {
   components: {
     SignUpForm
   },
-  data() {
-    return {
-      username: '',
-      email: '',
-      password: '',
-      message: ''
+  
+  data(){
+    return{
+    username: '',
+    email: '',
+    password: '',
+    clinic: '',
+    message: '',
+    isDentist: false
     }
   },
+  
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp({ username, email, password }) {
-        const PUBLISH_TOPIC ="patient/authentication/signup";
-        const SUBSCRIBE_TOPIC = "patient/authentication/status";
+    async submitSignUp({ username, email, password, clinic}) {
+        const PUBLISH_PATIENT_TOPIC ="patient/authentication/signup";
+        const PUBLISH_DENTIST_TOPIC="denist/authentication/signup";
         try {
+        if(!clinic){
+        
             const newPatient = {
                 "name": username,
                 "email": email,
                 "password": password
             }
             
-        await subscribeToTopic(SUBSCRIBE_TOPIC);
-        publishValue(PUBLISH_TOPIC, JSON.stringify(newPatient));
+            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient));
+        }else{
+            const newDentist = {
+                "name": username,
+                "email": email,
+                "password": password,
+                "clinic":clinic
+            }
+            
+            publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist));    
+        }
         
         // waits a while to display the Sign Up Successful message to user until we move him to login
         setTimeout(() => {
@@ -85,7 +104,13 @@ export default {
     // goes to login page
     goToLoginPage() {
       this.$router.push('/login')
-    }
+    },
+    setDenistTrue(){
+        this.isDentist = true;
+    },
+    setDenistFalse(){
+        this.isDentist = false;
+    },
   }
 }
 </script>

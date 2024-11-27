@@ -34,6 +34,13 @@
               class="signup-input"
             ></b-form-input>
           </b-col>
+        
+          <b-col xs="12" md="10" class="mb-3" v-if="isDentist">
+            <label class="signup-label" for="password">Clinic</label>
+            <b-dropdown :text=" localClinic ||'Select A clinic'"> 
+                <b-dropdown-item v-for="clinic in clinics" :key="clinic.id" @click="localClinic= clinic.name">{{clinic.name}}</b-dropdown-item>
+            </b-dropdown>
+          </b-col>
         </b-row>
 
         <b-row class="justify-content-center">
@@ -51,13 +58,17 @@ export default {
   props: {
     username: String,
     email: String,
-    password: String
+    password: String,
+    clinic: String,
+    isDentist: Boolean
   },
   data() {
     return {
       localUsername: this.username,
       localEmail: this.email,
-      localPassword: this.password
+      localPassword: this.password,
+      localClinic: this.clinic,
+      clinics:[{"id": 1234, "name": "Gothenburg Teeth Repair"},{"id": 12345, "name": "Dentists in GB"}, {"id": 123456, "name": "Healthy Teeth"}, {"id": 12, "name": "GB Nice Tooth spot"}]
     }
   },
   methods: {
@@ -66,10 +77,12 @@ export default {
       this.$emit('submit', {
         username: this.localUsername,
         email: this.localEmail,
-        password: this.localPassword
+        password: this.localPassword,
+        clinic: this.localClinic,
       })
     }
-  }
+  },
+  
 }
 </script>
 
