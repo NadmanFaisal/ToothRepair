@@ -63,8 +63,8 @@ public class MQTT implements MqttCallback {
         while(middleware.isConnected()){ // while client is connected
                 threadPool.submit(()-> {
                     try {
-                        middleware.subscribe(SUBSCRIBED_TOPIC[0], 0); //Subscribe to topic
-                        System.out.println("subscribed to" + topic)
+                        middleware.subscribe(SUBSCRIBED_TOPICS[0], 0); //Subscribe to topic
+                        System.out.println("subscribed to" + SUBSCRIBED_TOPICS);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
