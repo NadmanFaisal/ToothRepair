@@ -1,27 +1,21 @@
 <template>
-    <div class="row">
+    <div class="col-12 screen-container">
 
         <TopBarComponent />
 
         <div class="col-12 content-section">
 
-            <div class="col-6 left-section">
+            <div class="col-3 left-section">
 
-                <div class="col-6 calender-contaiener">
-                    container 1
-                </div>
+                <CalendarComponent />
 
-                <div class="col-6 map-container">
-                    container 2
-                </div>
+                <MapComponent />
 
             </div>
 
-            <div class="col-6 right-section">
+            <div class="col-9 right-section">
 
-                <div class="col-6 appointment-container">
-                    container 3
-                </div>
+                <AppointmentComponent />
 
             </div>
 
@@ -32,18 +26,24 @@
 <script>
 
 import TopBarComponent from '../components/TopBar.vue'
+import CalendarComponent from '../components/PatientHomePageComponents/CalendarComponent.vue'
+import MapComponent from '../components/PatientHomePageComponents/MapComponent.vue'
+import AppointmentComponent from '../components/PatientHomePageComponents/AppointmentComponent.vue'
 
 export default {
   name: 'PatientHomePage',
   components: {
-    TopBarComponent
+    TopBarComponent,
+    CalendarComponent,
+    MapComponent,
+    AppointmentComponent
   }
 }
 </script>
 
 <style scoped>
 
-.row {
+.screen-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -53,28 +53,8 @@ export default {
     display: flex;
     flex-direction: row;
     height: 93%;
-    background-image: linear-gradient(rgba(62, 180, 137, 0.5), rgba(62, 180, 137, 0.5)), url('@/assets/patient-home-bg-image.jpeg');
-    background-size: cover;
+    background-image: linear-gradient(0deg, rgba(31, 194, 194, 0.24) 0%, rgba(31, 194, 194, 0.24) 100%), url('@/assets/patient-home-bg-image.jpeg');
+    background-size: contain;
 }
 
-.calender-contaiener {
-    display: flex;
-    flex-direction: column;
-    height: 50%;
-    width: 100%;
-}
-
-.map-container {
-    display: flex;
-    flex-direction: column;
-    height: 50%;
-    width: 100%
-}
-
-.appointment-container {
-    display: flex;
-    flex-direction: column;
-    height: 50%;
-    width: 100%
-}
 </style>

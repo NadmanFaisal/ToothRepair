@@ -33,7 +33,7 @@ export default {
 }
 
 .logo-container {
-    margin-left: 15px;
+    padding-left: 20px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -45,7 +45,7 @@ export default {
 }
 
 .logo-label {
-    margin-left: 5px;
+    margin-left: 15px;
     color: #1FC2C2;
     text-align: center;
     font-family: Inter;
@@ -74,7 +74,7 @@ export default {
 }
 
 .patient-name-label {
-    margin-left: 10px;
+    padding-left: 10px;
     color: #000;
     text-align: center;
     font-family: Inter;
