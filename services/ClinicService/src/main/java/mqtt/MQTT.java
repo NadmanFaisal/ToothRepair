@@ -46,7 +46,7 @@ public class MQTT implements MqttCallback {
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
             middleware.setCallback(this);
-            this.subscribeToAlerts();
+            this.subscribeToTopics();
         } catch (MqttException e) {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
@@ -62,7 +62,7 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws InterruptedException prints Error Stack trace
      */
-    private void subscribeToAlerts() {
+    private void subscribeToTopics() {
         for (String topic : SUBSCRIBED_TOPICS) {
             threadPool.submit(()-> {
                 try {
@@ -85,21 +85,6 @@ public class MQTT implements MqttCallback {
         
     }
 
-    private void subscribeToTopic(String topic) {
-        threadPool.submit(()-> {
-            try {
-                if (middleware.isConnected()) {
-                    middleware.subscribe(topic, 0);
-                    System.out.println("Subscribed to topic: " + topic);
-                } else {
-                    System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
-                }
-            } catch (Exception e) {
-                System.out.println("Failed to subscribe to topic " + topic + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -146,7 +131,7 @@ public class MQTT implements MqttCallback {
         try {
             System.out.println("Attempting to reconnect...");
             middleware.reconnect();
-            this.subscribeToAlerts();
+            this.subscribeToTopics();
         } catch (Exception e) {
             System.err.println("Reconnection failed. Retrying...");
             cause.printStackTrace();
@@ -183,14 +168,23 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Handles the payload from the 'test/clinicAlert' topic
+     * 
+     * @param message payload of the 'test/clinicAlert' topic
+     */
     private void handleClinicAlert(String message) {
         if(message.equals("Get Clinics")){
             this.publishClinicList();
-        } else if (message.equals("Subscribe To Clinic Info Topic")) {
-            this.subscribeToTopic("test/createClinic");
         }
     }
 
+    /**
+     * If the clinic information is not empty, saves it into the mongodb database
+     * 
+     * @param message  payload of the 'test/createClinic' topic
+     * @throws Exception prints the Error Stack Trace
+     */
     private void handleCreateClinic(String message) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -220,6 +214,12 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Finds the clinic with the id provided and adds the reference to the dentist to it
+     * 
+     * @param message payload of the 'dentist/clinicService/addDentist' topic
+     * @throws Exception prints Error Stack Trace
+     */
     private void handleAddingDentist(String message) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
