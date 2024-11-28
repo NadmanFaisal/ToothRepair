@@ -26,7 +26,7 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/clinicList";
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_ALERTS = {"test/clinicAlert", "dentist/clinicAlert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -41,7 +41,7 @@ public class MQTT implements MqttCallback {
     @Autowired
     public MQTT(ClinicService clinicService){
         try {
-            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_ALERTS.length);
+            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.clinicService = clinicService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
@@ -63,7 +63,7 @@ public class MQTT implements MqttCallback {
      * @throws InterruptedException prints Error Stack trace
      */
     private void subscribeToAlerts() {
-        for (String topic : SUBSCRIBED_ALERTS) {
+        for (String topic : SUBSCRIBED_TOPICS) {
             threadPool.submit(()-> {
                 try {
                     if (middleware.isConnected()) {
@@ -175,9 +175,7 @@ public class MQTT implements MqttCallback {
                 handleClinicAlert(stringMessage);
             } else if (topic.equals("test/createClinic") ) {
                 handleCreateClinic(stringMessage);
-            } else if (topic.equals("dentist/clinicAlert")) {
-                handleDentistAlert(stringMessage);
-            } else if (topic.equals("dentist/clinicService/addDentist")) {
+            }  else if (topic.equals("dentist/clinicService/addDentist")) {
                 handleAddingDentist(stringMessage);
             }
         } catch (Exception e) {
@@ -190,11 +188,6 @@ public class MQTT implements MqttCallback {
             this.publishClinicList();
         } else if (message.equals("Subscribe To Clinic Info Topic")) {
             this.subscribeToTopic("test/createClinic");
-        }
-    }
-    private void handleDentistAlert(String message) {
-        if(message.equals("Recieve Dentist")) {
-            this.subscribeToTopic("dentist/clinicService/addDentist");
         }
     }
 
@@ -215,14 +208,19 @@ public class MQTT implements MqttCallback {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> messageData = objectMapper.readValue(message, new TypeReference<Map<String, String>>() {});
-
+            
             String clinicId = messageData.get("clinicId");
             String dentistId = messageData.get("dentistId");
+            if (clinicId.isEmpty()) {
+                System.out.println("No clinic Id was provided");
+            } else if (dentistId.isEmpty()) {
+                System.out.println("No dentist Id was provided");
+            }
 
             Optional<ClinicSchema> updatedClinic = clinicService.addDentist(clinicId, dentistId);
 
             if (updatedClinic.isPresent()) {
-               System.out.println("Dentist added: " + updatedClinic.get());
+               System.out.println("Dentist has been added to clinic: " + clinicId);
             } else {
                 System.out.println("Clinic not found with Id: " + clinicId);
             }
