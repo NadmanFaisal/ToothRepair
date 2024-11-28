@@ -158,7 +158,7 @@ public class MQTT implements MqttCallback {
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 1, false);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
                     System.out.println("has published");
                     //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
                 }

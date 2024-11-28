@@ -67,7 +67,7 @@ export function messageArrived(callback) {
     console.log(`Received message: ${message.toString()} on topic: ${topic}`)
     try {
       console.log('This is the JSON format of the patient list' + message)
-      callback(topic, message)
+      callback(topic, message.toString())
     } catch (error) {
       console.error('Error Parsing the Patient list', error)
       callback(topic, message.toString())
