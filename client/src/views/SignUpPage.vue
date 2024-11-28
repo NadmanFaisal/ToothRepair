@@ -60,7 +60,7 @@ export default {
       password: '',
       clinic: '',
       message: '',
-      isDentist: false
+      isDentist: false,
     }
   },
 
@@ -70,6 +70,7 @@ export default {
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+  
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
       try {
@@ -98,6 +99,7 @@ export default {
             unsubscribeFromTopic('authentication/status')
           }
         })
+        
         // waits a while to display the Sign Up Successful message to user until we move him to login
         setTimeout(() => {
           this.$router.push('/login')

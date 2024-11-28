@@ -43,7 +43,7 @@ public class MQTT implements MqttCallback {
     @Autowired
     public MQTT(PatientService patientService, DentistService dentistService){
         try {
-            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
+            this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
             this.patientService = patientService;
             this.dentistService = dentistService;
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
@@ -70,7 +70,7 @@ public class MQTT implements MqttCallback {
                 threadPool.submit(()-> {
                     try {
                         if(middleware.isConnected()){
-                            middleware.subscribe(topic, 0); //Subscribe to topic
+                            middleware.subscribe(topic, 1); //Subscribe to topic
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -101,7 +101,7 @@ public class MQTT implements MqttCallback {
             String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
 
             //Publish the payload as bytes to the topic.
-            middleware.publish(PUBLISHED_PATIENT_TOPIC, patientListJson.getBytes(), 0, false);
+            middleware.publish(PUBLISHED_PATIENT_TOPIC, patientListJson.getBytes(), 2, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -113,21 +113,21 @@ public class MQTT implements MqttCallback {
      * @param cause to throw the error stack trace
      * @throws Exception prints the Error Stack trace
      */
-    @Override
+        @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
-        while(!middleware.isConnected()){
-        try {
-            System.out.println("Attempting to reconnect...");
-            middleware.reconnect();
-            this.subscribeToTopics();
-        } catch (Exception e) {
-            System.err.println("Reconnection failed. Retrying...");
-            cause.printStackTrace();
+        while (!middleware.isConnected()) {
+            try {
+                System.out.println("Attempting to reconnect...");
+                middleware.reconnect();
+                middleware.setCallback(this); // Ensure callback is re-applied
+                this.subscribeToTopics();
+            } catch (Exception e) {
+                System.err.println("Reconnection failed. Retrying...");
+                cause.printStackTrace();
+            }
         }
-    }
-    System.out.println("Sucessfully Reconnected to the Broker");
-        
+        System.out.println("Successfully Reconnected to the Broker");
     }
 
 
@@ -158,7 +158,7 @@ public class MQTT implements MqttCallback {
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
                     System.out.println("has published");
                     //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
                 }
@@ -172,7 +172,7 @@ public class MQTT implements MqttCallback {
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
                     //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
                 }
                 
