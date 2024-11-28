@@ -195,6 +195,22 @@ public class MQTT implements MqttCallback {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             ClinicSchema clinicInfo = objectMapper.readValue(message, ClinicSchema.class);
+            
+            if (clinicInfo.getAddress().isEmpty()) {
+                System.err.println("Clinic address was not given in the payload");
+            } else if (clinicInfo.getName().isEmpty()) {
+                System.err.println("Clinic name was not given in the payload");
+            } else if (clinicInfo.getOpenHours().isEmpty()) {
+                System.err.println("Clinic open hours was not given in the payload");
+            } else if (clinicInfo.getContactInfo().getEmail().isEmpty()) {
+                System.err.println("Clinic email was not given in the payload");
+            } else if (clinicInfo.getContactInfo().getNumber().isEmpty()){
+                System.err.println("Clinic number was not given in the payload");
+            } else if (clinicInfo.getCoordinate() == null) {
+                System.err.println("Clinic coordinates was not given in the payload");
+            }
+
+
             clinicService.createClinic(clinicInfo);
             
             middleware.unsubscribe("test/createClinic");
@@ -211,6 +227,7 @@ public class MQTT implements MqttCallback {
             
             String clinicId = messageData.get("clinicId");
             String dentistId = messageData.get("dentistId");
+            
             if (clinicId.isEmpty()) {
                 System.out.println("No clinic Id was provided");
             } else if (dentistId.isEmpty()) {

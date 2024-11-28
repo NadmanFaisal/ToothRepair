@@ -54,10 +54,10 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishToTopic, publishMsgToTopic, unSubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishMsgToTopic, unSubscribeFromTopic, client } from '../mqtt/mqtt.js'
 import MapComponent from './Map.vue'
 export default {
-  name: 'HelloWorld',
+  name: 'ClinicTest',
   props: {
     msg: String
   },
@@ -77,22 +77,12 @@ export default {
       dentistId: null
     }
   },
+  mounted() {
+    client.on('connect', () => {
+      this.getAllClinics()
+    })
+  },
   methods: {
-    async getTestValue() {
-      try {
-        await subscribeToTopic('test/patientList')
-        publishToTopic('test/patientAlert')
-        messageArrived((topic, message) => {
-          this.patients.push(`${message}`)
-          if (topic === 'test/patientList') {
-            console.log('Received patient list:', message)
-            this.patients.push(message)
-          }
-        })
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
     async getAllClinics() {
       try {
         await subscribeToTopic('test/clinicList')
@@ -118,6 +108,22 @@ export default {
         dentists: this.dentists
 
       }
+
+      const openHoursRegPattern = /^\d{2}:\d{2}-\d{2}:\d{2}$/
+      const phoneNumberRegPattern = /^([+]46)\s\d{2}[-]\d{3}\s\d{2}\s\d{2}$/
+      const emailRegPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+      if (!openHoursRegPattern.test(newClinic.openHours)) {
+        alert('Invalid open hours format. Expected format is: HH:mm-HH:mm')
+        return
+      } else if (!phoneNumberRegPattern.test(newClinic.contact_info.number)) {
+        alert('Invalid phone number format. Expected format is: +dd dd-ddd dd dd')
+        return
+      } else if (!emailRegPattern.test(newClinic.contact_info.email)) {
+        alert('Invalid email format. Expected format is: someCharacters@someEmail.something')
+        return
+      }
+
       try {
         console.log('Publishing clinic information to test/createClinic')
         publishMsgToTopic('test/createClinic', JSON.stringify(newClinic))
