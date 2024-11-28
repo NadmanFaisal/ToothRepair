@@ -17,6 +17,8 @@
       <input type="text" v-model="number" placeholder="Enter clinic phone number...">
       <input type="text" v-model="email" placeholder="Enter clinic email...">
       <button @click="createClinic">Add new Clinic</button>
+
+      <button @click="addDentist">Add dentist</button>
     </div>
     <div class="mapCompContainer">
       <p>This is the Leaflet map</p>
@@ -53,7 +55,7 @@
 
 <script>
 import { subscribeToTopic, messageArrived, publishToTopic, publishMsgToTopic, unSubscribeFromTopic } from '../mqtt/mqtt.js'
-import MapComponent from '../components/Map.vue'
+import MapComponent from './Map.vue'
 export default {
   name: 'HelloWorld',
   props: {
@@ -71,7 +73,8 @@ export default {
       address: '',
       openHours: '',
       contactInfo: { number: '', email: '' },
-      dentists: []
+      dentists: [],
+      dentistId: null
     }
   },
   methods: {
@@ -106,8 +109,6 @@ export default {
       }
     },
     async createClinic() {
-      publishMsgToTopic('test/clinicAlert', 'Subscribe To Clinic Info Topic')
-      setTimeout(2000)
       const newClinic = {
         name: this.clinicName,
         coordinate: { latitude: this.latitude, longitude: this.longitude },
@@ -123,6 +124,9 @@ export default {
       } catch (error) {
         console.error('Tried to create a clinic: ', error)
       }
+    },
+    async addDentist() {
+      publishMsgToTopic('dentist/clinicService/addDentist', '{ "clinicId": "6747869d8bb1b95b44941a56", "dentistId": "757873994" }')
     }
   }
 
