@@ -69,7 +69,7 @@ export default {
     }
   },
   mounted() {
-    this.map = L.map(this.$refs.map).setView([57.708870, 11.974560], 7)
+    this.map = L.map(this.$refs.map).setView([57.708870, 11.974560], 10)
 
     const streetView = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,

@@ -113,7 +113,7 @@ export default {
       const phoneNumberRegPattern = /^([+]46)\s\d{2}[-]\d{3}\s\d{2}\s\d{2}$/
       const emailRegPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-      if (!openHoursRegPattern.test(newClinic.openHours)) {
+      if (!openHoursRegPattern.test(newClinic.open_hours)) {
         alert('Invalid open hours format. Expected format is: HH:mm-HH:mm')
         return
       } else if (!phoneNumberRegPattern.test(newClinic.contact_info.number)) {

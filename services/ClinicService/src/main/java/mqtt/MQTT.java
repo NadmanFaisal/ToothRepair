@@ -207,7 +207,6 @@ public class MQTT implements MqttCallback {
 
             clinicService.createClinic(clinicInfo);
             
-            middleware.unsubscribe("test/createClinic");
         } catch (Exception e) {
             System.err.println("Error creating clinic: " + e.getMessage());
             e.printStackTrace();
