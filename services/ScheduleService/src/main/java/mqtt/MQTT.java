@@ -23,7 +23,7 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/appointmentList";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/appointmentAlert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"test/appointmentAlert", "test/createAppointment"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -40,8 +40,9 @@ public class MQTT implements MqttCallback {
         try {
             this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.appointmentService = appointmentService;
-            middleware = new MqttClient(BROKER_URL, CLIENT_ID);
+            this.middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             middleware.connect();
+            System.out.println("Service connected to mqtt");
             middleware.setCallback(this);
             this.subscribeToTopics();
         } catch (MqttException e) {
@@ -60,22 +61,27 @@ public class MQTT implements MqttCallback {
      * @throws InterruptedException prints Error Stack trace
      */
     private void subscribeToTopics() {
-        while(middleware.isConnected()){ // while client is connected
+         // while client is connected
+            for (String topic : SUBSCRIBED_TOPICS) {
+                System.out.println("subscribed to: " + topic);
                 threadPool.submit(()-> {
                     try {
-                        middleware.subscribe(SUBSCRIBED_TOPICS[0], 0); //Subscribe to topic
-                        System.out.println("subscribed to" + SUBSCRIBED_TOPICS);
+                        if (middleware.isConnected()){
+                            middleware.subscribe(topic, 0); //Subscribe to topic
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
+            }
             try {
                 Thread.sleep(1000); // 1 second interval
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
     }
+
+
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -156,6 +162,7 @@ public class MQTT implements MqttCallback {
                 ObjectMapper objectMapper = new ObjectMapper();
                 AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                 appointmentService.createAppointment(appointmentInfo);
+                this.publishAppointmentList();
             }
         } catch (Exception e) {
             e.printStackTrace();

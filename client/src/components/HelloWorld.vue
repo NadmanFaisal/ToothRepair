@@ -68,7 +68,7 @@ export default {
     async getAppointments() {
       try {
         await subscribeToTopic('test/appointmentList')
-        publishToTopic('test/appointmentAlert')
+        publishToTopic('test/createAppointment')
         messageArrived((topic, message) => {
           this.appointments.push(`${message}`)
           if (topic === 'test/appointmentList') {
