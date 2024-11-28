@@ -66,11 +66,12 @@ public class MQTT implements MqttCallback {
      * @throws InterruptedException prints Error Stack trace
      */
     private void subscribeToTopics() {
-        while(middleware.isConnected()){ // while client is connected
             for (String topic : SUBSCRIBED_TOPICS) {
                 threadPool.submit(()-> {
                     try {
-                        middleware.subscribe(topic, 0); //Subscribe to topic
+                        if(middleware.isConnected()){
+                            middleware.subscribe(topic, 0); //Subscribe to topic
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -82,8 +83,6 @@ public class MQTT implements MqttCallback {
                 e.printStackTrace();
             }
         }
-
-    }
 
 
     /**
@@ -153,12 +152,15 @@ public class MQTT implements MqttCallback {
                 System.out.println("Message recieved: " + stringMessage);
                 PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
                 if(!patientService.checkDuplicatePatient(patient)){
-                   
+                    System.out.println(!patientService.checkDuplicatePatient(patient));
                     patientService.createPatient(patient);
+                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 1, false);
+                    System.out.println("has published");
+                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
                 }
 
             } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
@@ -166,10 +168,12 @@ public class MQTT implements MqttCallback {
                 DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
                 if(!dentistService.checkDuplicateDentist(dentist)){
                     dentistService.createDentist(dentist);
+                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
                     middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 0, false);
+                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
                 }
                 
             }

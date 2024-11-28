@@ -45,57 +45,57 @@
 
 <script>
 import SignUpForm from '@/components/SignUpForm.vue'
-import { subscribeToTopic, publishValue, messageArrived } from '../mqtt/mqtt.js'
-
+import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
   components: {
     SignUpForm
   },
-  
-  data(){
-    return{
-    username: '',
-    email: '',
-    password: '',
-    clinic: '',
-    message: '',
-    isDentist: false
+
+  data() {
+    return {
+      username: '',
+      email: '',
+      password: '',
+      clinic: '',
+      message: '',
+      isDentist: false
     }
   },
-  
+
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp({ username, email, password, clinic}) {
-        const PUBLISH_PATIENT_TOPIC ="patient/authentication/signup";
-        const PUBLISH_DENTIST_TOPIC="dentist/authentication/signup";
-        const SUBCRIBE_AUTHENTICATION_TOPIC = "authentication/status";
-        await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC);
-        try {
-        if(!clinic){
-        
-            const newPatient = {
-                "name": username,
-                "email": email,
-                "password": password
-            }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient));
-        }else{
-            const newDentist = {
-                "name": username,
-                "email": email,
-                "password": password,
-                "clinic":clinic
-            }
-            
-            publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist));    
+    async submitSignUp({ username, email, password, clinic }) {
+      const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
+      const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
+      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+
+      await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
+      try {
+        if (!clinic) {
+          const newPatient = {
+            name: username,
+            email,
+            password
+          }
+          publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+        } else {
+          const newDentist = {
+            name: username,
+            email,
+            password,
+            clinic
+          }
+
+          publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
         }
-        
+
         messageArrived((topic, message) => {
           if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
-            console.log(message);
-            alert(message);
+            console.log(message)
+            alert(message)
+            unsubscribeFromTopic('authentication/status')
           }
         })
         // waits a while to display the Sign Up Successful message to user until we move him to login
@@ -112,12 +112,12 @@ export default {
     goToLoginPage() {
       this.$router.push('/login')
     },
-    setDenistTrue(){
-        this.isDentist = true;
+    setDenistTrue() {
+      this.isDentist = true
     },
-    setDenistFalse(){
-        this.isDentist = false;
-    },
+    setDenistFalse() {
+      this.isDentist = false
+    }
   }
 }
 </script>
