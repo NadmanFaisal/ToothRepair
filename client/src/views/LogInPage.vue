@@ -82,9 +82,9 @@ export default {
   methods: {
     async loginUser() {
       this.error = null
-      const PUBLISH_PATIENT_LOGIN_ALERT = "patient/authentication/login";
-      const PUBLISH_DENTIST_LOGIN_ALERT = "dentist/authetication/login";
-      const SUBCRIBE_AUTHENTICATION_ALERT = "authentication/alert/login";
+      const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
+      const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
+      const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
       try {
@@ -92,27 +92,25 @@ export default {
           email: this.email,
           password: this.password
         }
-        if(this.isDentist){
-          publishValue(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData));
-        }else{
-          publishValue(PUBLISH_PATIENT_LOGIN_ALERT, JSON.stringify(logInData));
+        if (this.isDentist) {
+          publishValue(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData))
+        } else {
+          publishValue(PUBLISH_PATIENT_LOGIN_ALERT, JSON.stringify(logInData))
         }
 
         messageArrived((topic, message) => {
           if (topic === SUBCRIBE_AUTHENTICATION_ALERT) {
             console.log(message)
-            
-            if(message === "User is sucessfully logged in!"){
+
+            if (message === 'User is sucessfully logged in!') {
               this.$router.push('/')
             }
             setTimeout(function () {
-                alert(message)
-              }, 500)
+              alert(message)
+            }, 500)
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
           }
         })
-
-        
       } catch (err) {
         console.error(err)
         this.error = err.response?.data?.message || 'An error occurred during login'
