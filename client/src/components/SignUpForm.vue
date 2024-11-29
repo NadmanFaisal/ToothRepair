@@ -37,8 +37,8 @@
 
           <b-col xs="12" md="10" class="mb-3" v-if="isDentist">
             <label class="signup-label" for="password">Clinic</label>
-            <b-dropdown :text=" localClinic ||'Select a clinic'">
-                <b-dropdown-item v-for="clinic in clinics" :key="clinic.id" @click="localClinic= clinic.name">{{clinic.name}}</b-dropdown-item>
+            <b-dropdown :text=" localClinic.name ||'Select a clinic'">
+                <b-dropdown-item v-for="clinic in clinics" :key="clinic.id" @click="localClinic = clinic">{{clinic.name}}, {{clinic.address}}</b-dropdown-item>
             </b-dropdown>
           </b-col>
         </b-row>
@@ -54,6 +54,7 @@
     </div>
   </template>
 <script>
+import { subscribeToTopic, messageArrived, publishValue, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 export default {
   props: {
     username: String,
@@ -68,9 +69,16 @@ export default {
       localEmail: this.email,
       localPassword: this.password,
       localClinic: this.clinic,
-      clinics: [{ id: 1234, name: 'Gothenburg Teeth Repair' }, { id: 12345, name: 'Dentists in GB' }, { id: 123456, name: 'Healthy Teeth' }, { id: 12, name: 'GB Nice Tooth spot' }]
+      // clinics: [{ id: 1234, name: 'Gothenburg Teeth Repair' }, { id: 12345, name: 'Dentists in GB' }, { id: 123456, name: 'Healthy Teeth' }, { id: 12, name: 'GB Nice Tooth spot' }],
+      clinics: []
     }
   },
+  mounted() {
+    client.on('connect', () => {
+      this.getAllClinics()
+    })
+  },
+
   methods: {
     // emit values to parent class, which is the SignUpPage.vue
     handleSubmit() {
@@ -80,7 +88,23 @@ export default {
         password: this.localPassword,
         clinic: this.localClinic
       })
+    },
+    async getAllClinics(){
+      const SUBCRIBED_CLINIC_TOPIC = "clinicService/clinicList"
+      const PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/alert"
+      const publishMessage = "Get Clinics"
+      await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
+      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      messageArrived((topic, message) => {
+          if (topic === SUBCRIBED_CLINIC_TOPIC) {
+            console.log('Received clinics list:', message)
+            this.clinics = JSON.parse(message)
+            unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
+          }
+      })
     }
+
+
   }
 
 }

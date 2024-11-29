@@ -25,7 +25,7 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
     private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
-    
+    private static final String PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/addDentist";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup"};
@@ -168,6 +168,9 @@ public class MQTT implements MqttCallback {
                 DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
                 if(!dentistService.checkDuplicateDentist(dentist)){
                     dentistService.createDentist(dentist);
+                    String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+" }";
+                    System.out.println(messageToClinicService);
+                    middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(),0,false);
                     //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
                 }else{
                     String errorMessage = "Error: An account with this email already exists";

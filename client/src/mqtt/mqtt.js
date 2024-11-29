@@ -91,7 +91,7 @@ export function publishToTopic(topic) {
 }
 export function publishValue(topic, payload) {
   if (client.connected) {
-    console.log('Publishing ' + payload + 'to ' + topic)
+    console.log('Publishing ' + payload + ' to ' + topic)
     client.publish(topic, payload)
     console.log(payload + ' Has been published to ' + topic)
   }

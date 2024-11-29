@@ -82,6 +82,7 @@ export default {
           }
           publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
         } else {
+          clinic = clinic.id;
           const newDentist = {
             name: username,
             email,
