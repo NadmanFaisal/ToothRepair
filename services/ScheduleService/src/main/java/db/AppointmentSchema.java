@@ -3,8 +3,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Document(collection = "Schedule") 
 public class AppointmentSchema {
@@ -22,11 +23,14 @@ public class AppointmentSchema {
     // @DBRef
     // private DentistSchema dentist;
     
-    // private LocalDate date;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate date;
     
-    // private LocalTime startTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime startTime;
     
-    // private LocalTime endTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime endTime;
 
     // Getter methods to return attribute values
     public String getId() {
@@ -49,17 +53,17 @@ public class AppointmentSchema {
     //     return this.dentist;
     // }
 
-    // public LocalDate getDate() {
-    //     return this.date;
-    // }
+    public LocalDate getDate() {
+        return this.date;
+    }
 
-    // public LocalTime getStartTime() {
-    //     return this.startTime;
-    // }
+    public LocalTime getStartTime() {
+        return this.startTime;
+    }
 
-    // public LocalTime getEndTime() {
-    //     return this.endTime;
-    // }
+    public LocalTime getEndTime() {
+        return this.endTime;
+    }
 
     // Setter method to set values for attributes
     public void setStatus(String status) {
@@ -78,22 +82,22 @@ public class AppointmentSchema {
     //     this.dentist = dentist;
     // }
 
-    // public void setDate(LocalDate date) {
-    //     this.date = date;
-    // }
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 
-    // public void setStartTime(LocalTime startTime) {
-    //     this.startTime = startTime;
-    // }
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
 
-    // public void setEndTime(LocalTime endTime) {
-    //     this.endTime = endTime;
-    // }
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
 
     // Stringyfies the appointment data
     public String toString() {
         String appointmentRepresentation = "";
-        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + " }";
+        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + ", startTime: " + this.startTime + ", endTime: " + this.endTime + " }";
 
         return appointmentRepresentation;
     }

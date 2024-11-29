@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import main.java.db.AppointmentSchema;
 import main.java.service.AppointmentService;
@@ -26,6 +28,7 @@ public class MQTT implements MqttCallback {
     private static final String[] SUBSCRIBED_TOPICS = {"test/appointmentAlert", "test/createAppointment"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     /**
      * MQTT class Constructor
@@ -95,7 +98,6 @@ public class MQTT implements MqttCallback {
      */
     private void publishAppointmentList(){
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
             String emptyMessage = "";
             //Publish the payload as bytes to the topic.
@@ -155,12 +157,13 @@ public class MQTT implements MqttCallback {
             System.out.println("Message recieved: " + stringMessage);
             if (topic.equals("test/appointmentAlert")) {
                 if(stringMessage.equals("Get Appointments")){
+                    System.out.println("Will publish all appointments");
                     this.publishAppointmentList();
                 }
             } else if (topic.equals("test/createAppointment") ) {
                 System.out.println("Entered createAppointment if statement");
-                ObjectMapper objectMapper = new ObjectMapper();
                 AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                System.out.println(appointmentInfo.toString());
                 appointmentService.createAppointment(appointmentInfo);
             }
         } catch (Exception e) {

@@ -75,7 +75,7 @@ export function publishToTopic(topic) {
     console.log('I have published get patients to the broker')
   } else if (client.connected && topic === 'test/createAppointment') {
     console.log('Im trying to publish to the broker')
-    client.publish(topic, '{"status": "available"}') // publishes Get Appointments as a message to recieve all patients
+    client.publish(topic, '{"status": "booked", "date": "1111-11-11", "startTime": "09:30", "endTime": "10:00"}') // publishes Get Appointments as a message to recieve all patients
     console.log(`I have published to create appointments to ${topic}`)
   } else if (client.connected && topic === 'test/appointmentAlert') {
     console.log('Im trying to publish to the broker')
