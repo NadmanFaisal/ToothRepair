@@ -111,6 +111,11 @@ public class MQTT implements MqttCallback {
         }
     } 
 
+    /**
+     * Saves the clinic information into the database
+     * 
+     * @param clinicInformation the data of the new clinic
+     */
     public void createClinic(ClinicSchema clinicInformation) {
         System.out.println("ClinicInfo has been saved into the database: " + clinicInformation);
         this.clinicService.createClinic(clinicInformation);
