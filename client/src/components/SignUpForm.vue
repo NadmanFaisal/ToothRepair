@@ -89,21 +89,20 @@ export default {
         clinic: this.localClinic
       })
     },
-    async getAllClinics(){
-      const SUBCRIBED_CLINIC_TOPIC = "clinicService/clinicList"
-      const PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/alert"
-      const publishMessage = "Get Clinics"
+    async getAllClinics() {
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
       publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
-          if (topic === SUBCRIBED_CLINIC_TOPIC) {
-            console.log('Received clinics list:', message)
-            this.clinics = JSON.parse(message)
-            unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
-          }
+        if (topic === SUBCRIBED_CLINIC_TOPIC) {
+          console.log('Received clinics list:', message)
+          this.clinics = JSON.parse(message)
+          unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
+        }
       })
     }
-
 
   }
 
