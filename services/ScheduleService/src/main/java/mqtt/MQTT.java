@@ -162,7 +162,6 @@ public class MQTT implements MqttCallback {
                 ObjectMapper objectMapper = new ObjectMapper();
                 AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                 appointmentService.createAppointment(appointmentInfo);
-                this.publishAppointmentList();
             }
         } catch (Exception e) {
             e.printStackTrace();
