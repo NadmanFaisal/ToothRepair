@@ -24,9 +24,11 @@ import main.java.service.ClinicService;
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "test/clinicList";
+    private static final String PUBLISHED_TOPIC_CLIENT = "test/clinicList";
+    private static final String PUBLISHED_TOPIC_DENTIST = "clinicService/clinicList";
+
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic", "dentist/clinicService/alert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -55,7 +57,7 @@ public class MQTT implements MqttCallback {
      /**
      * Subscribes to the topic by assigning a thread to subscribe to that topic.
      * 
-     * Subscription happening with QoS 1.
+     * Subscription happening with QoS 0.
      * 
      * It subscribes while the client is connected within a 1 second interval
      * 
@@ -96,14 +98,14 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws MqttException prints the Error Stack trace
      */
-    private void publishClinicList(){
+    private void publishClinicList(String topic){
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String clinicListJson = objectMapper.writeValueAsString(this.clinicService.getAllClinics());
             String emptyMessage = "";
             //Publish the payload as bytes to the topic.
             
-            middleware.publish(PUBLISHED_TOPIC, clinicListJson.getBytes(), 1, false);
+            middleware.publish(topic, clinicListJson.getBytes(), 1, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,7 +159,9 @@ public class MQTT implements MqttCallback {
                    
             System.out.println("Message recieved: " + stringMessage + "\nTopic: " + topic);
             if (topic.equals("test/clinicAlert")) {
-                handleClinicAlert(stringMessage);
+                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLIENT);
+            } else if (topic.equals("dentist/clinicService/alert")) {
+                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_DENTIST);
             } else if (topic.equals("test/createClinic") ) {
                 handleCreateClinic(stringMessage);
             }  else if (topic.equals("dentist/clinicService/addDentist")) {
@@ -173,9 +177,9 @@ public class MQTT implements MqttCallback {
      * 
      * @param message payload of the 'test/clinicAlert' topic
      */
-    private void handleClinicAlert(String message) {
+    private void handleClinicAlert(String message, String topic) {
         if(message.equals("Get Clinics")){
-            this.publishClinicList();
+            this.publishClinicList(topic);
         }
     }
 
