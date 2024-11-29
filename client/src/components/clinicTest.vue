@@ -110,7 +110,7 @@ export default {
       }
 
       const openHoursRegPattern = /^\d{2}:\d{2}-\d{2}:\d{2}$/
-      const phoneNumberRegPattern = /^([+]46)\s\d{2}[-]\d{3}\s\d{2}\s\d{2}$/
+      const phoneNumberRegPattern = /^\d{10}$/
       const emailRegPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
       if (!openHoursRegPattern.test(newClinic.open_hours)) {
