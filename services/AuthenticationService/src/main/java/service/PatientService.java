@@ -34,6 +34,11 @@ public class PatientService{
         return false;
     }
 
+    public PatientSchema getPatient(PatientSchema patient){
+        return patientRepository.findByEmail(patient.getEmail());
+    }
+
+    
     
 
 

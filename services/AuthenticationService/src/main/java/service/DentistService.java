@@ -26,6 +26,7 @@ public class DentistService {
     public DentistSchema createDentist(DentistSchema dentist) {
         return dentistRepository.save(dentist);
     }
+    
     public Boolean checkDuplicateDentist(DentistSchema dentist ) {
         
         if(dentistRepository.findByEmail(dentist.getEmail()) != null){
@@ -33,5 +34,11 @@ public class DentistService {
         }
         return false;
     }
+
+    public DentistSchema getDentist(DentistSchema dentist){
+        return dentistRepository.findByEmail(dentist.getEmail());
+    }
+
+
 
 }

@@ -6,8 +6,8 @@
 
             <!-- Navigable Login/SignUp page-->
             <b-col class="login-signup-button-container">
-                <BButton type="button" class="login-button" @click="setDenistFalse()">I am a Patient</BButton>
-                <BButton type="button" class="login-button" @click="setDenistTrue()">I am a Dentist</BButton>
+                <BButton type="button" class="login-button" @click="setDentistFalse()">I am a Patient</BButton>
+                <BButton type="button" class="login-button" @click="setDentistTrue()">I am a Dentist</BButton>
               <BButton type="button" class="login-button" @click="goToLoginPage()">Log In</BButton>
               <BButton type="button" class="signup-button" @click="goToSignupPage()">Sign up</BButton>
             </b-col>
@@ -114,10 +114,10 @@ export default {
     goToLoginPage() {
       this.$router.push('/login')
     },
-    setDenistTrue() {
+    setDentistTrue() {
       this.isDentist = true
     },
-    setDenistFalse() {
+    setDentistFalse() {
       this.isDentist = false
     }
   }

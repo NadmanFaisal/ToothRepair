@@ -37,6 +37,13 @@ public class PatientSchema {
     public void setPassword(String newPassword){
         this.password = newPassword;
     }
+    
+    public boolean checkPassword(String inputPassword){
+        if(inputPassword.equals(this.password)){
+            return true;
+        }
+        return false;
+    }
 
     public String toString(){
         String patientRepresentation = "";

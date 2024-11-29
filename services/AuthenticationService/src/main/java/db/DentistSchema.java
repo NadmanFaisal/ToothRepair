@@ -47,6 +47,13 @@ public class DentistSchema {
         this.password = newPassword;
     }
 
+    public boolean checkPassword(String inputPassword){
+        if(inputPassword.equals(this.password)){
+            return true;
+        }
+        return false;
+    }
+
     public String toString(){
         String dentistRepresentation = "";
         dentistRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+ ", \n" + "clinic: "+ this.clinic +"}";

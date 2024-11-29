@@ -26,9 +26,10 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
     private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
     private static final String PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/addDentist";
+    private static final String PUBLISHED_LOGIN_TOPIC = "authentication/alert/login";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup"};
+    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -154,13 +155,13 @@ public class MQTT implements MqttCallback {
                 if(!patientService.checkDuplicatePatient(patient)){
                     System.out.println(!patientService.checkDuplicatePatient(patient));
                     patientService.createPatient(patient);
-                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
+                    
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
                     middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
                     System.out.println("has published");
-                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[1]);
+                    
                 }
 
             } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
@@ -171,16 +172,63 @@ public class MQTT implements MqttCallback {
                     String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+","+"\"dentistName\": "+ "\""+dentist.getName()+"\""+" }";
                     System.out.println(messageToClinicService);
                     middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(),0,false);
-                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
+                    
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
                     middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
-                    //middleware.unsubscribe(SUBSCRIBED_TOPICS[2]);
+                    
                 }
                 
+            } else if(topic.equals(SUBSCRIBED_TOPICS[3])){
+                this.loginPatient(stringMessage);
+            } else if(topic.equals(SUBSCRIBED_TOPICS[4])){
+                this.loginDentist(stringMessage);
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loginPatient(String stringPayload){
+        ObjectMapper objectMap = new ObjectMapper();
+        try{
+            
+        PatientSchema patient = objectMap.readValue(stringPayload, PatientSchema.class);
+        PatientSchema checkPatient = patientService.getPatient(patient);
+
+
+        if(patientService.checkDuplicatePatient(patient) && patient.checkPassword(checkPatient.getPassword()) ){ 
+            String successMessage = "User is sucessfully logged in!";
+            System.out.println(successMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+        }else{
+            String failureMessage = "Invalid email or Password please try again";
+            System.out.println(failureMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
+        }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loginDentist(String stringPayload){
+        ObjectMapper objectMap = new ObjectMapper();
+        try{
+            
+        DentistSchema dentist = objectMap.readValue(stringPayload, DentistSchema.class);
+        DentistSchema checkDentist = dentistService.getDentist(dentist);
+
+        if(dentistService.checkDuplicateDentist(dentist) && dentist.checkPassword(checkDentist.getPassword())){ 
+            String successMessage = "User is sucessfully logged in!";
+            System.out.println(successMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+        }else{
+            String failureMessage = "Invalid email or Password please try again";
+            System.out.println(failureMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
+        }
+        }catch(Exception e){
             e.printStackTrace();
         }
     }

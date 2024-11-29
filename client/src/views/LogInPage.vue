@@ -17,8 +17,8 @@
           <b-row>
             <b-col cols="12">
               <div class="login-signup-button-container">
-                <BButton type="button" class="login-button" @click="setDenistFalse()">I am a Patient</BButton>
-                <BButton type="button" class="login-button" @click="setDenistTrue()">I am a Dentist</BButton>
+                <BButton type="button" class="login-button" @click="setDentistFalse()">I am a Patient</BButton>
+                <BButton type="button" class="login-button" @click="setDentistTrue()">I am a Dentist</BButton>
                 <BButton type="button" class="login-button">Log In</BButton>
                 <BButton type="button" class="signup-button" @click="goToSignupPage()">Sign up</BButton>
               </div>
@@ -26,7 +26,7 @@
             <b-col cols="12">
               <div class="login-container">
                 <h2>Login</h2>
-                <form @submit.prevent="loginUser">
+                <form @submit.prevent="loginUser()">
                   <div class="detail-input-group">
                     <label for="email">Email</label>
                     <BFormInput
@@ -68,7 +68,7 @@
   </template>
 
 <script>
-
+import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
   data() {
@@ -82,22 +82,37 @@ export default {
   methods: {
     async loginUser() {
       this.error = null
+      const PUBLISH_PATIENT_LOGIN_ALERT = "patient/authentication/login";
+      const PUBLISH_DENTIST_LOGIN_ALERT = "dentist/authetication/login";
+      const SUBCRIBE_AUTHENTICATION_ALERT = "authentication/alert/login";
+
+      await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
       try {
         const logInData = {
           email: this.email,
           password: this.password
         }
+        if(this.isDentist){
+          publishValue(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData));
+        }else{
+          publishValue(PUBLISH_PATIENT_LOGIN_ALERT, JSON.stringify(logInData));
+        }
 
-        setTimeout(function () {
-          alert(`Login successful! Welcome back ${businessOwnerName}!`)
-        }, 500)
-        this.$router.push('/')
-        // eslint-disable-next-line prefer-const
-        let basket = []
+        messageArrived((topic, message) => {
+          if (topic === SUBCRIBE_AUTHENTICATION_ALERT) {
+            console.log(message)
+            
+            if(message === "User is sucessfully logged in!"){
+              this.$router.push('/')
+            }
+            setTimeout(function () {
+                alert(message)
+              }, 500)
+            unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
+          }
+        })
 
-        // Stores the business owners details in local storage
-        localStorage.setItem('businessOwner', JSON.stringify(businessOwner))
-        localStorage.setItem('basket', JSON.stringify(basket))
+        
       } catch (err) {
         console.error(err)
         this.error = err.response?.data?.message || 'An error occurred during login'
@@ -107,10 +122,10 @@ export default {
     goToSignupPage() {
       this.$router.push('/signup')
     },
-    setDenistTrue() {
+    setDentistTrue() {
       this.isDentist = true
     },
-    setDenistFalse() {
+    setDentistFalse() {
       this.isDentist = false
     }
   }
