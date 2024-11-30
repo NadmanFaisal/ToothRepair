@@ -60,9 +60,8 @@ export function unSubscribeFromTopic(topic) {
  */
 export function messageArrived(callback) {
   client.on('message', (topic, message) => {
-    console.log(`Received message: ${message.toString()} on topic: ${topic}`)
     try {
-      const parsedMessage = JSON.parse(message.toString())
+      const parsedMessage = message.toString()
       console.log('This is the JSON format of the patient list' + message)
       callback(topic, parsedMessage)
     } catch (error) {
@@ -100,6 +99,7 @@ export function publishToTopic(topic) {
  */
 export function publishMsgToTopic(topic, message) {
   if (client.connected) {
-    client.publish(topic, message)
+    client.publish(topic, message, {qos: 2, retain: false})
+    console.log('Published the message')
   }
 }
