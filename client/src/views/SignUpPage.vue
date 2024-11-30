@@ -20,7 +20,7 @@
                 :username="username"
                 :email="email"
                 :password="password"
-                :clinic="clinic"
+                :clinics="clinics"
                 :isDentist="isDentist"
                 @submit="submitSignUp"
               />
@@ -58,7 +58,7 @@ export default {
       username: '',
       email: '',
       password: '',
-      clinic: '',
+      clinics: [],
       message: '',
       isDentist: false
     }
@@ -73,7 +73,7 @@ export default {
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
       try {
-        if (!clinic) {
+        if (!this.isDentist) {
           const newPatient = {
             name: username,
             email,
@@ -110,12 +110,31 @@ export default {
       }
     },
 
+    async getAllClinics() {
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const publishMessage = 'Get Clinics'
+      await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
+      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      messageArrived((topic, message) => {
+        if (topic === SUBCRIBED_CLINIC_TOPIC) {
+          console.log('Received clinics list:', message)
+          this.clinics = JSON.parse(message)
+          unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
+        }
+      })
+    },
+
     // goes to login page
     goToLoginPage() {
       this.$router.push('/login')
     },
+    goToSignUpPage() {
+      this.$router.push('/signup')
+    },
     setDentistTrue() {
       this.isDentist = true
+      this.getAllClinics()
     },
     setDentistFalse() {
       this.isDentist = false

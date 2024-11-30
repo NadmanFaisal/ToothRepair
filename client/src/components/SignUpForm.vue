@@ -54,13 +54,12 @@
     </div>
   </template>
 <script>
-import { subscribeToTopic, messageArrived, publishValue, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 export default {
   props: {
     username: String,
     email: String,
     password: String,
-    clinic: String,
+    clinics: Array,
     isDentist: Boolean
   },
   data() {
@@ -68,15 +67,9 @@ export default {
       localUsername: this.username,
       localEmail: this.email,
       localPassword: this.password,
-      localClinic: this.clinic,
+      localClinic: this.clinics
       // clinics: [{ id: 1234, name: 'Gothenburg Teeth Repair' }, { id: 12345, name: 'Dentists in GB' }, { id: 123456, name: 'Healthy Teeth' }, { id: 12, name: 'GB Nice Tooth spot' }],
-      clinics: []
     }
-  },
-  mounted() {
-    client.on('connect', () => {
-      this.getAllClinics()
-    })
   },
 
   methods: {
@@ -86,21 +79,7 @@ export default {
         username: this.localUsername,
         email: this.localEmail,
         password: this.localPassword,
-        clinic: this.localClinic
-      })
-    },
-    async getAllClinics() {
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
-      const publishMessage = 'Get Clinics'
-      await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
-      messageArrived((topic, message) => {
-        if (topic === SUBCRIBED_CLINIC_TOPIC) {
-          console.log('Received clinics list:', message)
-          this.clinics = JSON.parse(message)
-          unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
-        }
+        clinics: this.localClinic
       })
     }
 
