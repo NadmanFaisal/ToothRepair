@@ -1,58 +1,59 @@
 <template>
-  <div class="col-12 appointment-container">
+    <div class="col-12 appointment-container">
 
-    <div class="col-12 appointment-content-container">
+      <div class="col-12 appointment-content-container">
 
-      <div class="col-12 morning-container">
+        <div class="col-12 morning-container">
 
-        <div class="col-12 top-section">
+          <div class="col-12 top-section">
 
-          <div class="col-1 sunrise-container">
-            <img src="../../assets/sunrise.png" class="sunrise-image">
+            <div class="col-1 sunrise-container">
+              <img src="../../assets/sunrise.png" class="sunrise-image">
+            </div>
+
+            <div class="col-11 title-container">
+              <h1 class="title-label">Morning</h1>
+              <label class="time-label">9:00 AM to 12:00 PM</label>
+              <!--Buttons for testing purposes-->
+              <button @click="getAppointments">Get appointments</button>
+            </div>
+
           </div>
 
-          <div class="col-11 title-container">
-            <h1 class="title-label">Morning</h1>
-            <label class="time-label">9:00 AM to 12:00 PM</label>
-            <!--Buttons for testing purposes-->
-            <button @click="getAppointments">Get appointments</button>
-            <button @click="createAppointment">create appointments</button>
+          <div class="col-10 slot-section">
+
+            <!-- Dynamically sets the color of the slots according to the status -->
+            <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectAppointment(appointment.id)">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label" :class="{ 'available-label': appointment.status === 'available', 'unavailable-label': appointment.status !== 'available' }">{{ appointment.startTime }} PM</label>
+              </div>
+            </div>
+
           </div>
 
         </div>
 
-        <div class="col-10 slot-section">
-
-          <!-- Dynamically sets the color of the slots according to the status -->
-          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'booked-slot': appointment.status === 'booked', 'unavailable-slot': appointment.status === 'unavailable' } " @click="selectAppointment(appointment.id)">
-            <div class="col- 4 status-mark-container">
-              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
-            </div>
-            <div class="col-8 appointment-information-container">
-              <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ appointment.startTime }}</label>
-            </div>
-          </div>
-
+        <div class="col-12 section-divider-container">
+          <hr class="col-10 section-divider">
         </div>
 
-      </div>
+        <div class="col-12 evening-container">
 
-      <div class="col-12 section-divider-container">
-        <hr class="col-10 section-divider">
-      </div>
+          <div class="col-12 top-section">
 
-      <div class="col-12 evening-container">
+            <div class="col-1 sunrise-container">
+              <img src="../../assets/sunrise.png" class="sunrise-image">
+            </div>
 
-        <div class="col-12 top-section">
+            <div class="col-11 title-container">
+              <h1 class="title-label">Evening</h1>
+              <label class="time-label">12:00 PM to 17:00 PM</label>
+              <button type="button" @click="bookAppointment" class="btn btn-primary confirm-booking-button">Confirm</button>
+            </div>
 
-          <div class="col-1 sunrise-container">
-            <img src="../../assets/sunrise.png" class="sunrise-image">
-          </div>
-
-          <div class="col-11 title-container">
-            <h1 class="title-label">Evening</h1>
-            <label class="time-label">12:00 PM to 17:00 PM</label>
-            <button type="button" @click="bookAppointment" class="btn btn-primary confirm-booking-button">Confirm</button>
           </div>
 
         </div>
@@ -60,8 +61,6 @@
       </div>
 
     </div>
-
-  </div>
 </template>
 
 <script>
@@ -71,7 +70,7 @@ import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
 export default {
-  name: 'AppointmentComponent',
+  name: 'DentistAppointmentComponent',
   data() {
     return {
       appointments: [],
@@ -79,14 +78,6 @@ export default {
     }
   },
   methods: {
-    async createAppointment() {
-      try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/createAppointment', '{"status": "available", "date": "1111-11-11", "startTime": "09:30", "endTime": "10:00"}')
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
     async getAppointments() {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
@@ -107,25 +98,12 @@ export default {
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
-    async bookAppointment() {
-      if (!this.selectedAppointmentId) {
-        console.error('No booking slot has been selected')
-        return
-      }
-      try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', this.selectedAppointmentId)
-        this.selectAppointmentId = null
-        this.getAppointments()
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
     selectAppointment(id) {
       console.log(id)
       this.selectedAppointmentId = id
     }
   }
+
 }
 </script>
 
@@ -216,19 +194,19 @@ export default {
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.available-slot {
+.unavailable-slot {
   margin: 20px;
   display: flex;
   flex-direction: row;
   height: 75px;
   border-radius: 5px;
-  border: 1px solid #009C1F;
-  background-color: #009C15;
-  box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
-  color:white;
+  border: 1px solid #DEDEDE;
+  background-color: #FFF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color:#6B6B6B;
 }
 
-.unavailable-slot {
+.available-slot {
   margin: 20px;
   display: flex;
   flex-direction: row;
@@ -240,20 +218,12 @@ export default {
   color:#DCDCDC;
 }
 
-.unavailable-label {
+.available-label {
   color:#DCDCDC;
 }
 
-.booked-slot {
-  margin: 20px;
-  display: flex;
-  flex-direction: row;
-  height: 75px;
-  border-radius: 5px;
-  border: 1px solid #E70505;
-  background-color: #E70505;
-  box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
-  color:white;
+.unavailable-label {
+  color:#6B6B6B;
 }
 
 .status-mark-container {

@@ -7,6 +7,13 @@
         </div>
 
         <div class="col-6 router-container">
+            <div v-for="item in navItems" :key="item.name">
+                <h1 class="router-label">
+                    <router-link :to="item.route" class="nav-link">
+                        {{ item.name }}
+                    </router-link>
+                </h1>
+            </div>
         </div>
 
         <div class="col-3 settings-container">
@@ -20,7 +27,15 @@
 
 <script>
 export default {
-  name: 'TopBarComponent'
+  name: 'TopBarComponent',
+  data() {
+    return {
+      navItems: [
+        { name: 'My Bookings', route: '/myBookingsPage' }
+        // Add more navigation items here
+      ]
+    }
+  }
 }
 </script>
 
@@ -52,6 +67,22 @@ export default {
     font-size: 24px;
     font-style: normal;
     font-weight: 900;
+    line-height: normal;
+}
+
+.router-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.router-label {
+    color: #040404;
+    text-align: center;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
     line-height: normal;
 }
 
