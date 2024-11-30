@@ -9,7 +9,7 @@
                 <BButton type="button" class="login-button" @click="setDentistFalse()">I am a Patient</BButton>
                 <BButton type="button" class="login-button" @click="setDentistTrue()">I am a Dentist</BButton>
               <BButton type="button" class="login-button" @click="goToLoginPage()">Log In</BButton>
-              <BButton type="button" class="signup-button" @click="goToSignupPage()">Sign up</BButton>
+              <BButton type="button" class="signup-button" @click="goToSignUpPage()">Sign up</BButton>
             </b-col>
 
             <b-col class="white-container-signup p-4">
