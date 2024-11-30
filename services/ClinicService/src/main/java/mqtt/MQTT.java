@@ -235,7 +235,6 @@ public class MQTT implements MqttCallback {
             
             String clinicId = messageData.get("clinicId");
             String dentistId = messageData.get("dentistId");
-            String dentistName = messageData.get("dentistName");
             
             if (clinicId.isEmpty()) {
                 System.out.println("No clinic Id was provided");
@@ -250,7 +249,7 @@ public class MQTT implements MqttCallback {
             } else {
                 System.out.println("Clinic not found with Id: " + clinicId);
             }
-            middleware.publish("client/clinicService/dentistInfo", message.getBytes(), 2, false);
+
             middleware.unsubscribe("dentist/clinicService/addDentist");
 
         } catch (Exception e) {
