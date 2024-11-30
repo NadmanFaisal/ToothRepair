@@ -23,9 +23,10 @@ import main.java.service.AppointmentService;
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "test/appointmentList";
+    private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/appointmentAlert", "test/createAppointment"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
+     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -70,7 +71,7 @@ public class MQTT implements MqttCallback {
                 threadPool.submit(()-> {
                     try {
                         if (middleware.isConnected()){
-                            middleware.subscribe(topic, 0); //Subscribe to topic
+                            middleware.subscribe(topic, 1); //Subscribe to topic
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -155,16 +156,19 @@ public class MQTT implements MqttCallback {
             String stringMessage = new String(message.getPayload()); 
                    
             System.out.println("Message recieved: " + stringMessage);
-            if (topic.equals("test/appointmentAlert")) {
+            if (topic.equals("ScheduleService/Appointment/getAppointments")) {
                 if(stringMessage.equals("Get Appointments")){
                     System.out.println("Will publish all appointments");
                     this.publishAppointmentList();
                 }
-            } else if (topic.equals("test/createAppointment") ) {
+            } else if (topic.equals("ScheduleService/Appointment/createAppointment") ) {
                 System.out.println("Entered createAppointment if statement");
                 AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                 System.out.println(appointmentInfo.toString());
                 appointmentService.createAppointment(appointmentInfo);
+            } else if (topic.equals("ScheduleService/Appointment/bookAppointment") ) {
+                System.out.println("Entered bookAppointment if statement");
+                appointmentService.bookAppointment(stringMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();
