@@ -1,6 +1,7 @@
 package main.java.mqtt;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -147,7 +148,7 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload());
             ObjectMapper objectMap = new ObjectMapper();
-
+            
             if(stringMessage.equals("Get Patients")){
                 System.out.println("Message recieved: " + stringMessage);
                 this.publishPatientList();
@@ -187,26 +188,30 @@ public class MQTT implements MqttCallback {
             } else if(topic.equals(SUBSCRIBED_TOPICS[4])){
                 this.loginDentist(stringMessage);
             }else if(topic.equals(SUBSCRIBED_TOPICS[5])){
-                this.publishDentistNames(stringMessage);
+                ArrayList dentistList = objectMap.readValue(stringMessage, ArrayList.class);
+                System.out.println("This fixes our problem" + objectMap.readValue(stringMessage, List.class));
+                this.publishDentistNames(dentistList);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void publishDentistNames(String payload){
-        System.out.println(payload);
+    public void publishDentistNames(ArrayList dentistList){
+        System.out.println(dentistList);
         try{
-        String[] dentistIDs = payload.split(",");
-        String bigBoiPayload = "";
-        for( String dentistID : dentistIDs){
-            String dentistName = dentistService.getNameByID(dentistID);
-            dentistID = "{ \"id\": "+ dentistID + ", "+" \"name\": "+ dentistName +" }";
-            System.out.println(dentistID);
-            bigBoiPayload = bigBoiPayload + dentistID;
+            String bigBoiPayload = "";
+        for( Object dentistID : dentistList ){
+            String id = (String) dentistID;
+            String dentistName = dentistService.getNameByID(id);
+            id = "{ \"id\": "+ id + ", "+" \"name\": "+ dentistName +" }";
+            System.out.println(id);
+            bigBoiPayload = bigBoiPayload + id;
         }
             System.out.println(bigBoiPayload);
             middleware.publish(PUBLISHED_DENTIST_TOPIC, bigBoiPayload.getBytes(), 2, false);
+
+        
         }catch(Exception e){
             e.printStackTrace();
         }
