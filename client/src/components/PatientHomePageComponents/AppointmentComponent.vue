@@ -24,7 +24,7 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectedAppointment(appointment.id)">
+          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectAppointment(appointment.id)">
             <div class="col- 4 status-mark-container">
               <img :src="getStatusImage(appointment.status)" class="status-mark-image">
             </div>
@@ -108,6 +108,10 @@ export default {
       return status === 'available' ? checkMark : crossMark
     },
     async bookAppointment() {
+      if (!this.selectedAppointmentId) {
+        console.error('No booking slot has been selected')
+        return
+      }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/bookAppointment', this.selectedAppointmentId)
@@ -116,7 +120,7 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    selectedAppointment(id) {
+    selectAppointment(id) {
       console.log(id)
       this.selectedAppointmentId = id
     }
