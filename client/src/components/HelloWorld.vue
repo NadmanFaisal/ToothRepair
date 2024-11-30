@@ -81,7 +81,7 @@ export default {
       }
     },
     pushPatientHomePage() {
-      this.$router.push('/homePage')
+      this.$router.push('/patientHomePage')
     }
   }
 

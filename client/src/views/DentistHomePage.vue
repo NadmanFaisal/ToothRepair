@@ -7,7 +7,7 @@
 
             <div class="col-3 left-section">
 
-                <CalendarComponent />
+                <DentistCalendarComponent />
 
             </div>
 
@@ -24,13 +24,13 @@
 <script>
 import TopBarComponent from '../components/TopBar.vue'
 import DenstistAppointmentComponent from '../components/DentistHomePageComponents/DenstistAppointmentComponent.vue'
-import CalendarComponent from '../components/DentistHomePageComponents/CalendarComponent.vue'
+import DentistCalendarComponent from '../components/DentistHomePageComponents/DentistCalendarComponent.vue'
 
 export default {
   name: 'MyBookingsPage',
   components: {
     DenstistAppointmentComponent,
-    CalendarComponent,
+    DentistCalendarComponent,
     TopBarComponent
   }
 }

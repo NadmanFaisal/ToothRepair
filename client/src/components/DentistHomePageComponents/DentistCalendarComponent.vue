@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'CalendarComponent'
+  name: 'DentistCalendarComponent'
 }
 </script>
 
