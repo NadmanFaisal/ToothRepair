@@ -69,7 +69,7 @@ public class MQTT implements MqttCallback {
             threadPool.submit(()-> {
                 try {
                     if (middleware.isConnected()) {
-                        middleware.subscribe(topic, 0); //Subscribe to topic
+                        middleware.subscribe(topic, 1); //Subscribe to topic
                     } else {
                         System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
                     }
@@ -105,7 +105,7 @@ public class MQTT implements MqttCallback {
             String emptyMessage = "";
             //Publish the payload as bytes to the topic.
             
-            middleware.publish(topic, clinicListJson.getBytes(), 1, false);
+            middleware.publish(topic, clinicListJson.getBytes(), 2, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -235,6 +235,7 @@ public class MQTT implements MqttCallback {
             
             String clinicId = messageData.get("clinicId");
             String dentistId = messageData.get("dentistId");
+            String dentistName = messageData.get("dentistName");
             
             if (clinicId.isEmpty()) {
                 System.out.println("No clinic Id was provided");
@@ -249,6 +250,7 @@ public class MQTT implements MqttCallback {
             } else {
                 System.out.println("Clinic not found with Id: " + clinicId);
             }
+            middleware.publish("client/clinicService/dentistInfo", message.getBytes(), 2, false);
             middleware.unsubscribe("dentist/clinicService/addDentist");
 
         } catch (Exception e) {
