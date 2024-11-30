@@ -24,7 +24,7 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'booked-slot': appointment.status === 'booked', 'unavailable-slot': appointment.status === 'unavailable' } " @click="selectAppointment(appointment.id)">
+          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'booked-slot': appointment.status === 'booked', 'unavailable-slot': appointment.status === 'unavailable' } " @click="selectAppointment(appointment)">
             <div class="col- 4 status-mark-container">
               <img :src="getStatusImage(appointment.status)" class="status-mark-image">
             </div>
@@ -121,9 +121,13 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    selectAppointment(id) {
-      console.log(id)
-      this.selectedAppointmentId = id
+    selectAppointment(appointment) {
+      if (appointment.status === 'unavailable') {
+        console.warn.apply('This slot is unavailable')
+        return
+      }
+      console.log(appointment.id)
+      this.selectedAppointmentId = appointment.id
     }
   }
 }
