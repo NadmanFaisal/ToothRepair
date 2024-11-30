@@ -1,6 +1,7 @@
 package main.java.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,12 @@ public class DentistService {
 
     public DentistSchema getDentist(DentistSchema dentist){
         return dentistRepository.findByEmail(dentist.getEmail());
+    }
+
+    public String getNameByID(String dentistID){
+        Optional<DentistSchema> dentist =  dentistRepository.findById(dentistID);
+        return dentist.get().getName();
+        
     }
 
 

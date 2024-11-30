@@ -1,5 +1,6 @@
 package main.java.mqtt;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,9 +28,10 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
     private static final String PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authentication/alert/login";
+    private static final String PUBLISHED_DENTIST_TOPIC = "authentication/dentist/getDentistNames";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login"};
+    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login", "authentication/dentist/getDentistNamesAlert"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -184,11 +186,33 @@ public class MQTT implements MqttCallback {
                 this.loginPatient(stringMessage);
             } else if(topic.equals(SUBSCRIBED_TOPICS[4])){
                 this.loginDentist(stringMessage);
+            }else if(topic.equals(SUBSCRIBED_TOPICS[5])){
+                this.publishDentistNames(stringMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void publishDentistNames(String payload){
+        System.out.println(payload);
+        try{
+        String[] dentistIDs = payload.split(",");
+        String bigBoiPayload = "";
+        for( String dentistID : dentistIDs){
+            String dentistName = dentistService.getNameByID(dentistID);
+            dentistID = "{ \"id\": "+ dentistID + ", "+" \"name\": "+ dentistName +" }";
+            System.out.println(dentistID);
+            bigBoiPayload = bigBoiPayload + dentistID;
+        }
+            System.out.println(bigBoiPayload);
+            middleware.publish(PUBLISHED_DENTIST_TOPIC, bigBoiPayload.getBytes(), 2, false);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
 
     public void loginPatient(String stringPayload){
         ObjectMapper objectMap = new ObjectMapper();
