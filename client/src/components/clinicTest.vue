@@ -86,16 +86,47 @@ export default {
     async getAllClinics() {
       try {
         await subscribeToTopic('test/clinicList')
+        await subscribeToTopic('client/clinicService/dentistInfo')
         publishMsgToTopic('test/clinicAlert', 'Get Clinics')
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
             console.log('Recieved clinic list: ', message)
             this.clinics = message
             unSubscribeFromTopic('test/clinicList')
+          } else if (topic === 'client/clinicService/dentistInfo') {
+            this.addDentistToClinic(message)
+            unSubscribeFromTopic('client/clinicService/dentistInfo')
           }
         })
       } catch (error) {
         console.error('Tried to retrieve all clinics: ', error)
+      }
+    },
+    addDentistToClinic(dentistInfo) {
+      const { clinicId, dentistId, dentistName } = dentistInfo
+
+      if (!clinicId || !dentistId || !dentistName) {
+        console.error('Missing information in dentistInfo payload: ', dentistInfo)
+      }
+
+      const clinic = this.clinics.find(clinic => clinic.id === clinicId)
+
+      if (clinic) {
+        if (!clinic.dentists) {
+          this.$set(clinic, 'dentists', [])
+        }
+
+        const existingDentist = clinic.dentists.find(dentist => dentist.dentistId === dentistId)
+
+        if (existingDentist) {
+          existingDentist.dentistName = dentistName
+          console.log('Updated dentist ' + dentistId + ' in clinic ' + clinicId)
+        } else {
+          clinic.dentists.push({ dentistId, dentistName })
+          console.log('Added new dentist with id: ' + dentistId + ' Name: ' + dentistName)
+        }
+      } else {
+        console.log('No clinic with given id: ' + clinicId)
       }
     },
     async createClinic() {
@@ -130,9 +161,6 @@ export default {
       } catch (error) {
         console.error('Tried to create a clinic: ', error)
       }
-    },
-    async addDentist() {
-      publishMsgToTopic('dentist/clinicService/addDentist', '{ "clinicId": "6747869d8bb1b95b44941a56", "dentistId": "757873994" }')
     }
   }
 

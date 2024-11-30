@@ -51,7 +51,7 @@ export default {
           <p><strong>Address: </strong>${clinic.address}</p>
           <p><strong>Contact Info:</strong> ${clinic.contactInfo.number}, ${clinic.contactInfo.email}</p>
           <p><strong>Open Hours:</strong> ${clinic.openHours}</p>
-          <p><strong>Dentists: </strong> ${clinic.dentists}</p>
+          <p><strong>Dentists: </strong> ${clinic.dentists.dentistName}</p>
         </div>
         `
         const popUp = L.popup().setContent(popUpContent)
