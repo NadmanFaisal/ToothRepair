@@ -74,7 +74,6 @@ export default {
       openHours: '',
       contactInfo: { number: '', email: '' },
       dentists: [],
-      dentistId: null
     }
   },
   mounted() {
@@ -86,47 +85,47 @@ export default {
     async getAllClinics() {
       try {
         await subscribeToTopic('test/clinicList')
-        await subscribeToTopic('client/clinicService/dentistInfo')
+        await subscribeToTopic('authentication/dentist/getDentistNames')
         publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
             console.log('Recieved clinic list: ', message)
-            this.clinics = message
+            this.clinics = JSON.parse(message)
+            if (this.clinics) {
+              this.clinics.forEach(clinic => {
+                clinic.dentists = clinic.dentists.map(dentistId => ({
+                  dentistId,
+                  dentistName: ''
+                }))
+              })
+              const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
+              console.log('dentistIds: ', allDentistIds)
+              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+            }
+
             unSubscribeFromTopic('test/clinicList')
-          } else if (topic === 'client/clinicService/dentistInfo') {
-            this.addDentistToClinic(message)
-            unSubscribeFromTopic('client/clinicService/dentistInfo')
+          } else if (topic === 'authentication/dentist/getDentistNames') {
+            const fixedMessage = '[' + message + ']'
+            const newMessage = JSON.parse(fixedMessage)
+            console.log("fixed message: ", newMessage)
+            if (message) {
+              newMessage.forEach(dentistData => {
+                this.clinics.forEach(clinic => {
+                  clinic.dentists.forEach(dentist => {
+                    if (dentist.dentistId === dentistData.id) {
+                      dentist.dentistName = dentistData.name
+                      console.log('Dentist id: ' + dentist.dentistId + 'Dentist name: ' + dentist.dentistName)
+                    }
+                  })
+                })
+                console.log('Here are all the clinics', this.clinics)
+              })
+            }
           }
         })
       } catch (error) {
         console.error('Tried to retrieve all clinics: ', error)
-      }
-    },
-    addDentistToClinic(dentistInfo) {
-      const { clinicId, dentistId, dentistName } = dentistInfo
-
-      if (!clinicId || !dentistId || !dentistName) {
-        console.error('Missing information in dentistInfo payload: ', dentistInfo)
-      }
-
-      const clinic = this.clinics.find(clinic => clinic.id === clinicId)
-
-      if (clinic) {
-        if (!clinic.dentists) {
-          this.$set(clinic, 'dentists', [])
-        }
-
-        const existingDentist = clinic.dentists.find(dentist => dentist.dentistId === dentistId)
-
-        if (existingDentist) {
-          existingDentist.dentistName = dentistName
-          console.log('Updated dentist ' + dentistId + ' in clinic ' + clinicId)
-        } else {
-          clinic.dentists.push({ dentistId, dentistName })
-          console.log('Added new dentist with id: ' + dentistId + ' Name: ' + dentistName)
-        }
-      } else {
-        console.log('No clinic with given id: ' + clinicId)
       }
     },
     async createClinic() {
