@@ -169,7 +169,7 @@ public class MQTT implements MqttCallback {
                 DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
                 if(!dentistService.checkDuplicateDentist(dentist)){
                     dentistService.createDentist(dentist);
-                    String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+","+"\"dentistName\": "+ "\""+dentist.getName()+"\""+" }";
+                    String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+" }";
                     System.out.println(messageToClinicService);
                     middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
                     
