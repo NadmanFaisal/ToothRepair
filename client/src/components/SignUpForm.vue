@@ -37,7 +37,7 @@
 
           <b-col xs="12" md="10" class="mb-3" v-if="isDentist">
             <label class="signup-label" for="password">Clinic</label>
-            <b-dropdown :text=" localClinic.name ||'Select a clinic'">
+            <b-dropdown :text=" localClinic?.name ||'Select a clinic'">
                 <b-dropdown-item v-for="clinic in clinics" :key="clinic.id" @click="localClinic = clinic">{{clinic.name}}, {{clinic.address}}</b-dropdown-item>
             </b-dropdown>
           </b-col>
@@ -67,7 +67,7 @@ export default {
       localUsername: this.username,
       localEmail: this.email,
       localPassword: this.password,
-      localClinic: this.clinics
+      localClinic: {}
       // clinics: [{ id: 1234, name: 'Gothenburg Teeth Repair' }, { id: 12345, name: 'Dentists in GB' }, { id: 123456, name: 'Healthy Teeth' }, { id: 12, name: 'GB Nice Tooth spot' }],
     }
   },
@@ -75,11 +75,12 @@ export default {
   methods: {
     // emit values to parent class, which is the SignUpPage.vue
     handleSubmit() {
+      console.log('Selected Clinic:', this.localClinic)
       this.$emit('submit', {
         username: this.localUsername,
         email: this.localEmail,
         password: this.localPassword,
-        clinics: this.localClinic
+        clinic: this.localClinic
       })
     }
 

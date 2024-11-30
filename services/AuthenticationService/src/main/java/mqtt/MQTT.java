@@ -171,7 +171,7 @@ public class MQTT implements MqttCallback {
                     dentistService.createDentist(dentist);
                     String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+","+"\"dentistName\": "+ "\""+dentist.getName()+"\""+" }";
                     System.out.println(messageToClinicService);
-                    middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(),0,false);
+                    middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
                     
                 }else{
                     String errorMessage = "Error: An account with this email already exists";
