@@ -123,7 +123,7 @@ export default {
     },
     selectAppointment(appointment) {
       if (appointment.status === 'unavailable') {
-        console.warn.apply('This slot is unavailable')
+        console.warn('This slot is unavailable')
         return
       }
       console.log(appointment.id)
