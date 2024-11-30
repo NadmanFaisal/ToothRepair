@@ -23,12 +23,12 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectAppointment(appointment.id)">
+            <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectAppointment(appointment)">
               <div class="col- 4 status-mark-container">
                 <img :src="getStatusImage(appointment.status)" class="status-mark-image">
               </div>
               <div class="col-8 appointment-information-container">
-                <label class="appointment-information-label" :class="{ 'available-label': appointment.status === 'available', 'unavailable-label': appointment.status !== 'available' }">{{ appointment.startTime }} PM</label>
+                <label class="appointment-information-label" :class="{ 'available-label': appointment.status === 'available', 'available-label': appointment.status === 'booked', 'unavailable-label': appointment.status === 'unavailable' }">{{ appointment.startTime }} PM</label>
               </div>
             </div>
 
@@ -51,7 +51,7 @@
             <div class="col-11 title-container">
               <h1 class="title-label">Evening</h1>
               <label class="time-label">12:00 PM to 17:00 PM</label>
-              <button type="button" @click="bookAppointment" class="btn btn-primary confirm-booking-button">Confirm</button>
+              <button type="button" @click="makeAvailable" class="btn btn-primary confirm-booking-button">Confirm</button>
             </div>
 
           </div>
@@ -95,12 +95,32 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
+    async makeAvailable() {
+      if (!this.selectedAppointmentId) {
+        console.error('No booking slot has been selected')
+        return
+      }
+      try {
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', this.selectedAppointmentId)
+        this.selectAppointmentId = null
+        this.getAppointments()
+      } catch (error) {
+        console.error('This bombaclaat wont work' + error)
+      }
+    },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
-    selectAppointment(id) {
-      console.log(id)
-      this.selectedAppointmentId = id
+    selectAppointment(appointment) {
+      if (appointment.status === 'booked') {
+        const confirmation = confirm('This has already been booked by patients. Do you want to delete their bookings and make it unavailable?')
+        if (!confirmation) {
+          return
+        }
+      }
+      console.log(appointment.id)
+      this.selectedAppointmentId = appointment.id
     }
   }
 

@@ -26,7 +26,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
-     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment"}; 
+     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment", "ScheduleService/Appointment/changeAppointmentStatus"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -169,6 +169,9 @@ public class MQTT implements MqttCallback {
             } else if (topic.equals("ScheduleService/Appointment/bookAppointment") ) {
                 System.out.println("Entered bookAppointment if statement");
                 appointmentService.bookAppointment(stringMessage);
+            } else if (topic.equals("ScheduleService/Appointment/changeAppointmentStatus") ) {
+                System.out.println("Entered changeAppointmentStatus if statement");
+                appointmentService.changeAppointmentStatus(stringMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();

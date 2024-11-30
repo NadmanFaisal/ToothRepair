@@ -41,5 +41,26 @@ public class AppointmentService {
         }
 
     }
+
+    public Optional<AppointmentSchema> changeAppointmentStatus(String id) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(id);
+
+        if (optionalAppointment.isPresent()) {
+            AppointmentSchema appointment = optionalAppointment.get();
+
+            if (appointment.getStatus().equals("unavailable")) {
+                appointment.setStatus("available");
+            } else if (appointment.getStatus().equals("available") || (appointment.getStatus().equals("booked"))) {
+                appointment.setStatus("unavailable");
+            }
+
+            appointmentRepository.save(appointment);
+
+            return Optional.of(appointment);
+        } else {
+            return Optional.empty();
+        }
+
+    }
     
 }
