@@ -204,10 +204,12 @@ public class MQTT implements MqttCallback {
         for( Object dentistID : dentistList ){
             String id = (String) dentistID;
             String dentistName = dentistService.getNameByID(id);
-            id = "{ \"id\": "+ id + ", "+" \"name\": "+ dentistName +" }";
+            id = "{ \"id\": "+ id + ", "+" \"name\": "+ dentistName +" }, ";
             System.out.println(id);
             bigBoiPayload = bigBoiPayload + id;
+            
         }
+            bigBoiPayload = bigBoiPayload.substring(0, bigBoiPayload.length() - 2);
             System.out.println(bigBoiPayload);
             middleware.publish(PUBLISHED_DENTIST_TOPIC, bigBoiPayload.getBytes(), 2, false);
 
