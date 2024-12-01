@@ -92,7 +92,7 @@ public class MQTT implements MqttCallback {
     /**
      * Publishes all patients in the patient topic as a String in JSON notation.
      * 
-     * Publishing happening with QoS 1.
+     * Publishing happening with QoS 2.
      * 
      * It publishes with the conected client
      * 
@@ -117,7 +117,8 @@ public class MQTT implements MqttCallback {
      * @param cause to throw the error stack trace
      * @throws Exception prints the Error Stack trace
      */
-        @Override
+    
+    @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
         while (!middleware.isConnected()) {
@@ -153,36 +154,9 @@ public class MQTT implements MqttCallback {
                 System.out.println("Message recieved: " + stringMessage);
                 this.publishPatientList();
             } else if(topic.equals(SUBSCRIBED_TOPICS[1])){
-                System.out.println("Message recieved: " + stringMessage);
-                PatientSchema patient = objectMap.readValue(stringMessage, PatientSchema.class);
-                if(!patientService.checkDuplicatePatient(patient)){
-                    System.out.println(!patientService.checkDuplicatePatient(patient));
-                    patientService.createPatient(patient);
-                    
-                }else{
-                    String errorMessage = "Error: An account with this email already exists";
-                    System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
-                    System.out.println("has published");
-                    
-                }
-
+                this.signupPatient(stringMessage);
             } else if(topic.equals(SUBSCRIBED_TOPICS[2])){
-                System.out.println("Message recieved: " + stringMessage);
-                DentistSchema dentist = objectMap.readValue(stringMessage, DentistSchema.class);
-                if(!dentistService.checkDuplicateDentist(dentist)){
-                    dentistService.createDentist(dentist);
-                    String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+" }";
-                    System.out.println(messageToClinicService);
-                    middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
-                    
-                }else{
-                    String errorMessage = "Error: An account with this email already exists";
-                    System.out.println(errorMessage);
-                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
-                    
-                }
-                
+                this.signupDentist(stringMessage);               
             } else if(topic.equals(SUBSCRIBED_TOPICS[3])){
                 this.loginPatient(stringMessage);
             } else if(topic.equals(SUBSCRIBED_TOPICS[4])){
@@ -197,6 +171,75 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Logic to sign up a patient. It reads the value as a PatientSchema and checks for duplicate in the 
+     * database, if no duplicates creates a patient otherwise sends an errorMessage 
+     * 
+     * @param stringPayload the payload that is converted to a String
+     * @throws Exception prints the Error Stack trace
+     */
+    public void signupPatient(String stringPayload){
+        ObjectMapper objectMap = new ObjectMapper();
+
+        try {
+            System.out.println("Message recieved: " + stringPayload);
+            PatientSchema patient = objectMap.readValue(stringPayload, PatientSchema.class);
+            if(!patientService.checkDuplicatePatient(patient)){
+                System.out.println(!patientService.checkDuplicatePatient(patient));
+                patientService.createPatient(patient);
+                
+            }else{
+                String errorMessage = "Error: An account with this email already exists";
+                System.out.println(errorMessage);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
+                System.out.println("has published");
+                
+            }            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Logic to sign up a patient. It reads the value as a DemtistSchema and checks for duplicate in the 
+     * database, if no duplicates creates a dentist otherwise sends an errorMessage
+     * 
+     * @param stringPayload the payload that is converted to a String
+     * @throws Exception prints the Error Stack trace
+     */
+    public void signupDentist(String stringPayload){
+        ObjectMapper objectMap = new ObjectMapper();
+
+        try {
+            System.out.println("Message recieved: " + stringPayload);
+            DentistSchema dentist = objectMap.readValue(stringPayload, DentistSchema.class);
+            if(!dentistService.checkDuplicateDentist(dentist)){
+                dentistService.createDentist(dentist);
+                String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+" }";
+                System.out.println(messageToClinicService);
+                middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
+                
+            }else{
+                String errorMessage = "Error: An account with this email already exists";
+                System.out.println(errorMessage);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
+                
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Logic to publish Dentist Names to the Clinic service
+     * we recieve a list of dentist ids and check for their existence in the database
+     * if they exist then we create a JSON for every ID and include its name
+     * then we send it to the clinic service, 
+     * so that they can display the dentist names in the clinic map
+     * 
+     * @param dentistList recieve an array of dentistList
+     * @throws Exception prints the Error Stack trace
+     */
     public void publishDentistNames(ArrayList dentistList){
         System.out.println(dentistList);
         try{
@@ -220,7 +263,15 @@ public class MQTT implements MqttCallback {
     }
 
 
-
+    /**
+     * Logic to login the patient by reading the value as Patient Schema
+     * comparing Patients details with the one in database and if its valid
+     * publish successMessage User is logged in
+     * else publish failure message Invalid Email or password.
+     * 
+     * @param stringPayload payload of the users login credentials.
+     * @throws Exception prints the Error Stack trace
+     */
     public void loginPatient(String stringPayload){
         ObjectMapper objectMap = new ObjectMapper();
         try{
@@ -243,6 +294,15 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Logic to login the dentist by reading the value as Dentist Schema
+     * comparing dentist details with the one in database and if its valid
+     * publish successMessage User is logged in
+     * else publish failure message Invalid Email or password.
+     * 
+     * @param stringPayload string containing dentist's credentials
+     * @throws Exception prints the Error Stack trace
+     */
     public void loginDentist(String stringPayload){
         ObjectMapper objectMap = new ObjectMapper();
         try{
