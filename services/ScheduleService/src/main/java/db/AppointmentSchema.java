@@ -14,14 +14,12 @@ public class AppointmentSchema {
     
     private String status;
     
-    // @DBRef
-    // private PatientSchema patient;
+    private String patient;
     
     // @DBRef
-    // private ClinicSchema clinic;
+    // private String clinic;
     
-    // @DBRef
-    // private DentistSchema dentist;
+    private String dentist;
     
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
@@ -41,17 +39,17 @@ public class AppointmentSchema {
         return this.status;
     }
 
-    // public PatientSchema getPatient() {
-    //     return this.patient;
-    // }
+    public String getPatient() {
+        return this.patient;
+    }
 
     // public ClinicSchema getClinic() {
     //     return this.clinic;
     // }
 
-    // public DentistSchema getDentist() {
-    //     return this.dentist;
-    // }
+    public String getDentist() {
+        return this.dentist;
+    }
 
     public LocalDate getDate() {
         return this.date;
@@ -70,17 +68,17 @@ public class AppointmentSchema {
         this.status = status;
     }
 
-    // public void setPatient(PatientSchema patient) {
-    //     this.patient = patient;
-    // }
+    public void setPatient(String patient) {
+        this.patient = patient;
+    }
 
     // public void setClinic(ClinicSchema clinic) {
     //     this.clinic = clinic;
     // }
 
-    // public void setDentist(DentistSchema dentist) {
-    //     this.dentist = dentist;
-    // }
+    public void setDentist(String dentist) {
+        this.dentist = dentist;
+    }
 
     public void setDate(LocalDate date) {
         this.date = date;
@@ -97,7 +95,9 @@ public class AppointmentSchema {
     // Stringyfies the appointment data
     public String toString() {
         String appointmentRepresentation = "";
-        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + ", startTime: " + this.startTime + ", endTime: " + this.endTime + " }";
+        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + 
+        ", startTime: " + this.startTime + ", endTime: " + this.endTime + ", patient: " + this.patient +
+        ", dentist: " + this.dentist +  " }";
 
         return appointmentRepresentation;
     }

@@ -25,11 +25,13 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
-    public Optional<AppointmentSchema> bookAppointment(String id) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(id);
+    public Optional<AppointmentSchema> bookAppointment(AppointmentSchema appointmentInfo) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
 
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
+
+            appointment.setPatient(appointmentInfo.getPatient());
 
             appointment.setStatus("booked");
 
@@ -42,11 +44,14 @@ public class AppointmentService {
 
     }
 
-    public Optional<AppointmentSchema> changeAppointmentStatus(String id) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(id);
-
+    //might need to refactor
+    public Optional<AppointmentSchema> changeAppointmentStatus(AppointmentSchema appointmentInfo) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
+    
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
+
+            appointment.setDentist(appointmentInfo.getDentist());
 
             if (appointment.getStatus().equals("unavailable")) {
                 appointment.setStatus("available");

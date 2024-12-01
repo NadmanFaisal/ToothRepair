@@ -102,7 +102,7 @@ export default {
       }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', this.selectedAppointmentId)
+        publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": "dentistID"}')
         this.selectAppointmentId = null
         this.getAppointments()
       } catch (error) {

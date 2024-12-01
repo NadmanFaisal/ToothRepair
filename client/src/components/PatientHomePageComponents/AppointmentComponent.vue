@@ -82,7 +82,7 @@ export default {
     async createAppointment() {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/createAppointment', '{"status": "available", "date": "1111-11-11", "startTime": "09:30", "endTime": "10:00"}')
+        publishToTopic('ScheduleService/Appointment/createAppointment', '{"status": "unavailable", "date": "1111-11-11", "startTime": "09:00", "endTime": "09:30"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -114,7 +114,7 @@ export default {
       }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', this.selectedAppointmentId)
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": "patientID"}')
         this.selectAppointmentId = null
         this.getAppointments()
       } catch (error) {

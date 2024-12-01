@@ -31,6 +31,8 @@ public class MQTT implements MqttCallback {
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
+
+    
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
@@ -168,10 +170,14 @@ public class MQTT implements MqttCallback {
                 appointmentService.createAppointment(appointmentInfo);
             } else if (topic.equals("ScheduleService/Appointment/bookAppointment") ) {
                 System.out.println("Entered bookAppointment if statement");
-                appointmentService.bookAppointment(stringMessage);
+                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                System.out.println(appointmentInfo.toString());
+                appointmentService.bookAppointment(appointmentInfo);
             } else if (topic.equals("ScheduleService/Appointment/changeAppointmentStatus") ) {
                 System.out.println("Entered changeAppointmentStatus if statement");
-                appointmentService.changeAppointmentStatus(stringMessage);
+                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                System.out.println(appointmentInfo.toString());
+                appointmentService.changeAppointmentStatus(appointmentInfo);
             }
         } catch (Exception e) {
             e.printStackTrace();
