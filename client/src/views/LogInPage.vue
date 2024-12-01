@@ -68,7 +68,6 @@
   </template>
 
 <script>
-import router from '@/router'
 import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
@@ -86,17 +85,17 @@ export default {
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
       const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
       const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
-      const PUBLISH_ID_ALERT = "authentication/alert/id"
-      const SUBSCRIBE_USER_ID = "authentication/userID"
+      const PUBLISH_ID_ALERT = 'authentication/alert/id'
+      const SUBSCRIBE_USER_ID = 'authentication/userID'
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
-      await subscribeToTopic(SUBSCRIBE_USER_ID);
+      await subscribeToTopic(SUBSCRIBE_USER_ID)
       try {
         const logInData = {
           email: this.email,
           password: this.password
         }
-  
+
         if (this.isDentist) {
           publishValue(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData))
         } else {
@@ -108,31 +107,28 @@ export default {
             console.log(message)
 
             if (message === 'User is sucessfully logged in!') {
-
               publishValue(PUBLISH_ID_ALERT, this.email)
               const userInfo = {
                 email: this.email,
                 role: this.isDentist ? 'dentist' : 'patient'
               }
-              console.log(userInfo);
-              const encodedUserInfo = btoa(JSON.stringify(userInfo));
-              console.log(encodedUserInfo);
-              document.cookie = `userInfo=${encodedUserInfo}; path=/;`
+              console.log(userInfo)
+              const encodedUserInfo = btoa(JSON.stringify(userInfo))
+              console.log(encodedUserInfo)
+              document.cookie = `userInfo=${encodedUserInfo}; path=/; max-age=3600`
               console.log(document.cookie)
-              
-              if(this.isDentist){
+
+              if (this.isDentist) {
                 this.$router.push('/dentistHome')
-              }else{
+              } else {
                 this.$router.push('/patientHome')
               }
-
-              
             }
             setTimeout(function () {
               alert(message)
             }, 500)
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
-          }else if(topic === SUBSCRIBE_USER_ID){
+          } else if (topic === SUBSCRIBE_USER_ID) {
             localStorage.setItem('UserID', JSON.stringify(message))
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
           }

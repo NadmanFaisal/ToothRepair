@@ -3,14 +3,13 @@ import DentistHome from './views/DentistHome.vue'
 import PatientHome from './views/PatientHome.vue'
 import LogInPage from './views/LogInPage.vue'
 import SignUpPage from './views/SignUpPage.vue'
-import { pascalCase } from 'unplugin-vue-components'
 
 const routes = [
-  {path: '/', redirect: '/login'},
-  { path: '/patientHome', name: 'PatientHome', component: PatientHome, meta:{requiresRole: 'patient'}},
-  { path: '/dentistHome', name: 'DentistHome', component: DentistHome, meta:{requiresRole: 'dentist'} },
-  { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta:{guestOnly: true} },
-  { path: '/login', name: 'LogInPage', component: LogInPage, meta:{guestOnly: true} }
+  { path: '/', redirect: '/login' },
+  { path: '/patientHome', name: 'PatientHome', component: PatientHome, meta: { requiresRole: 'patient' } },
+  { path: '/dentistHome', name: 'DentistHome', component: DentistHome, meta: { requiresRole: 'dentist' } },
+  { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
+  { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } }
 ]
 
 const router = createRouter({
@@ -18,47 +17,37 @@ const router = createRouter({
   routes
 })
 
-function getUserInfoCookie(){
-
-  const cookies = document.cookie.split('; ');
-  const userInfoCookie = cookies.find(cookie => cookie.startsWith('userInfo='));
+function getUserInfoCookie() {
+  const cookies = document.cookie.split('; ')
+  const userInfoCookie = cookies.find(cookie => cookie.startsWith('userInfo='))
 
   if (userInfoCookie) {
-    const encodedUserInfo = userInfoCookie.split('=')[1];
+    const encodedUserInfo = userInfoCookie.split('=')[1]
     try {
       const parsedCookie = JSON.parse(atob(encodedUserInfo))
       console.log(parsedCookie)
       return parsedCookie
-      
     } catch (error) {
-      console.error('Error decoding userInfo cookie:', error);
+      console.error('Error decoding userInfo cookie:', error)
     }
   }
-  return null;
+  return null
 }
 
-router.beforeEach( (to, from, next) => {
-  const userInfo = getUserInfoCookie();
-  if (to.path === '/') {
-    if (userInfo) {
-      next(`/${userInfo.role}Home`); 
-    } else {
-      next('/login'); // Redirect to login if not logged in
+router.beforeEach((to, from, next) => {
+  const userInfo = getUserInfoCookie()
+  if (to.meta.requiresRole) {
+    if (!userInfo || userInfo.role !== to.meta.requiresRole) {
+      next(userInfo ? `/${userInfo.role}Home` : '/login')
+      return
     }
   }
-  if(to.meta.requiresRole){
-    if(!userInfo || userInfo.role !== to.meta.requiresRole){
-      next(userInfo ? `/${userInfo.role}Home` : `/login`);
-    }
-  } else if(to.meta.guestOnly && userInfo){
-    next(`/${userInfo.role}Home`);
-  }else{
-    next()
+  if (to.meta.guestOnly && userInfo) {
+    next(`/${userInfo.role}Home`)
+    return
   }
 
+  next()
 })
-
-
-
 
 export default router

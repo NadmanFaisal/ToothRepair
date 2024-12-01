@@ -60,12 +60,11 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    logout(){
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-      this.$router.push('/login');
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      this.$router.push('/login')
     }
   }
-  
 
 }
 </script>
