@@ -250,7 +250,6 @@ public class MQTT implements MqttCallback {
                 System.out.println("Clinic not found with Id: " + clinicId);
             }
 
-            middleware.unsubscribe("dentist/clinicService/addDentist");
 
         } catch (Exception e) {
             e.printStackTrace();
