@@ -75,12 +75,15 @@ export default {
     return {
       email: '',
       password: '',
-      isDentist: false,
+      isDentist: null,
       error: null
     }
   },
   methods: {
     async loginUser() {
+      if (this.isDentist === null) {
+        alert('Please specify your role.')
+      }
       this.error = null
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
       const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
