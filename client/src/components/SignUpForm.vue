@@ -59,7 +59,10 @@ export default {
     username: String,
     email: String,
     password: String,
-    clinics: Array,
+    clinics: {
+      type : Array,
+      required : true
+    },
     isDentist: Boolean
   },
   data() {

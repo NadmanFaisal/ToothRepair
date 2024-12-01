@@ -66,37 +66,46 @@ export default {
 
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp({ username, email, password, clinics }) {
+    async submitSignUp({ username, email, password, clinic }) {
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
-      if (username && password && emailVerification.test(email)) {
-        console.log('I made it inside the if statement')
-        await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
-        try {
-          if (!this.isDentist) {
-            const newPatient = {
-              name: username,
-              email,
-              password
-            }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-          } else {
-            if (clinics) {
-              const newDentist = {
-                name: username,
-                email,
-                password,
-                clinic: clinics.id
-              }
-
-              publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
-            } else {
-              alert('Please select and existing clinic')
-            }
+      console.log("This is the clinics " + clinic?.id)
+      try{
+      await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
+      if(this.isDentist){
+        if(username && password && emailVerification.test(email) && clinic?.id){
+          const newDentist = {
+                  name: username,
+                  email,
+                  password,
+                  clinic: clinic?.id
           }
 
+          publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+
+          setTimeout(() => {
+            this.$router.push('/login')
+          }, 2000)
+        }else{
+          alert('Error: Input field left empty, please provide values for all input fields')
+        }
+      }else{
+        if(username && password && emailVerification.test(email)){
+          const newPatient = {
+                name: username,
+                email,
+                password
+          }
+            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+            
+            setTimeout(() => {
+            this.$router.push('/login')
+          }, 2000)
+        }
+          alert('Error: Input field left empty, please provide values for all input fields')
+      }
           messageArrived((topic, message) => {
             if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
               console.log(message)
@@ -106,16 +115,13 @@ export default {
           })
 
           // waits a while to display the Sign Up Successful message to user until we move him to login
-          setTimeout(() => {
-            this.$router.push('/login')
-          }, 2000)
-          this.message = 'Sign Up Successful!'
+          
+          /*
+          
+          */
         } catch (error) {
           this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
         }
-      } else {
-        alert('Error: Input field left empty, please provide values for all input fields')
-      }
     },
 
     async getAllClinics() {
