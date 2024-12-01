@@ -147,7 +147,7 @@ export default {
         alert('Invalid open hours format. Expected format is: HH:mm-HH:mm')
         return
       } else if (!phoneNumberRegPattern.test(newClinic.contact_info.number)) {
-        alert('Invalid phone number format. Expected format is: +dd dd-ddd dd dd')
+        alert('Invalid phone number format. Expected format is: dddddddddd')
         return
       } else if (!emailRegPattern.test(newClinic.contact_info.email)) {
         alert('Invalid email format. Expected format is: someCharacters@someEmail.something')
