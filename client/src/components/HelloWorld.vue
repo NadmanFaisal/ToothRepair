@@ -2,6 +2,7 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <button @click="getTestValue">TEST MQTT Button</button>
+    <BButton @click="logout"> Log Out button</BButton>
     <p>{{ this.patients }}</p>
     <p>
       For a guide and recipes on how to configure / customize this project,<br>
@@ -58,8 +59,13 @@ export default {
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
+    },
+    logout(){
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+      this.$router.push('/login');
     }
   }
+  
 
 }
 </script>

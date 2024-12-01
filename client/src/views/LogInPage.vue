@@ -68,6 +68,7 @@
   </template>
 
 <script>
+import router from '@/router'
 import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
@@ -113,17 +114,19 @@ export default {
                 email: this.email,
                 role: this.isDentist ? 'dentist' : 'patient'
               }
+              console.log(userInfo);
               const encodedUserInfo = btoa(JSON.stringify(userInfo));
+              console.log(encodedUserInfo);
               document.cookie = `userInfo=${encodedUserInfo}; path=/;`
-              /* figure this out later
+              console.log(document.cookie)
+              
               if(this.isDentist){
-                this.$router.push for dentist
+                this.$router.push('/dentistHome')
               }else{
-                this.$router.push for patient
+                this.$router.push('/patientHome')
               }
-              */
-             
-              this.$router.push('/')
+
+              
             }
             setTimeout(function () {
               alert(message)
