@@ -66,12 +66,14 @@ export default {
 
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp({ username, email, password, clinic }) {
+    async submitSignUp({ username, email, password, clinics }) {
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
-
-      await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
+      const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
+      if(username && password && emailVerification.test(email)){
+        console.log("I made it inside the if statement")
+        await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
       try {
         if (!this.isDentist) {
           const newPatient = {
@@ -81,14 +83,18 @@ export default {
           }
           publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
         } else {
+          if(clinics){
           const newDentist = {
             name: username,
             email,
             password,
-            clinic: clinic?.id
+            clinic: clinics.id
           }
 
           publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+          }else{
+            alert("Please select and existing clinic")
+          }
         }
 
         messageArrived((topic, message) => {
@@ -107,6 +113,10 @@ export default {
       } catch (error) {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }
+    }else{
+      alert("Error: Input field left empty, please provide values for all input fields")
+    }
+
     },
 
     async getAllClinics() {
