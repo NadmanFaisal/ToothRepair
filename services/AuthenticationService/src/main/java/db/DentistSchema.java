@@ -4,18 +4,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "patients") 
-public class PatientSchema {
+@Document(collection = "dentists")
+public class DentistSchema { 
     @Id
     private String id;
     private String name;
     @Indexed(unique = true)
     private String email;
     private String password;
+    private String clinic;
+
+    public String getClinic() {
+        return clinic;
+    }
+    public void setClinic(String clinic) {
+        this.clinic = clinic;
+    }
 
     public String getId() {
         return id;
     }
+
     public String getName() {
         return name;
     }
@@ -37,7 +46,7 @@ public class PatientSchema {
     public void setPassword(String newPassword){
         this.password = newPassword;
     }
-    
+
     public boolean checkPassword(String inputPassword){
         if(inputPassword.equals(this.password)){
             return true;
@@ -46,9 +55,9 @@ public class PatientSchema {
     }
 
     public String toString(){
-        String patientRepresentation = "";
-        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
-        return patientRepresentation;
+        String dentistRepresentation = "";
+        dentistRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+ ", \n" + "clinic: "+ this.clinic +"}";
+        return dentistRepresentation;
 
     }
 

@@ -2,7 +2,7 @@
 import mqtt from 'mqtt'
 
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export const client = mqtt.connect('ws://test.mosquitto.org:8081')
+export const client = mqtt.connect('wss://test.mosquitto.org:8081')
 
 // On connection to client,  print connected
 client.on('connect', () => {
@@ -42,14 +42,18 @@ export function subscribeToTopic(topic) {
   )
 }
 
-export function unSubscribeFromTopic(topic) {
-  client.unsubscribe(topic, (err) => {
-    if (err) {
-      console.error('Failed to unsubscribe from topic: ', topic, err)
-    } else {
-      console.log('Unsubscribed from: ', topic)
-    }
-  })
+export function unsubscribeFromTopic(topic) {
+  try {
+    client.unsubscribe(topic, (err) => {
+      if (err) {
+        console.error(`Failed to unsubscribe from topic ${topic}:`, err)
+      } else {
+        console.log(`Successfully unsubscribed from topic: ${topic}`)
+      }
+    })
+  } catch (error) {
+    console.error(`Error while unsubscribing from topic ${topic}:`, error)
+  }
 }
 
 /**
@@ -59,11 +63,11 @@ export function unSubscribeFromTopic(topic) {
  * @returns {message} returns the message recieved from the topic
  */
 export function messageArrived(callback) {
+  client.removeAllListeners('message')
   client.on('message', (topic, message) => {
     try {
-      const parsedMessage = message.toString()
       console.log('This is the JSON format of the patient list' + message)
-      callback(topic, parsedMessage)
+      callback(topic, message.toString())
     } catch (error) {
       console.error('Error Parsing the Patient list', error)
       callback(topic, message.toString())
@@ -101,5 +105,12 @@ export function publishMsgToTopic(topic, message) {
   if (client.connected) {
     client.publish(topic, message, {qos: 2, retain: false})
     console.log('Published the message')
+  }
+}
+export function publishValue(topic, payload) {
+  if (client.connected) {
+    console.log('Publishing ' + payload + ' to ' + topic)
+    client.publish(topic, payload)
+    console.log(payload + ' Has been published to ' + topic)
   }
 }

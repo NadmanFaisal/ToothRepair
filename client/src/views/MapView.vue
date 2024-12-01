@@ -54,10 +54,10 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishMsgToTopic, unSubscribeFromTopic, client } from '../mqtt/mqtt.js'
-import MapComponent from './Map.vue'
+import { subscribeToTopic, messageArrived, publishMsgToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import MapComponent from '../components/MapComponent.vue'
 export default {
-  name: 'ClinicTest',
+  name: 'MapView',
   props: {
     msg: String
   },
@@ -104,7 +104,7 @@ export default {
               publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
-            unSubscribeFromTopic('test/clinicList')
+            unsubscribeFromTopic('test/clinicList')
           } else if (topic === 'authentication/dentist/getDentistNames') {
             const fixedMessage = '[' + message + ']'
             const newMessage = JSON.parse(fixedMessage)
