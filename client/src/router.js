@@ -3,13 +3,15 @@ import DentistHome from './views/DentistHome.vue'
 import PatientHome from './views/PatientHome.vue'
 import LogInPage from './views/LogInPage.vue'
 import SignUpPage from './views/SignUpPage.vue'
+import MapView from './views/MapView.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/patientHome', name: 'PatientHome', component: PatientHome, meta: { requiresRole: 'patient' } },
   { path: '/dentistHome', name: 'DentistHome', component: DentistHome, meta: { requiresRole: 'dentist' } },
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
-  { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } }
+  { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
+  { path: '/mapView', name: 'MapView', component: MapView},
 ]
 
 const router = createRouter({

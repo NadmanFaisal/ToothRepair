@@ -8,6 +8,8 @@
       <router-link to = "/patientHome"> Patient Home</router-link>
       <br>
       <router-link to = "/dentistHome"> Dentist Home</router-link>
+      <br>
+      <router-link to = "/mapView">Map View Page</router-link>
 
       <!--<router-link to = "/signup2"> NewSignUp</router-link>-->
 
@@ -17,10 +19,13 @@
 </template>
 
 <script>
+
 export default {
   name: 'App',
-  components: {}
+  components: {}  
+
 }
+
 </script>
 
 <style>

@@ -1,18 +1,24 @@
 <template>
     <div>
         <img alt="Vue logo" src="../assets/logo.png">
-        <HelloWorld msg="Welcome to Your Patient Home Page"/>
+        <div>This is the Patient Page</div>
+        <BButton @click="logout"> Log Out button</BButton>
     </div>
 </template>
 
 <script>
-import HelloWorld from '../components/HelloWorld.vue'
+// import HelloWorld from '../components/HelloWorld.vue'
 
 export default {
   name: 'PatientHome',
-  components: {
-    HelloWorld
-  }
+  components: {},
+  methods:{
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      this.$router.push('/login')
+    }
+}
+
 }
 
 </script>
