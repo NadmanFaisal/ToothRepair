@@ -18,7 +18,7 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
+    private static final String BROKER_URL = "ws://test.mosquitto.org:8081";  // Replace with your broker address
     private static final String CLIENT_ID = "JavaServiceClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "test/patientList";
     private final PatientService patientService; // CRUD Operations for the patient database
@@ -61,7 +61,7 @@ public class MQTT implements MqttCallback {
         while(middleware.isConnected()){ // while client is connected
         thread.submit(()-> {
             try {
-                middleware.subscribe(SUBSCRIBED_TOPIC, 0); //Subscribe to topic
+                middleware.subscribe(SUBSCRIBED_TOPIC, 1); //Subscribe to topic
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -89,9 +89,10 @@ public class MQTT implements MqttCallback {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
+            String emptyMessage = "";
             //Publish the payload as bytes to the topic.
             
-            middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 0, false);
+            middleware.publish(PUBLISHED_TOPIC, patientListJson.getBytes(), 1, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
