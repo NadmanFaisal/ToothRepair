@@ -23,6 +23,7 @@ export default {
   },
   methods: {
     addMarkers() {
+      console.log('Access addMarkers')
       if (this.markerGroup) {
         this.markerGroup.clearLayers()
       } else {
@@ -30,7 +31,6 @@ export default {
       }
 
       this.clinics.forEach(clinic => {
-        
         const marker = L.marker([clinic.coordinate.latitude, clinic.coordinate.longitude],
           {
             icon: L.icon({
@@ -44,7 +44,7 @@ export default {
           permanent: true,
           direction: 'top'
         })
-         
+
         const dentistNames = clinic.dentists.map(dentist => dentist.dentistName).join(', ')
         const popUpContent =
         `
@@ -56,13 +56,13 @@ export default {
           <p><strong>Dentists: </strong> ${dentistNames || 'No dentists registered'} </p>
           </div>
           `
-          const popUp = L.popup().setContent(popUpContent)
-          marker.bindPopup(popUp)
-          this.markerGroup.addLayer(marker)
-        })
-      }
-    },
-    watch: {
+        const popUp = L.popup().setContent(popUpContent)
+        marker.bindPopup(popUp)
+        this.markerGroup.addLayer(marker)
+      })
+    }
+  },
+  watch: {
     clinics: {
       handler(newClinics) {
         console.log('Clinics updated, adding markers: ', newClinics)
@@ -73,26 +73,26 @@ export default {
   },
   mounted() {
     this.map = L.map(this.$refs.map).setView([57.708870, 11.974560], 10)
-    
+
     const streetView = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       noWrap: true
     })
-    
+
     const satelliteView = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
       maxZoom: 20,
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     })
-    
+
     streetView.addTo(this.map)
-    
+
     L.control.layers({
       Street: streetView,
       Satellite: satelliteView
     }).addTo(this.map)
-    
+
     if (this.clinics && this.clinics.length > 0) {
-      console.log('Here in map clinics: ', clinics)
+      console.log('Here in map clinics: ', this.clinics)
       this.addMarkers()
     }
   }

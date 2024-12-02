@@ -103,8 +103,9 @@ export default {
             setTimeout(() => {
             this.$router.push('/login')
           }, 2000)
-        }
+        }else{
           alert('Error: Input field left empty, please provide values for all input fields')
+        }
       }
           messageArrived((topic, message) => {
             if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {

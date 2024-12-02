@@ -81,17 +81,31 @@ export function messageArrived(callback) {
  *
  * @param {*} topic requires a topic to publish a value
  */
-export function publishToTopic(topic) {
-  if (client.connected) {
-    if (topic === 'test/clinicAlert') {
-      console.log('Im trying to publish to the "test/clinicAlert" topic')
-      client.publish(topic, 'Get Clinics') // publishes Get Patients as a message to recieve all patients
-      console.log('I have published "Get Clinics" to the "test/clinicAlert" topic')
-    } else if (topic === 'test/patientAlert') {
-      console.log('Im trying to publish to the broker')
-      client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
-      console.log('I have published get patients to the broker')
-    }
+export function publishToTopic(topic, message) {
+  if (client.connected && topic === 'ScheduleService/Appointment/createAppointment') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, message) // publishes Get Appointments as a message to recieve all patients
+    console.log(`I have published to ${message} to ${topic}`)
+  } else if (client.connected && topic === 'ScheduleService/Appointment/getAppointments') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, message) // publishes Get Appointments as a message to recieve all patients
+    console.log(`I have published to ${message} to ${topic}`)
+  } else if (client.connected && topic === 'ScheduleService/Appointment/bookAppointment') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, message) // publishes Get Appointments as a message to recieve all patients
+    console.log(`I have published to ${message} to ${topic}`)
+  } else if (client.connected && topic === 'ScheduleService/Appointment/changeAppointmentStatus') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, message) // publishes Get Appointments as a message to recieve all patients
+    console.log(`I have published to ${message} to ${topic}`)
+  } else if (client.connected && topic === 'test/clinicAlert') {
+    console.log('Im trying to publish to the "test/clinicAlert" topic')
+    client.publish(topic, 'Get Clinics') // publishes Get Patients as a message to recieve all patients
+    console.log('I have published "Get Clinics" to the "test/clinicAlert" topic')
+  } else if (client.connected && topic === 'test/patientAlert') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
+    console.log('I have published get patients to the broker')
   }
 }
 
@@ -103,7 +117,7 @@ export function publishToTopic(topic) {
  */
 export function publishMsgToTopic(topic, message) {
   if (client.connected) {
-    client.publish(topic, message, {qos: 2, retain: false})
+    client.publish(topic, message, { qos: 2, retain: false })
     console.log('Published the message')
   }
 }
