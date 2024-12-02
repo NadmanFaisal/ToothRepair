@@ -30,6 +30,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authentication/alert/login";
     private static final String PUBLISHED_DENTIST_TOPIC = "authentication/dentist/getDentistNames";
+    private static final String PUBLISHED_USER_ID_TOPIC = "authentication/userID";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login", "authentication/dentist/getDentistNamesAlert"};
@@ -200,6 +201,8 @@ public class MQTT implements MqttCallback {
         }
     }
 
+
+
     /**
      * Logic to sign up a patient. It reads the value as a DemtistSchema and checks for duplicate in the 
      * database, if no duplicates creates a dentist otherwise sends an errorMessage
@@ -282,8 +285,13 @@ public class MQTT implements MqttCallback {
 
         if(patientService.checkDuplicatePatient(patient) && patient.checkPassword(checkPatient.getPassword()) ){ 
             String successMessage = "User is sucessfully logged in!";
+            String id = checkPatient.getId();
             System.out.println(successMessage);
+            System.out.println("NADMAN IS GAYYYYYYYYYYYYYY" + checkPatient.toString());
+            System.out.println("VAIBHAV IS GFAYYYYYYYYYYY" + id);
             middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+            middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
+            System.out.println("Published the Patient ID " + id+ "to topic: " + PUBLISHED_USER_ID_TOPIC);
         }else{
             String failureMessage = "Invalid email or Password please try again";
             System.out.println(failureMessage);
@@ -312,8 +320,15 @@ public class MQTT implements MqttCallback {
 
         if(dentistService.checkDuplicateDentist(dentist) && dentist.checkPassword(checkDentist.getPassword())){ 
             String successMessage = "User is sucessfully logged in!";
+            String id = checkDentist.getId();
             System.out.println(successMessage);
+            System.out.println("NADMAN IS GAYYYYYYYYYYYYYY" + checkDentist.toString());
+            System.out.println("VAIBHAV IS GFAYYYYYYYYYYY" + id);
             middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+            middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
+            System.out.println("Published the Dentist ID " + id+ " to topic: " + PUBLISHED_USER_ID_TOPIC);
+
+
         }else{
             String failureMessage = "Invalid email or Password please try again";
             System.out.println(failureMessage);

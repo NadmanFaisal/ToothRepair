@@ -89,7 +89,6 @@ export default {
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
       const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
       const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
-      const PUBLISH_ID_ALERT = 'authentication/alert/id'
       const SUBSCRIBE_USER_ID = 'authentication/userID'
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
@@ -111,7 +110,6 @@ export default {
             console.log(message)
 
             if (message === 'User is sucessfully logged in!') {
-              publishValue(PUBLISH_ID_ALERT, this.email)
               const userInfo = {
                 email: this.email,
                 role: this.isDentist ? 'dentist' : 'patient'
@@ -134,6 +132,7 @@ export default {
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
           } else if (topic === SUBSCRIBE_USER_ID) {
             localStorage.setItem('UserID', JSON.stringify(message))
+            console.log("This is the stored User ID: " +JSON.stringify(message))
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
           }
         })
