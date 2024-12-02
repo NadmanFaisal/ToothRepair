@@ -89,6 +89,13 @@ export default {
       selectedAppointmentId: null
     }
   },
+  created() {
+    this.$watch(
+      () => this.$route,
+      this.getAppointments,
+      { immediate: true }
+    )
+  },
   methods: {
     async createAppointment() {
       try {
@@ -124,8 +131,9 @@ export default {
         return
       }
       try {
+        const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": "patientID"}')
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {

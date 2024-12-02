@@ -287,8 +287,8 @@ public class MQTT implements MqttCallback {
             String successMessage = "User is sucessfully logged in!";
             String id = checkPatient.getId();
             System.out.println(successMessage);
-            System.out.println("NADMAN IS GAYYYYYYYYYYYYYY" + checkPatient.toString());
-            System.out.println("VAIBHAV IS GFAYYYYYYYYYYY" + id);
+            System.out.println(checkPatient.toString());
+            System.out.println(id);
             middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
             middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
             System.out.println("Published the Patient ID " + id+ "to topic: " + PUBLISHED_USER_ID_TOPIC);
@@ -322,8 +322,8 @@ public class MQTT implements MqttCallback {
             String successMessage = "User is sucessfully logged in!";
             String id = checkDentist.getId();
             System.out.println(successMessage);
-            System.out.println("NADMAN IS GAYYYYYYYYYYYYYY" + checkDentist.toString());
-            System.out.println("VAIBHAV IS GFAYYYYYYYYYYY" + id);
+            System.out.println(checkDentist.toString());
+            System.out.println(id);
             middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
             middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
             System.out.println("Published the Dentist ID " + id+ " to topic: " + PUBLISHED_USER_ID_TOPIC);
