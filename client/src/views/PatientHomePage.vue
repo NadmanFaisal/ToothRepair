@@ -9,7 +9,10 @@
 
                 <CalendarComponent />
 
-                <MapComponent />
+                <div class="mapCompContainer">
+                    <p>This is the Leaflet map</p>
+                    <MapComponent :clinics="clinics"></MapComponent>
+                </div>
 
             </div>
 
@@ -24,10 +27,11 @@
 </template>
 
 <script>
+import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
 
 import TopBarComponent from '../components/TopBar.vue'
 import CalendarComponent from '../components/PatientHomePageComponents/CalendarComponent.vue'
-import MapComponent from '../components/PatientHomePageComponents/MapComponent.vue'
+import MapComponent from '../components/MapComponent.vue'
 import AppointmentComponent from '../components/PatientHomePageComponents/AppointmentComponent.vue'
 
 export default {
@@ -37,6 +41,64 @@ export default {
     CalendarComponent,
     MapComponent,
     AppointmentComponent
+  },
+  date() {
+    return {
+      clinics: []
+    }
+  },
+  mounted() {
+    client.on('connect', () => {
+      this.getAllClinics()
+    })
+  },
+  methods: {
+    async getAllClinics() {
+      try {
+        await subscribeToTopic('test/clinicList')
+        await subscribeToTopic('authentication/dentist/getDentistNames')
+        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+
+        messageArrived((topic, message) => {
+          if (topic === 'test/clinicList') {
+            console.log('Recieved clinic list: ', message)
+            this.clinics = JSON.parse(message)
+            if (this.clinics) {
+              this.clinics.forEach(clinic => {
+                clinic.dentists = clinic.dentists.map(dentistId => ({
+                  dentistId,
+                  dentistName: ''
+                }))
+              })
+              const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
+              console.log('dentistIds: ', allDentistIds)
+              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+            }
+
+            unsubscribeFromTopic('test/clinicList')
+          } else if (topic === 'authentication/dentist/getDentistNames') {
+            const fixedMessage = '[' + message + ']'
+            const newMessage = JSON.parse(fixedMessage)
+            console.log('fixed message: ', newMessage)
+            if (message) {
+              newMessage.forEach(dentistData => {
+                this.clinics.forEach(clinic => {
+                  clinic.dentists.forEach(dentist => {
+                    if (dentist.dentistId === dentistData.id) {
+                      dentist.dentistName = dentistData.name
+                      console.log('Dentist id: ' + dentist.dentistId + 'Dentist name: ' + dentist.dentistName)
+                    }
+                  })
+                })
+                console.log('Here are all the clinics', this.clinics)
+              })
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve all clinics: ', error)
+      }
+    }
   }
 }
 </script>

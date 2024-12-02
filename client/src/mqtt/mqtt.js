@@ -42,6 +42,20 @@ export function subscribeToTopic(topic) {
   )
 }
 
+export function unsubscribeFromTopic(topic) {
+  try {
+    client.unsubscribe(topic, (err) => {
+      if (err) {
+        console.error(`Failed to unsubscribe from topic ${topic}:`, err)
+      } else {
+        console.log(`Successfully unsubscribed from topic: ${topic}`)
+      }
+    })
+  } catch (error) {
+    console.error(`Error while unsubscribing from topic ${topic}:`, error)
+  }
+}
+
 /**
  * This function handles recieved message by parsing it to JSON.
  *
@@ -49,12 +63,11 @@ export function subscribeToTopic(topic) {
  * @returns {message} returns the message recieved from the topic
  */
 export function messageArrived(callback) {
+  client.removeAllListeners('message')
   client.on('message', (topic, message) => {
-    console.log(`Received message: ${message.toString()} on topic: ${topic}`)
     try {
-      const parsedMessage = JSON.parse(message.toString())
       console.log('This is the JSON format of the patient list' + message)
-      callback(topic, parsedMessage)
+      callback(topic, message.toString())
     } catch (error) {
       console.error('Error Parsing the Patient list', error)
       callback(topic, message.toString())
@@ -85,5 +98,33 @@ export function publishToTopic(topic, message) {
     console.log('Im trying to publish to the broker')
     client.publish(topic, message) // publishes Get Appointments as a message to recieve all patients
     console.log(`I have published to ${message} to ${topic}`)
+  } else if (client.connected && topic === 'test/clinicAlert') {
+    console.log('Im trying to publish to the "test/clinicAlert" topic')
+    client.publish(topic, 'Get Clinics') // publishes Get Patients as a message to recieve all patients
+    console.log('I have published "Get Clinics" to the "test/clinicAlert" topic')
+  } else if (client.connected && topic === 'test/patientAlert') {
+    console.log('Im trying to publish to the broker')
+    client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
+    console.log('I have published get patients to the broker')
+  }
+}
+
+/**
+ * This function sends a message to the topic which is provided
+ *
+ * @param {*} topic specifies the topic that the message is being sent to
+ * @param {*} message the message that is sent through the topic
+ */
+export function publishMsgToTopic(topic, message) {
+  if (client.connected) {
+    client.publish(topic, message, { qos: 2, retain: false })
+    console.log('Published the message')
+  }
+}
+export function publishValue(topic, payload) {
+  if (client.connected) {
+    console.log('Publishing ' + payload + ' to ' + topic)
+    client.publish(topic, payload)
+    console.log(payload + ' Has been published to ' + topic)
   }
 }
