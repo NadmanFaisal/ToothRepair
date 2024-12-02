@@ -16,6 +16,7 @@
               <label class="time-label">9:00 AM to 12:00 PM</label>
               <!--Buttons for testing purposes-->
               <button @click="getAppointments">Get appointments</button>
+              <button @click="createAppointment">create appointments</button>
             </div>
 
           </div>
@@ -93,6 +94,14 @@ export default {
     )
   },
   methods: {
+    async createAppointment() {
+      try {
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/createAppointment', '{"status": "unavailable", "date": "1111-11-11", "startTime": "09:00", "endTime": "09:30"}')
+      } catch (error) {
+        console.error('This bombaclaat wont work' + error)
+      }
+    },
     async getAppointments() {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')

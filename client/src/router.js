@@ -40,12 +40,12 @@ router.beforeEach((to, from, next) => {
   const userInfo = getUserInfoCookie()
   if (to.meta.requiresRole) {
     if (!userInfo || userInfo.role !== to.meta.requiresRole) {
-      next(userInfo ? `/${userInfo.role}Home` : '/login')
+      next(userInfo ? `/${userInfo.role}HomePage` : '/login')
       return
     }
   }
   if (to.meta.guestOnly && userInfo) {
-    next(`/${userInfo.role}Home`)
+    next(`/${userInfo.role}HomePage`)
     return
   }
 
