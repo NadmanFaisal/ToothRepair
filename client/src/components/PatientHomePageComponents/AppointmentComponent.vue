@@ -24,7 +24,18 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'booked-slot': appointment.status === 'booked', 'unavailable-slot': appointment.status === 'unavailable' } " @click="selectAppointment(appointment)">
+          <div
+          class="col-2 appointment-slot-container"
+          v-for="appointment in appointments"
+          :key="appointment.id"
+          :class="{
+            'available-slot': appointment.status === 'available',
+            'booked-slot': appointment.status === 'booked',
+            'unavailable-slot': appointment.status === 'unavailable',
+            'selected-slot': appointment.id === selectedAppointmentId
+            } "
+            @click="selectAppointment(appointment)"
+            >
             <div class="col- 4 status-mark-container">
               <img :src="getStatusImage(appointment.status)" class="status-mark-image">
             </div>
@@ -109,13 +120,13 @@ export default {
     },
     async bookAppointment() {
       if (!this.selectedAppointmentId) {
-        console.error('No booking slot has been selected')
+        alert('No booking slot has been selected')
         return
       }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": "patientID"}')
-        this.selectAppointmentId = null
+        this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
@@ -123,11 +134,16 @@ export default {
     },
     selectAppointment(appointment) {
       if (appointment.status === 'unavailable') {
-        console.warn('This slot is unavailable')
+        alert('This slot is unavailable')
         return
       }
+      if (appointment.status === 'booked') {
+        alert('Slot has already been booked. Please select a different slot')
+        return
+      }
+
+      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)
-      this.selectedAppointmentId = appointment.id
     }
   }
 }
@@ -246,6 +262,19 @@ export default {
 
 .unavailable-label {
   color:#DCDCDC;
+}
+
+.selected-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  background-color: #009C15;
+  box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+  color:white;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }
 
 .booked-slot {

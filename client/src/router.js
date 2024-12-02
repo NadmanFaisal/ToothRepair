@@ -11,7 +11,7 @@ const routes = [
   { path: '/dentistHomePage', name: 'dentistHome', component: DentistHomePage, meta: { requiresRole: 'dentist' } },
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
   { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
-  { path: '/mapView', name: 'MapView', component: MapView }
+  { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } }
 ]
 
 const router = createRouter({

@@ -83,6 +83,7 @@ export default {
     async loginUser() {
       if (this.isDentist === null) {
         alert('Please specify your role.')
+        return
       }
       this.error = null
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'

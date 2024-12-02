@@ -1,5 +1,6 @@
 <template>
     <div class="screen-container">
+        <BButton @click="logout"> Log Out button</BButton>
 
         <TopBarComponent />
 
@@ -32,6 +33,12 @@ export default {
     DenstistAppointmentComponent,
     DentistCalendarComponent,
     TopBarComponent
+  },
+  methods: {
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      this.$router.push('/login')
+    }
   }
 }
 </script>

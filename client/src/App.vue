@@ -10,7 +10,6 @@
       <router-link to = "/dentistHomePage"> Dentist Home</router-link>
       <br>
       <router-link to = "/mapView">Map View Page</router-link>
-      <BButton @click="logout"> Log Out button</BButton>
 
       <!--<router-link to = "/signup2"> NewSignUp</router-link>-->
 
@@ -25,10 +24,7 @@ export default {
   name: 'App',
   components: {},
   methods: {
-    logout() {
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      this.$router.push('/login')
-    }
+
   }
 
 }

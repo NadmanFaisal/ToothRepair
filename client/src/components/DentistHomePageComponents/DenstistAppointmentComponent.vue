@@ -23,7 +23,15 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id" :class="{ 'available-slot': appointment.status === 'available', 'unavailable-slot': appointment.status !== 'available' } " @click="selectAppointment(appointment)">
+            <div class="col-2 appointment-slot-container"
+            v-for="appointment in appointments"
+            :key="appointment.id"
+            :class="{
+              'available-slot': appointment.status === 'available',
+              'unavailable-slot': appointment.status !== 'available',
+              'selected-slot': appointment.id === selectedAppointmentId
+              }
+              " @click="selectAppointment(appointment)">
               <div class="col- 4 status-mark-container">
                 <img :src="getStatusImage(appointment.status)" class="status-mark-image">
               </div>
@@ -103,7 +111,7 @@ export default {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": "dentistID"}')
-        this.selectAppointmentId = null
+        this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
@@ -119,8 +127,8 @@ export default {
           return
         }
       }
+      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)
-      this.selectedAppointmentId = appointment.id
     }
   }
 
@@ -236,6 +244,17 @@ export default {
   background-color: #FFF;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   color:#DCDCDC;
+}
+
+.selected-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  background-color: #FFF;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }
 
 .available-label {
