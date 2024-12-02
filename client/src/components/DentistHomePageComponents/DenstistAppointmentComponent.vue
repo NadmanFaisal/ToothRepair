@@ -96,8 +96,35 @@ export default {
   methods: {
     async createAppointment() {
       try {
+        await this.getAppointments()
+
+        // This function is used to increament the time of the slots by 30 minutes
+        const incrementTime = (time) => {
+          const [hours, minutes] = time.split(':').map(Number)
+          const newMinutes = minutes + 30
+          const newHours = hours + Math.floor(newMinutes / 60)
+          const adjustedMinutes = newMinutes % 60
+          return `${String(newHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`
+        }
+
+        // Uses 9:00 as initial time and keeps incrementing it to check if a slot with same time exists.
+        let startTime = '09:00'
+        const duplicateTimes = this.appointments.map(app => app.startTime)
+
+        // Increments the time if duplicate time exists
+        while (duplicateTimes.includes(startTime)) {
+          startTime = incrementTime(startTime)
+        }
+
+        // Creates new appointment with next available time slot
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/createAppointment', '{"status": "unavailable", "date": "1111-11-11", "startTime": "09:00", "endTime": "09:30"}')
+        const newAppointment = {
+          status: 'available',
+          date: '1111-11-11',
+          startTime,
+          endTime: incrementTime(startTime)
+        }
+        publishToTopic('ScheduleService/Appointment/createAppointment', JSON.stringify(newAppointment))
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
