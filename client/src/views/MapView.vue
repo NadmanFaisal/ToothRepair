@@ -73,7 +73,7 @@ export default {
       address: '',
       openHours: '',
       contactInfo: { number: '', email: '' },
-      dentists: [],
+      dentists: []
     }
   },
   mounted() {
@@ -108,7 +108,7 @@ export default {
           } else if (topic === 'authentication/dentist/getDentistNames') {
             const fixedMessage = '[' + message + ']'
             const newMessage = JSON.parse(fixedMessage)
-            console.log("fixed message: ", newMessage)
+            console.log('fixed message: ', newMessage)
             if (message) {
               newMessage.forEach(dentistData => {
                 this.clinics.forEach(clinic => {

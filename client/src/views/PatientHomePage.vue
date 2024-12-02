@@ -42,7 +42,7 @@ export default {
     MapComponent,
     AppointmentComponent
   },
-  date() {
+  data() {
     return {
       clinics: []
     }
@@ -99,6 +99,13 @@ export default {
         console.error('Tried to retrieve all clinics: ', error)
       }
     }
+  },
+  created() {
+    this.$watch(
+      () => this.$route,
+      this.getAllClinics,
+      { immediate: true }
+    )
   }
 }
 </script>
