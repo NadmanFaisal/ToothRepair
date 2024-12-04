@@ -94,7 +94,7 @@ Authentication-service-docker:
     - docker-build
 
 # Builds and pushes the ClinicService docker image
-Authentication-service-docker:
+Clinic-service-docker:
   stage: upload-docker
   image: docker:latest
   services:
