@@ -93,6 +93,26 @@ Authentication-service-docker:
   tags:
     - docker-build
 
+# Builds and pushes the ClinicService docker image
+Authentication-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Clinic-service-build
+  script:
+    - cd services/ClinicService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service
+  tags:
+    - docker-build
+
 # Builds and pushes the scheduleService docker image
 Schedule-service-docker:
   stage: upload-docker
