@@ -73,7 +73,27 @@ Schedule-service-build:
     paths:
       - services/ScheduleService/target/
 
-# Build and Push the Schedule Service Docker Image
+# Builds and pushes the AuthenticationService docker image
+Authentication-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Authentication-service-build
+  script:
+    - cd services/AuthenticationService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service
+  tags:
+    - docker-build
+
+# Builds and pushes the scheduleService docker image
 Schedule-service-docker:
   stage: upload-docker
   image: docker:latest
