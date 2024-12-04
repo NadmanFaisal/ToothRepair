@@ -90,3 +90,5 @@ Schedule-service-docker:
     - cd services/ScheduleService
     - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service .
     - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service
+  tags:
+    - docker-build
