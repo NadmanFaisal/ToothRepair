@@ -132,7 +132,7 @@ export default {
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
           } else if (topic === SUBSCRIBE_USER_ID) {
             localStorage.setItem('UserID', JSON.stringify(message))
-            console.log("This is the stored User ID: " +JSON.stringify(message))
+            console.log('This is the stored User ID: ' + JSON.stringify(message))
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
           }
         })
