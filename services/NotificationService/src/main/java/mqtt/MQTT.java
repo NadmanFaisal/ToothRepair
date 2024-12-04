@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.java.db.LogSchema;
+import main.java.email.EmailService;
 import main.java.service.LogService;
 
 @Component
@@ -26,6 +27,7 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
     private static final String[] SUBSCRIBED_TOPICS = {"authentication/userID", "logout"};
     private final LogService logService;
+    private final EmailService emailService;
     private LogSchema log;
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
@@ -39,12 +41,13 @@ public class MQTT implements MqttCallback {
      */
 
     @Autowired
-    public MQTT(LogService logService){
+    public MQTT(LogService logService, EmailService emailService){
         try {
             this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
             this.logService = logService;
             this.log = new LogSchema();
+            this.emailService = emailService;
             middleware.connect();
             middleware.setCallback(this);
             this.subscribeToTopics();
@@ -128,6 +131,7 @@ public class MQTT implements MqttCallback {
                 this.log.setUserId(userID);
                 System.out.println(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
                 this.log.setUserLog(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
+                this.emailService.sendSimpleMessage("Vaibhavpuram05@gmail.com", "Please work", "Test message");
 
             }else if(topic.equals(SUBSCRIBED_TOPICS[1])){
                 System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
