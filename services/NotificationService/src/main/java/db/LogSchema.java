@@ -8,7 +8,7 @@ public class LogSchema {
     @Id
     private String id;
     private String userId;
-    private String userLog;
+    private String userLog = "";
 
     public String getId() {
         return id;
@@ -26,7 +26,7 @@ public class LogSchema {
         this.userId = userId;
     }
     public void setUserLog(String userLog) {
-        this.userLog = userLog;
+        this.userLog = this.userLog+ "\n" + userLog;
     }
     
     public String toString(){

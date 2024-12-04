@@ -13,17 +13,23 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import main.java.db.LogSchema;
+import main.java.service.LogService;
 
 @Component
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
-    private static final String[] SUBSCRIBED_TOPICS = {};
+    private static final String[] SUBSCRIBED_TOPICS = {"authentication/userID", "logout"};
+    private final LogService logService;
+    private LogSchema log;
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
-
+    
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
@@ -33,10 +39,12 @@ public class MQTT implements MqttCallback {
      */
 
     @Autowired
-    public MQTT(){
+    public MQTT(LogService logService){
         try {
             this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
             middleware = new MqttClient(BROKER_URL, CLIENT_ID);
+            this.logService = logService;
+            this.log = new LogSchema();
             middleware.connect();
             middleware.setCallback(this);
             this.subscribeToTopics();
@@ -111,14 +119,25 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        
+        LocalDateTime currentTime = LocalDateTime.now();
         try {
             String stringMessage = new String(message.getPayload());
-            ObjectMapper objectMap = new ObjectMapper();
-            
-            if(stringMessage.equals("Get Patients")){
-                System.out.println("Message recieved: " + stringMessage);
-            } 
+
+            if(topic.equals(SUBSCRIBED_TOPICS[0])){
+                String userID = stringMessage;
+                this.log.setUserId(userID);
+                System.out.println(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
+                this.log.setUserLog(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
+
+            }else if(topic.equals(SUBSCRIBED_TOPICS[1])){
+                System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
+                this.log.setUserLog(currentTime+" "+this.log.getUserId()+" "+stringMessage);
+                logService.createLog(log); 
+                this.log = new LogSchema();
+            }
+
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }

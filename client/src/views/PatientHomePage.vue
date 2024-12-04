@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic, publishValue } from '../mqtt/mqtt.js'
 
 import TopBarComponent from '../components/TopBar.vue'
 import CalendarComponent from '../components/PatientHomePageComponents/CalendarComponent.vue'
@@ -101,6 +101,8 @@ export default {
       }
     },
     logout() {
+      const PUBLISH_LOGOUT_TOPIC = "logout"
+      publishMsgToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System");
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       this.$router.push('/login')
     }
