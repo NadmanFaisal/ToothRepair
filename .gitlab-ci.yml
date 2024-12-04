@@ -83,8 +83,10 @@ Schedule-service-docker:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
   before_script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Schedule-service-build
   script:
     - cd services/ScheduleService
-    - docker build -t $CI_REGISTRY_IMAGE/schedule-service .
-    - docker push $CI_REGISTRY_IMAGE/schedule-service
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service
