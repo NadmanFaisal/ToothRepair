@@ -1,0 +1,14 @@
+# Use a lightweight OpenJDK base image for the runtime
+FROM maven:3.9.4-eclipse-temurin-17
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the built JAR file from the GitLab CI build output
+COPY target/NotificationService-1.0-SNAPSHOT.jar app.jar
+
+# Expose the port your application listens on
+EXPOSE 8080
+
+# Command to run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
