@@ -4,6 +4,7 @@ import DentistHomePage from './views/DentistHomePage.vue'
 import LogInPage from './views/LogInPage.vue'
 import SignUpPage from './views/SignUpPage.vue'
 import MapView from './views/MapView.vue'
+import PatientSelectionScreen from './views/PatientSelectionScreen.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -11,7 +12,8 @@ const routes = [
   { path: '/dentistHomePage', name: 'dentistHome', component: DentistHomePage, meta: { requiresRole: 'dentist' } },
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
   { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
-  { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } }
+  { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } },
+  { path: '/patientSelection', name: 'PatientSelectionScreen', component: PatientSelectionScreen, meta: { requiredRole: 'patient' } }
 ]
 
 const router = createRouter({
