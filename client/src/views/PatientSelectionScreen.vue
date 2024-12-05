@@ -21,9 +21,21 @@
 
           <div class="col-6 dental-treatment-container">
 
+            <div class="col-12 dental-treatment-content">
+              <img src="../assets/hospital.png" class="hospital-image">
+              <label class="dental-treatment-label-header">Dental Treatment</label>
+              <label class="dental-treatment-label-paragraph">Dental treatment encompasses a variety of procedures aimed at maintaining oral health</label>
+            </div>
+
           </div>
 
           <div class="col-6 dental-cosmetic-container">
+
+            <div class="col-12 dental-cosmetic-content">
+              <img src="../assets/teeth.png" class="teeth-image">
+              <label class="dental-cosmetic-label-header">Dentistry Cosmetic</label>
+              <label class="dental-cosmetic-label-paragraph">Cosmetic dentistry focuses on improving the appearance of teeth, gums, and smiles.</label>
+            </div>
 
           </div>
 
@@ -83,7 +95,7 @@ export default {
 .description-contaienr {
   display: flex;
   flex-direction: column;
-  height: 45%;
+  height: 50%;
   justify-content: flex-end;
 }
 
@@ -107,16 +119,46 @@ export default {
   text-align: left
 }
 
-.dental-treatment-container {
+.dental-treatment-container, .dental-cosmetic-container {
+  padding: 8%;
   display: flex;
   flex-direction: column;
-  height: 55%;
+  height: 50%;
 }
 
-.dental-cosmetic-container {
+.dental-treatment-content, .dental-cosmetic-content {
   display: flex;
   flex-direction: column;
-  height: 55%;
+  height: 100%;
+  background-color: #FFF;
+  padding: 10px;
+}
+
+.hospital-image, .teeth-image {
+  margin-top: 10%;
+  align-self: center;
+  height: 35%;
+  width: 35%;
+}
+
+.dental-cosmetic-label-header, .dental-treatment-label-header {
+  color: #015C5C;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  text-align: start;
+}
+
+.dental-treatment-label-paragraph, .dental-cosmetic-label-paragraph {
+  color: #015C5C;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 200;
+  line-height: normal;
+  text-align: start;
 }
 
 .right-section {
