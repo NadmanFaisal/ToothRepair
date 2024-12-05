@@ -28,10 +28,7 @@ public class PatientService{
 
     public Boolean checkDuplicatePatient(PatientSchema patient ) {
         
-        if(patientRepository.findByEmail(patient.getEmail()) != null){
-            return true;
-        }
-        return false;
+        return patientRepository.findByEmail(patient.getEmail()) != null;
     }
 
     public PatientSchema getPatient(PatientSchema patient){
