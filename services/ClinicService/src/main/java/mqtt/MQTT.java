@@ -31,6 +31,8 @@ public class MQTT implements MqttCallback {
     private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic", "dentist/clinicService/alert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
+    private ObjectMapper objectMapper = new ObjectMapper();
+
 
     /**
      * MQTT class Constructor
@@ -100,10 +102,7 @@ public class MQTT implements MqttCallback {
      */
     private void publishClinicList(String topic){
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String clinicListJson = objectMapper.writeValueAsString(this.clinicService.getAllClinics());
-            String emptyMessage = "";
-            //Publish the payload as bytes to the topic.
             
             middleware.publish(topic, clinicListJson.getBytes(), 2, false);
         } catch (Exception e) {
@@ -162,15 +161,22 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload()); 
                    
-            System.out.println("Message recieved: " + stringMessage + "\nTopic: " + topic);
-            if (topic.equals("test/clinicAlert")) {
-                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLIENT);
-            } else if (topic.equals("dentist/clinicService/alert")) {
-                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_DENTIST);
-            } else if (topic.equals("test/createClinic") ) {
-                handleCreateClinic(stringMessage);
-            }  else if (topic.equals("dentist/clinicService/addDentist")) {
-                handleAddingDentist(stringMessage);
+            System.out.println("Message recieved: " + stringMessage + " Topic: " + topic);
+            switch (topic) {
+                case "test/clinicAlert":
+                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLIENT);
+                    break;
+                case "dentist/clinicService/alert":
+                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_DENTIST);
+                    break;
+                case "test/createClinic":
+                    handleCreateClinic(stringMessage);
+                    break;
+                case "dentist/clinicService/addDentist":
+                    handleAddingDentist(stringMessage);
+                    break;
+                default:
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,25 +202,13 @@ public class MQTT implements MqttCallback {
      */
     private void handleCreateClinic(String message) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             ClinicSchema clinicInfo = objectMapper.readValue(message, ClinicSchema.class);
             
-            if (clinicInfo.getAddress().isEmpty()) {
-                System.err.println("Clinic address was not given in the payload");
-            } else if (clinicInfo.getName().isEmpty()) {
-                System.err.println("Clinic name was not given in the payload");
-            } else if (clinicInfo.getOpenHours().isEmpty()) {
-                System.err.println("Clinic open hours was not given in the payload");
-            } else if (clinicInfo.getContactInfo().getEmail().isEmpty()) {
-                System.err.println("Clinic email was not given in the payload");
-            } else if (clinicInfo.getContactInfo().getNumber().isEmpty()){
-                System.err.println("Clinic number was not given in the payload");
-            } else if (clinicInfo.getCoordinate() == null) {
-                System.err.println("Clinic coordinates was not given in the payload");
+            if (checkClinicInfo(clinicInfo)) {
+                clinicService.createClinic(clinicInfo);
+            } else {
+                System.err.println("Some clinic information in the payload is missing");
             }
-
-
-            clinicService.createClinic(clinicInfo);
             
         } catch (Exception e) {
             System.err.println("Error creating clinic: " + e.getMessage());
@@ -222,6 +216,34 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Checks if the recieved clinicInfo has values in the corresponding attributes.
+     * 
+     * @param clinicInfo the clinicInfo 
+     * @return returns true if the clinicInfo has all the neccessary information
+     */
+    public boolean checkClinicInfo(ClinicSchema clinicInfo) {
+        boolean clinicInfoExists = true;
+        if (clinicInfo.getAddress().isEmpty()) {
+            System.err.println("Clinic address was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getName().isEmpty()) {
+            System.err.println("Clinic name was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getOpenHours().isEmpty()) {
+            System.err.println("Clinic open hours was not given in the payload");
+        } else if (clinicInfo.getContactInfo().getEmail().isEmpty()) {
+            System.err.println("Clinic email was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getContactInfo().getNumber().isEmpty()){
+            System.err.println("Clinic number was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getCoordinate() == null) {
+            System.err.println("Clinic coordinates was not given in the payload");
+            clinicInfoExists = false;
+        }
+        return clinicInfoExists;
+    }
     /**
      * Finds the clinic with the id provided and adds the reference to the dentist to it
      * 
@@ -238,8 +260,10 @@ public class MQTT implements MqttCallback {
             
             if (clinicId.isEmpty()) {
                 System.out.println("No clinic Id was provided");
+                return;
             } else if (dentistId.isEmpty()) {
                 System.out.println("No dentist Id was provided");
+                return;
             }
 
             Optional<ClinicSchema> updatedClinic = clinicService.addDentist(clinicId, dentistId);
