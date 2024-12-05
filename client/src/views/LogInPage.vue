@@ -87,7 +87,7 @@ export default {
       }
       this.error = null
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
-      const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
+      const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authentication/login'
       const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
       const SUBSCRIBE_USER_ID = 'authentication/userID'
 

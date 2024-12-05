@@ -78,8 +78,7 @@ export default {
 
             unsubscribeFromTopic('test/clinicList')
           } else if (topic === 'authentication/dentist/getDentistNames') {
-            const fixedMessage = '[' + message + ']'
-            const newMessage = JSON.parse(fixedMessage)
+            const newMessage = JSON.parse(message)
             console.log('fixed message: ', newMessage)
             if (message) {
               newMessage.forEach(dentistData => {
