@@ -44,6 +44,29 @@
         <div class="col-5 right-section">
 
           <div class="col-12 book-appointment-container">
+            <label class="book-appointment-label">Book Appointment</label>
+            <hr>
+
+            <div class="col-12 email-continer">
+              <label class="email-label">Email</label>
+              <input class="form-control email-input">
+            </div>
+
+            <div class="col-12 mobile-container">
+              <label class="mobile-label">Mobile</label>
+              <input class="form-control mobile-input">
+            </div>
+
+            <div class="col-12 clinic-container">
+              <label class="clinic-label">Clinic</label>
+                <button class="btn btn-secondary dropdown-toggle clinic-dropdown-button" type="button">
+                  Select a clinic
+                </button>
+            </div>
+
+            <div class="col-12 button-container">
+              <button class="col-8 btn show-slot-button">Show Slots</button>
+            </div>
 
           </div>
 
@@ -132,6 +155,7 @@ export default {
   height: 100%;
   background-color: #FFF;
   padding: 10px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
 .hospital-image, .teeth-image {
@@ -165,10 +189,76 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: 4.5%;
+  justify-content: end;
 }
 
 .book-appointment-container {
+  padding: 8%;
   display: flex;
   flex-direction: column;
+  height: 85%;
+  background-color: #FFF;
+}
+
+.email-continer, .mobile-container, .clinic-container {
+  height: 20%;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-appointment-label {
+  color: #515151;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.email-label, .mobile-label, .clinic-label {
+  color: #515151;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  text-align: start;
+}
+
+.clinic-dropdown-button {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 20%;
+}
+
+.show-slot-button {
+  border-radius: 15px;
+  background: #1FC2C2 !important;
+  box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
+
+  color: #FFF !important;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 }
 </style>
