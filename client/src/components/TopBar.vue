@@ -31,6 +31,7 @@ export default {
   data() {
     return {
       navItems: [
+        { name: 'Select Clinic', route: '/patientSelection' },
         { name: 'My Bookings', route: '/patientHomePage' }
         // Add more navigation items here
       ]
