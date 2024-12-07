@@ -39,17 +39,12 @@ public class PatientSchema {
     }
     
     public boolean checkPassword(String inputPassword){
-        if(inputPassword.equals(this.password)){
-            return true;
-        }
-        return false;
+        return inputPassword.equals(this.password);
     }
 
+    @Override
     public String toString(){
-        String patientRepresentation = "";
-        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
-        return patientRepresentation;
-
+        return "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
     }
 
 }
