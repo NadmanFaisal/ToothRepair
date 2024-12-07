@@ -45,7 +45,7 @@
 
 <script>
 import SignUpForm from '@/components/SignUpForm.vue'
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
@@ -83,7 +83,7 @@ export default {
                   clinic: clinic?.id
           }
 
-          publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+          publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
 
           setTimeout(() => {
             this.$router.push('/login')
@@ -98,7 +98,7 @@ export default {
                 email,
                 password
           }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
             
             setTimeout(() => {
             this.$router.push('/login')
@@ -130,7 +130,7 @@ export default {
       const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
         if (topic === SUBCRIBED_CLINIC_TOPIC) {
           console.log('Received clinics list:', message)

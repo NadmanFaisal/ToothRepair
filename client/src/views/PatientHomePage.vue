@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishToTopic } from '../mqtt/mqtt.js'
 
 import TopBarComponent from '../components/TopBar.vue'
 import CalendarComponent from '../components/PatientHomePageComponents/CalendarComponent.vue'
@@ -58,7 +58,7 @@ export default {
       try {
         await subscribeToTopic('test/clinicList')
         await subscribeToTopic('authentication/dentist/getDentistNames')
-        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+        publishToTopic('test/clinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
@@ -73,7 +73,7 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              publishToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
             unsubscribeFromTopic('test/clinicList')
