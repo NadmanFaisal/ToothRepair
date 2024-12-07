@@ -11,7 +11,7 @@ import main.java.db.PatientSchema;
 @Service
 public class PatientService{
 
-    private PatientRepository patientRepository;
+    private final PatientRepository patientRepository;
     @Autowired
     public PatientService(PatientRepository patientRepository) {
         this.patientRepository = patientRepository;
@@ -35,9 +35,4 @@ public class PatientService{
         return patientRepository.findByEmail(patient.getEmail());
     }
 
-    
-    
-
-
 }
-

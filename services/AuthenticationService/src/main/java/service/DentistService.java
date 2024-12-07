@@ -13,7 +13,7 @@ import main.java.db.DentistSchema;
 @Service
 public class DentistService {
 
-    private DentistRepository dentistRepository;
+    private final DentistRepository dentistRepository;
     @Autowired
     public DentistService(DentistRepository dentistRepository) {
         this.dentistRepository = dentistRepository;
