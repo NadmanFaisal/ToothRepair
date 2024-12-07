@@ -2,7 +2,7 @@
     <div class="col-12 top-bar-container">
 
         <div class="col-3 logo-container">
-            <img src="../assets/app-logo.png" class="logo">
+            <img src="../../assets/app-logo.png" class="logo">
             <label class="logo-label">TEETH REPAIR</label>
         </div>
 
@@ -17,8 +17,8 @@
         </div>
 
         <div class="col-3 settings-container">
-            <img src="../assets/notifications.png" class="notification-label">
-            <img src="../assets/profile-picture.png" class="profile-picture">
+            <img src="../../assets/notifications.png" class="notification-label">
+            <img src="../../assets/profile-picture.png" class="profile-picture">
             <label class="patient-name-label"> Name of Patient</label>
         </div>
 
@@ -27,12 +27,11 @@
 
 <script>
 export default {
-  name: 'TopBarComponent',
+  name: 'DentistTopBarComponent',
   data() {
     return {
       navItems: [
-        { name: 'My Home', route: '/patientHomePage' },
-        { name: 'My Bookings', route: '/patientAppointmentPage' }
+        { name: 'My Bookings', route: '/DentistBookingPage' }
         // Add more navigation items here
       ]
     }

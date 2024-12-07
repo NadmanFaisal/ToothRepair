@@ -2,7 +2,7 @@
 
     <div class="screen-container">
 
-      <TopBar />
+      <PatientTopBar />
 
       <div class="col-9 content-section">
         <div class="col-7 left-section">
@@ -90,18 +90,18 @@
 </template>
 
 <script>
-import TopBar from '../components/TopBar.vue'
+import PatientTopBar from '../components/PatientHomePageComponents/PatientTopBarComponent.vue'
 import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import { store } from '../store'
 
 export default {
   name: 'PatientHomePage',
   components: {
-    TopBar
+    PatientTopBar
   },
   data() {
     return {
       clinics: [],
-      selectedClinic: null,
       selectedClinicName: null
     }
   },
@@ -112,18 +112,18 @@ export default {
   },
   methods: {
     selectAClinic(clinic) {
-      this.selectedClinicId = clinic.id
-      this.selectedClinicName = clinic.name
+      store.setSelectedClinic(clinic)
+      this.selectedClinicName = store.getSelectedClinicName()
     },
     gotToAppointmentPage() {
-      if (!this.selectedClinicId) {
+      if (!store.getSelectedClinicId()) {
         alert('No clinic has been selected. Please select a clinic')
         return
       }
       this.$router.push({
         path: '/patientAppointmentPage',
         query: {
-          clinicId: this.selectedClinicId
+          clinicId: store.getSelectedClinicId()
         }
       })
     },

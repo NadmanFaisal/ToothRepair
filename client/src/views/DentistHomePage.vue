@@ -2,7 +2,7 @@
     <div class="screen-container">
         <BButton @click="logout"> Log Out button</BButton>
 
-        <TopBarComponent />
+        <DentistTopBarComponent />
 
         <div class="col-12 content-section">
 
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import TopBarComponent from '../components/TopBar.vue'
+import DentistTopBarComponent from '../components/DentistHomePageComponents/DentistTopBarComponent.vue'
 import DenstistAppointmentComponent from '../components/DentistHomePageComponents/DenstistAppointmentComponent.vue'
 import DentistCalendarComponent from '../components/DentistHomePageComponents/DentistCalendarComponent.vue'
 
@@ -32,7 +32,7 @@ export default {
   components: {
     DenstistAppointmentComponent,
     DentistCalendarComponent,
-    TopBarComponent
+    DentistTopBarComponent
   },
   methods: {
     logout() {

@@ -26,8 +26,9 @@
 
 <script>
 import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
+import { store } from '../store'
 
-import TopBarComponent from '../components/TopBar.vue'
+import TopBarComponent from '../components/PatientHomePageComponents/PatientTopBarComponent.vue'
 import CalendarComponent from '../components/PatientHomePageComponents/PatientCalendarComponent.vue'
 import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
 import AppointmentComponent from '../components/PatientHomePageComponents/PatientAppointmentComponent.vue'
@@ -46,7 +47,8 @@ export default {
     }
   },
   mounted() {
-    const clinicId = this.$route.query.clinicId
+    const clinicId = store.getSelectedClinicId()
+    console.log('Clinic ID received')
     console.log(clinicId)
     client.on('connect', () => {
       this.getAllClinics()
@@ -102,6 +104,7 @@ export default {
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       this.$router.push('/login')
+      store.reset()
     }
   },
   created() {
