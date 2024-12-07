@@ -78,8 +78,10 @@ public class MQTT implements MqttCallback {
                 threadPool.submit(()-> {
                     try {
                         if(middleware.isConnected()){
-                            System.out.println("AuthenticationService connected to the broker");
                             middleware.subscribe(topic, 1); //Subscribe to topic
+                            System.out.println("AuthenticationService subscribed to topic: " + topic);
+                        } else {
+                            System.out.println("AuthenticationService is not connected to the broker. Cannot subscribe to topic: " + topic);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -94,26 +96,6 @@ public class MQTT implements MqttCallback {
         }
 
 
-    /**
-     * Publishes all patients in the patient topic as a String in JSON notation.
-     * 
-     * Publishing happening with QoS 2.
-     * 
-     * It publishes with the conected client
-     * 
-     * @param N/A no params needed
-     * @throws MqttException prints the Error Stack trace
-     */
-    private void publishPatientList(){
-        try {
-            String patientListJson = objectMapper.writeValueAsString(this.patientService.getAllPatients());
-
-            //Publish the payload as bytes to the topic.
-            middleware.publish(PUBLISHED_PATIENT_TOPIC, patientListJson.getBytes(), 2, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Reconnects to the client and subscribes to the topics

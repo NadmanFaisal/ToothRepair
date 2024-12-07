@@ -72,6 +72,7 @@ public class MQTT implements MqttCallback {
                 try {
                     if (middleware.isConnected()) {
                         middleware.subscribe(topic, 1); //Subscribe to topic
+                        System.out.println("ScheduleService subscribed to topic: " + topic);
                     } else {
                         System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
                     }
