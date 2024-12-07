@@ -116,6 +116,10 @@ export default {
       this.selectedClinicName = clinic.name
     },
     gotToAppointmentPage() {
+      if (!this.selectedClinicId) {
+        alert('No clinic has been selected. Please select a clinic')
+        return
+      }
       this.$router.push({
         path: '/patientAppointmentPage',
         query: {
