@@ -482,4 +482,23 @@ export default {
   font-weight: 700;
   line-height: normal;
 }
+
+@media screen and (max-width: 750px) {
+  .right-section {
+    display: none;
+  }
+
+  .left-section {
+    flex: 1;
+  }
+
+  .logo-title {
+    align-self: center;
+    text-align: start;
+  }
+
+  .login-button {
+    margin-top: 20px;
+  }
+}
 </style>
