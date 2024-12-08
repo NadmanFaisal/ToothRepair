@@ -41,7 +41,7 @@
                   name="userType"
                   id="patient-radio"
                   @change="setDentistFalse()"
-                  :checked="!isDentist">
+                  >
                 <label class="form-check-label patient-radio-label" for="patientRadio">
                   I am a Patient
                 </label>
@@ -55,7 +55,7 @@
                   name="userType"
                   id="dentist-radio"
                   @change="setDentistTrue()"
-                  :checked="isDentist">
+                  >
                 <label class="form-check-label dentist-radio-label" for="dentistRadio">
                   I am a Dentist
                 </label>
@@ -65,7 +65,7 @@
             </div>
 
             <div class="col-12 login-button-section">
-              <button class="col-8 btn login-button" @click="gotToAppointmentPage">Log In</button>
+              <button class="col-8 btn login-button" @click="loginUser">Log In</button>
             </div>
 
           </div>
@@ -341,6 +341,7 @@ export default {
 }
 
 .login-button-section {
+  margin-top: 20px;
   display: flex;
   flex-direction: row;
   height: 25%;
@@ -361,5 +362,24 @@ export default {
   font-style: normal;
   font-weight: 700;
   line-height: normal;
+}
+
+@media screen and (max-width: 750px) {
+  .right-section {
+    display: none;
+  }
+
+  .left-section {
+    flex: 1;
+  }
+
+  .logo-title {
+    align-self: center;
+    text-align: start;
+  }
+
+  .login-button {
+    margin-top: 20px;
+  }
 }
 </style>
