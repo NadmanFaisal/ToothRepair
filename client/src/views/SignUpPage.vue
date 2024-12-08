@@ -456,6 +456,7 @@ export default {
   border: 1px solid #D2D1D1;
   background: #FFF;
   width: 100%;
+  height: 50px;
 
   color: #BBB9B9;
   text-align: left;
