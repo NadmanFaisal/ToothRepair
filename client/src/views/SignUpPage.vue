@@ -14,10 +14,77 @@
         </div>
 
         <div class="col-8 middle-login-section">
+
           <div class="col-12 register-section">
-              <h1 class="register-title">Welcome</h1>
+              <h1 class="register-title">Register</h1>
               <label class="login-label">Already have an account? <span class="highlighted-text" @click="navigateToLoginPage">Log in!</span></label>
           </div>
+
+          <div class="col-12 patient-dentist-selection-section">
+            <button type="button" class="btn patient-button" :class="{ activeButton: !isDentist }" @click="setDentistFalse()">Patient</button>
+            <button type="button" class="btn dentist-button" :class="{ activeButton: isDentist }" @click="setDentistTrue()">Dentist</button>
+          </div>
+
+          <div class="col-12 username-section">
+            <label class="username-label">Name</label>
+            <input class="form-control username-input" v-model="username" placeholder="Your name...">
+          </div>
+
+          <div class="col-12 middle-middle-section">
+
+            <div class="col-6 middle-left-section">
+
+              <div class="col-12 email-section">
+                <label class="email-label">Email</label>
+                <input class="form-control email-input" v-model="email" placeholder="example@email.com">
+              </div>
+
+              <div class="col-12 password-section">
+                <label class="password-label">Password</label>
+                <input class="form-control password-input" v-model="password" placeholder="**********">
+              </div>
+
+            </div>
+
+            <div class="col-6 middle-right-section">
+
+              <div class="col-12 phone-section">
+                <label class="phone-label">Phone</label>
+                <input class="form-control phone-input" v-model="phone" placeholder="073*******">
+              </div>
+
+              <div class="col-12 confirm-password-section">
+                <label class="confirm-password-label">Confirm Password</label>
+                <input class="form-control confirm-password-input" v-model="confirmPassword" placeholder="**********">
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-12 bottom-section">
+
+            <div class="col-12 dropdown clinic-container" v-if="isDentist">
+
+              <button
+                class="btn btn-secondary dropdown-toggle clinic-dropdown-button"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                text="Select a clinic"
+                >
+                {{ selectedClinicName || 'Select a clinic' }}
+              </button>
+
+              <ul class="dropdown-menu">
+                <li class="dropdown-item" v-for="clinic in clinics" :key="clinic.id" @click="selectAClinic(clinic)">{{ clinic.name }}</li>
+              </ul>
+
+            </div>
+
+            <button class="col-8 btn signup-button" @click="submitSignUp">Sign Up</button>
+          </div>
+
         </div>
 
         <div class="col-2 right-empty-section">
@@ -44,6 +111,8 @@ export default {
       username: '',
       email: '',
       password: '',
+      phone: null,
+      confirmPassword: '',
       clinics: [],
       message: '',
       isDentist: false
@@ -56,6 +125,11 @@ export default {
     },
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp({ username, email, password, clinic }) {
+      if (this.password !== this.confirmPassword) {
+        alert('Passwords do not match. Try again.')
+        return
+      }
+
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
@@ -202,7 +276,7 @@ export default {
 .register-section {
   display: flex;
   flex-direction: column;
-  height: 30%;
+  height: 15%;
   align-items: start;
   justify-content: center;
 
@@ -236,5 +310,170 @@ export default {
   font-weight: 400;
   line-height: normal;
   text-decoration: underline;
+}
+
+.patient-dentist-selection-section {
+  display: flex;
+  flex-direction: row;
+  height: 10%;
+}
+
+.patient-button {
+  width: 50%;
+  height: 65%;
+  border-radius: 10px 0px 0px 10px;
+  border: 1px solid #D2D1D1;
+  color: #1FC2C2;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.dentist-button {
+  width: 50%;
+  height: 65%;
+  border-radius: 0px 10px 10px 0px;
+  border: 1px solid #D2D1D1;
+  color: #1FC2C2;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.activeButton {
+  background: #1FC2C2;
+  color: #FFF;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.username-section {
+  display: flex;
+  flex-direction: column;
+  height: 15%;
+  align-items: start;
+}
+
+.username-label {
+  padding: 5px;
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.username-input {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+
+  height: 45%;
+  width: 100%;
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.middle-middle-section {
+  display: flex;
+  flex-direction: row;
+  height: 35%;
+  flex-wrap: wrap;
+}
+
+.middle-left-section, .middle-right-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-section, .password-section, .phone-section, .confirm-password-section {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  height: 50%;
+  align-items: start;
+}
+
+.email-label, .password-label, .phone-label, .confirm-password-label {
+  padding: 5px;
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.email-input, .password-input, .phone-input, .confirm-password-input {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+
+  height: 45%;
+  width: 100%;
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.bottom-section {
+  height: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clinic-dropdown-button {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+  width: 100%;
+
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.signup-button {
+  margin-top: 20px;
+  border-radius: 15px;
+  background: #1FC2C2;
+  box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
+  color: #FFF;
+  height: 25%;
+  width: 30%;
+
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
 }
 </style>
