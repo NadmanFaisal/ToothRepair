@@ -17,7 +17,7 @@
 
             <div class="col-12 welcome-section">
               <h1 class="welcome-title">Welcome</h1>
-              <label class="create-account-label">Don't have an account?<span class="highlighted-text"> Create an account</span></label>
+              <label class="create-account-label">Don't have an account? <span class="highlighted-text" @click="navigateToSignupPage">Click here to create an account</span></label>
             </div>
 
             <div class="col-12 email-section">
@@ -31,8 +31,37 @@
             </div>
 
             <div class="col-12 user-type-section">
-              <BButton type="button" class="patient-button" @click="setDentistFalse()">I am a Patient</BButton>
-              <BButton type="button" class="dentist-button" @click="setDentistTrue()">I am a Dentist</BButton>
+
+              <label class="selec-user-label">Select user type: </label>
+
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="userType"
+                  id="patient-radio"
+                  @change="setDentistFalse()"
+                  :checked="!isDentist">
+                <label class="form-check-label patient-radio-label" for="patientRadio">
+                  I am a Patient
+                </label>
+              </div>
+
+              <div class="form-check">
+
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="userType"
+                  id="dentist-radio"
+                  @change="setDentistTrue()"
+                  :checked="isDentist">
+                <label class="form-check-label dentist-radio-label" for="dentistRadio">
+                  I am a Dentist
+                </label>
+
+              </div>
+
             </div>
 
             <div class="col-12 login-button-section">
@@ -68,6 +97,9 @@ export default {
     }
   },
   methods: {
+    navigateToSignupPage() {
+      this.$router.push('/signup')
+    },
     async loginUser() {
       if (this.isDentist === null) {
         alert('Please specify your role.')
@@ -173,8 +205,8 @@ export default {
 }
 
 .logo-image {
-  margin-left: 20px;
-  height: 60%;
+  margin-left: 40px;
+  height: 55%;
 }
 
 .logo-title {
@@ -182,7 +214,7 @@ export default {
   color: #515151;
   text-align: center;
   font-family: Inter;
-  font-size: 45px;
+  font-size: 40px;
   font-style: normal;
   font-weight: 900;
   line-height: normal;
@@ -218,7 +250,7 @@ export default {
   color: #515151;
   text-align: center;
   font-family: Inter;
-  font-size: 20px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -227,10 +259,11 @@ export default {
 .highlighted-text {
   color: #1FC2C2;
   font-family: Inter;
-  font-size: 20px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+  text-decoration: underline;
 }
 
 .email-section, .password-section {
@@ -271,6 +304,40 @@ export default {
   display: flex;
   flex-direction: row;
   height: 5%;
+  width: 100%;
+}
+
+.selec-user-label {
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+#patient-radio, #dentist-radio {
+  margin-left: 5px;
+}
+
+.patient-radio-label, .dentist-radio-label {
+  margin-left: 10px;
+}
+
+.form-check-label {
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.form-check-input:checked {
+  background-color: #1FC2C2;
+  border-color: #1FC2C2;
 }
 
 .login-button-section {
