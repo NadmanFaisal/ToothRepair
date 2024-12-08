@@ -101,6 +101,8 @@ export default {
             }
             publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
 
+            this.createAppointments(5)
+
             setTimeout(() => {
               this.$router.push('/login')
             }, 2000)
@@ -125,7 +127,48 @@ export default {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }
     },
+    async createAppointments(noOfDays) {
+      try {
+        // Increments the time of the appointments by 30 mins
+        const incrementTime = (time) => {
+          const [hours, minutes] = time.split(':').map(Number)
+          const newMinutes = minutes + 30
+          const newHours = hours + Math.floor(newMinutes / 60)
+          const adjustedMinutes = newMinutes % 60
+          return `${String(newHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`
+        }
 
+        // Loops through noOfDays to create appointments specifically for each day
+        for (let dayOffset = 0; dayOffset < noOfDays; dayOffset++) {
+          const appointmentDate = new Date()
+          appointmentDate.setDate(appointmentDate.getDate() + dayOffset)
+          const formattedDate = appointmentDate.toISOString().split('T')[0]
+
+          // The time for the first appointment
+          let startTime = '09:00'
+
+          // Creates 5 appointments each day
+          for (let i = 0; i < 5; i++) {
+            const endTime = incrementTime(startTime)
+
+            const newAppointment = {
+              status: 'unavailable',
+              date: formattedDate,
+              startTime,
+              endTime
+            }
+
+            await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+            publishToTopic('ScheduleService/Appointment/createAppointment', JSON.stringify(newAppointment))
+
+            // Increments the start time for the next appointment to be created
+            startTime = incrementTime(startTime)
+          }
+        }
+      } catch (error) {
+        console.error('Error creating appointments for 5 days:', error)
+      }
+    },
     async getAllClinics() {
       // fix topic
       const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
