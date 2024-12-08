@@ -114,6 +114,8 @@ export default {
       phone: null,
       confirmPassword: '',
       clinics: [],
+      selectedClinicId: null,
+      selectedClinicName: null,
       message: '',
       isDentist: false
     }
@@ -123,8 +125,12 @@ export default {
     navigateToLoginPage() {
       this.$router.push('/login')
     },
+    selectAClinic(clinic) {
+      this.selectedClinicId = clinic.id
+      this.selectedClinicName = clinic.name
+    },
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp({ username, email, password, clinic }) {
+    async submitSignUp() {
       if (this.password !== this.confirmPassword) {
         alert('Passwords do not match. Try again.')
         return
@@ -134,16 +140,16 @@ export default {
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
-      console.log('This is the clinics ' + clinic?.id)
+      console.log('This is the clinics ' + this.selectedClinicId)
       try {
         await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
         if (this.isDentist) {
-          if (username && password && emailVerification.test(email) && clinic?.id) {
+          if (this.username && this.password && emailVerification.test(this.email) && this.selectedClinicId) {
             const newDentist = {
-              name: username,
-              email,
-              password,
-              clinic: clinic?.id
+              name: this.username,
+              email: this.email,
+              password: this.password,
+              clinic: this.selectedClinicId
             }
 
             publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
@@ -155,11 +161,11 @@ export default {
             alert('Error: Input field left empty, please provide values for all input fields')
           }
         } else {
-          if (username && password && emailVerification.test(email)) {
+          if (this.username && this.password && emailVerification.test(this.email)) {
             const newPatient = {
-              name: username,
-              email,
-              password
+              name: this.username,
+              email: this.email,
+              password: this.password
             }
             publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
 
