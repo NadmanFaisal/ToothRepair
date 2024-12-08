@@ -104,7 +104,7 @@ public class MQTT implements MqttCallback {
             String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
             String emptyMessage = "";
             //Publish the payload as bytes to the topic.
-            
+            System.out.println(appointmentListJson);
             middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 1, false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,16 +116,6 @@ public class MQTT implements MqttCallback {
         this.appointmentService.createAppointment(appointmentInformation);
     }
 
-    /**
-     * Publishes the topic as a String in JSON notation.
-     * 
-     * Publishing happening with QoS 1.
-     * 
-     * It publishes with the conected client
-     * 
-     * @param N/A no params needed
-     * @throws MqttException prints the Error Stack trace
-     */
     @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
@@ -153,31 +143,46 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        
         try {
-            String stringMessage = new String(message.getPayload()); 
-                   
+            String stringMessage = new String(message.getPayload());
             System.out.println("Message recieved: " + stringMessage);
-            if (topic.equals("ScheduleService/Appointment/getAppointments")) {
-                if(stringMessage.equals("Get Appointments")){
-                    System.out.println("Will publish all appointments");
-                    this.publishAppointmentList();
+            switch (topic) {
+                case "ScheduleService/Appointment/getAppointments": {
+                    if(stringMessage.equals("Get Appointments")){
+                        System.out.println("Will publish all appointments");
+                        this.publishAppointmentList();
+                    }   
+                    break;
                 }
-            } else if (topic.equals("ScheduleService/Appointment/createAppointment") ) {
-                System.out.println("Entered createAppointment if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.createAppointment(appointmentInfo);
-            } else if (topic.equals("ScheduleService/Appointment/bookAppointment") ) {
-                System.out.println("Entered bookAppointment if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.bookAppointment(appointmentInfo);
-            } else if (topic.equals("ScheduleService/Appointment/changeAppointmentStatus") ) {
-                System.out.println("Entered changeAppointmentStatus if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.changeAppointmentStatus(appointmentInfo);
+
+                case "ScheduleService/Appointment/createAppointment": {
+                    System.out.println("Entered createAppointment if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.createAppointment(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/bookAppointment": {
+                    System.out.println("Entered bookAppointment if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.bookAppointment(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/changeAppointmentStatus": {
+                    System.out.println("Entered changeAppointmentStatus if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.changeAppointmentStatus(appointmentInfo);
+                    break;
+                }
+
+                default:{
+                    System.out.println("The topic is invalid");
+                    break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

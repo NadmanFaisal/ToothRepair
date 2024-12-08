@@ -90,8 +90,8 @@
 </template>
 
 <script>
-import PatientTopBar from '../components/PatientHomePageComponents/PatientTopBarComponent.vue'
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 import { store } from '../store'
 
 export default {
@@ -128,11 +128,12 @@ export default {
       })
     },
     async getAllClinics() {
+      // fix topic
       const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
       const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
         if (topic === SUBCRIBED_CLINIC_TOPIC) {
           console.log('Received clinics list:', message)

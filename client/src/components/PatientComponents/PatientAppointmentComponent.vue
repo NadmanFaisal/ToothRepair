@@ -76,7 +76,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, client } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -94,6 +94,12 @@ export default {
       this.getAppointments,
       { immediate: true }
     )
+  },
+  mounted() {
+    client.on('connect', () => {
+      this.getAppointments()
+      console.log(this.appointments)
+    })
   },
   methods: {
     async getAppointments() {

@@ -68,7 +68,7 @@
   </template>
 
 <script>
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
   data() {
@@ -86,6 +86,7 @@ export default {
         return
       }
       this.error = null
+      // fix topic
       const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
       const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
       const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
@@ -100,9 +101,9 @@ export default {
         }
 
         if (this.isDentist) {
-          publishValue(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData))
+          publishToTopic(PUBLISH_DENTIST_LOGIN_ALERT, JSON.stringify(logInData))
         } else {
-          publishValue(PUBLISH_PATIENT_LOGIN_ALERT, JSON.stringify(logInData))
+          publishToTopic(PUBLISH_PATIENT_LOGIN_ALERT, JSON.stringify(logInData))
         }
 
         messageArrived((topic, message) => {

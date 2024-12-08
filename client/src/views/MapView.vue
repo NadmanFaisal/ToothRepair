@@ -54,8 +54,8 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishMsgToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
-import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
+import { subscribeToTopic, messageArrived, publishToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import MapComponent from '../components/PatientComponents/PatientMapComponent.vue'
 export default {
   name: 'MapView',
   props: {
@@ -86,7 +86,8 @@ export default {
       try {
         await subscribeToTopic('test/clinicList')
         await subscribeToTopic('authentication/dentist/getDentistNames')
-        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+        // fix topic
+        publishToTopic('test/clinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
@@ -101,7 +102,8 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              // fix topic
+              publishToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
             unsubscribeFromTopic('test/clinicList')
@@ -156,7 +158,8 @@ export default {
 
       try {
         console.log('Publishing clinic information to test/createClinic')
-        publishMsgToTopic('test/createClinic', JSON.stringify(newClinic))
+        // fix topic
+        publishToTopic('test/createClinic', JSON.stringify(newClinic))
       } catch (error) {
         console.error('Tried to create a clinic: ', error)
       }

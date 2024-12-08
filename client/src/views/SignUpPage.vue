@@ -45,7 +45,7 @@
 
 <script>
 import SignUpForm from '@/components/SignUpForm.vue'
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
@@ -67,6 +67,7 @@ export default {
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp({ username, email, password, clinic }) {
+      // fix topic
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
@@ -83,7 +84,7 @@ export default {
               clinic: clinic?.id
             }
 
-            publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+            publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
 
             setTimeout(() => {
               this.$router.push('/login')
@@ -98,7 +99,7 @@ export default {
               email,
               password
             }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
 
             setTimeout(() => {
               this.$router.push('/login')
@@ -126,11 +127,12 @@ export default {
     },
 
     async getAllClinics() {
+      // fix topic
       const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
       const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
         if (topic === SUBCRIBED_CLINIC_TOPIC) {
           console.log('Received clinics list:', message)

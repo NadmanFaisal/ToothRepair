@@ -25,13 +25,13 @@
 </template>
 
 <script>
-import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishMsgToTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishToTopic } from '../mqtt/mqtt.js'
 import { store } from '../store'
 
-import TopBarComponent from '../components/PatientHomePageComponents/PatientTopBarComponent.vue'
-import CalendarComponent from '../components/PatientHomePageComponents/PatientCalendarComponent.vue'
-import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
-import AppointmentComponent from '../components/PatientHomePageComponents/PatientAppointmentComponent.vue'
+import TopBarComponent from '../components/PatientComponents/PatientTopBarComponent.vue'
+import CalendarComponent from '../components/PatientComponents/PatientCalendarComponent.vue'
+import MapComponent from '../components/PatientComponents/PatientMapComponent.vue'
+import AppointmentComponent from '../components/PatientComponents/PatientAppointmentComponent.vue'
 
 export default {
   name: 'PatientAppointmentPage',
@@ -59,7 +59,8 @@ export default {
       try {
         await subscribeToTopic('test/clinicList')
         await subscribeToTopic('authentication/dentist/getDentistNames')
-        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+        // fix topic
+        publishToTopic('test/clinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
           if (topic === 'test/clinicList') {
@@ -74,7 +75,8 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              // fix topic
+              publishToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
             unsubscribeFromTopic('test/clinicList')

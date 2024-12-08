@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import DentistTopBarComponent from '../components/DentistHomePageComponents/DentistTopBarComponent.vue'
-import DenstistAppointmentComponent from '../components/DentistHomePageComponents/DenstistAppointmentComponent.vue'
-import DentistCalendarComponent from '../components/DentistHomePageComponents/DentistCalendarComponent.vue'
+import DentistTopBarComponent from '../components/DentistComponents/DentistTopBarComponent.vue'
+import DenstistAppointmentComponent from '../components/DentistComponents/DenstistAppointmentComponent.vue'
+import DentistCalendarComponent from '../components/DentistComponents/DentistCalendarComponent.vue'
 
 export default {
   name: 'MyBookingsPage',
