@@ -23,12 +23,13 @@ import main.java.service.AppointmentService;
 public class MQTT implements MqttCallback {
     private static final String BROKER_URL = "tcp://test.mosquitto.org";
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
+    private static final String [] BROKER_URLS = { "tcp:test.mosquitto.org", "tcp://broker.hivemq.com"};
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment", "ScheduleService/Appointment/changeAppointmentStatus"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private final IMqttClient middleware; // MQTT client
+    private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
 
@@ -43,17 +44,42 @@ public class MQTT implements MqttCallback {
 
     @Autowired
     public MQTT(AppointmentService appointmentService){
-        try {
             this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
             this.appointmentService = appointmentService;
-            this.middleware = new MqttClient(BROKER_URL, CLIENT_ID);
-            middleware.connect();
-            System.out.println("Service connected to mqtt");
-            middleware.setCallback(this);
-            this.subscribeToTopics();
-        } catch (MqttException e) {
-            throw new RuntimeException("Failed to initialize MQTT client", e);
+            try {
+                this.initializeClient();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize MQTT client", e);
+            }
+        
+    }
+
+    /**
+     * Handles the logic for initializing a connection to the a public MQTT broker
+     * If the current broker is not reachable, then the method tries to connect to another broker url  within the for-loop
+     *
+     * Method is called within the constructor to initialize the connection
+     * Method also calls the subscribeToTopics function to ensure the subscription of all topics
+     * 
+     * @param N/A no params needed
+     * @throws InterruptedException prints Error Stack trace
+     */
+    private void initializeClient() throws MqttException {
+        System.out.println("Trying to initialize client");
+        for (String broker : BROKER_URLS) {
+            try {
+                middleware = new MqttClient(broker, CLIENT_ID);
+                middleware.connect();
+                System.out.println("Connecting to this broker: " + broker);
+                middleware.setCallback(this);
+                this.subscribeToTopics();
+                System.out.println("Connected to broker: " + broker);
+                return; // Exit the loop once connected
+            } catch (MqttException e) {
+                System.err.println("Failed to connect to broker: " + broker + ". Trying next...");
+            }
         }
+        throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
     }
 
      /**
@@ -132,7 +158,9 @@ public class MQTT implements MqttCallback {
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
         while(!middleware.isConnected()){
+            
         try {
+            Thread.sleep(2000);
             System.out.println("Attempting to reconnect...");
             middleware.reconnect();
             this.subscribeToTopics();

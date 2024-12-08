@@ -25,7 +25,8 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
+    private static final String BROKER_URL = "tcp:test.mosquitto.org";  // Replace with your broker address
+    private static final String [] BROKER_URLS = { "tcp:test.mosquitto.org", "tcp://broker.hivemq.com"};
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
     private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
@@ -37,7 +38,7 @@ public class MQTT implements MqttCallback {
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authentication/login", "authentication/dentist/getDentistNamesAlert"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private final IMqttClient middleware; // MQTT client
+    private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -50,18 +51,47 @@ public class MQTT implements MqttCallback {
 
     @Autowired
     public MQTT(PatientService patientService, DentistService dentistService){
-        try {
+        
             this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
             this.patientService = patientService;
             this.dentistService = dentistService;
-            middleware = new MqttClient(BROKER_URL, CLIENT_ID);
-            middleware.connect();
-            middleware.setCallback(this);
-            this.subscribeToTopics();
-        } catch (MqttException e) {
-            throw new RuntimeException("Failed to initialize MQTT client", e);
-        }
+            try {
+                this.initializeClient();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize MQTT client after retries", e);
+            }
+       
     }
+
+    
+    /**
+     * Handles the logic for initializing a connection to the a public MQTT broker
+     * If the current broker is not reachable, then the method tries to connect to another broker url  within the for-loop
+     *
+     * Method is called within the constructor to initialize the connection
+     * Method also calls the subscribeToTopics function to ensure the subscription of all topics
+     * 
+     * @param N/A no params needed
+     * @throws InterruptedException prints Error Stack trace
+     */
+    private void initializeClient() throws MqttException {
+        System.out.println("Trying to initialize client");
+        for (String broker : BROKER_URLS) {
+            try {
+                middleware = new MqttClient(broker, CLIENT_ID);
+                middleware.connect();
+                System.out.println("Connecting to this broker: " + broker);
+                middleware.setCallback(this);
+                this.subscribeToTopics();
+                System.out.println("Connected to broker: " + broker);
+                return; // Exit the loop once connected
+            } catch (MqttException e) {
+                System.err.println("Failed to connect to broker: " + broker + ". Trying next...");
+            }
+        }
+        throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
+    }
+    
 
      /**
      * Subscribes to the topic by assigning a thread to subscribe to that topic.
@@ -109,6 +139,7 @@ public class MQTT implements MqttCallback {
         System.out.println("Connection lost: " + cause.getMessage());
         while (!middleware.isConnected()) {
             try {
+                Thread.sleep(2000);
                 System.out.println("Attempting to reconnect...");
                 middleware.reconnect();
                 middleware.setCallback(this); // Ensure callback is re-applied
@@ -117,7 +148,7 @@ public class MQTT implements MqttCallback {
                 System.err.println("Reconnection failed. Retrying...");
                 cause.printStackTrace();
             }
-        }
+        }  
         System.out.println("Successfully Reconnected to the Broker");
     }
 
