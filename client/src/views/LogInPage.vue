@@ -341,7 +341,6 @@ export default {
 }
 
 .login-button-section {
-  margin-top: 20px;
   display: flex;
   flex-direction: row;
   height: 25%;
@@ -349,6 +348,7 @@ export default {
 }
 
 .login-button {
+  margin-top: 20px;
   border-radius: 15px;
   background: #1FC2C2;
   box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
