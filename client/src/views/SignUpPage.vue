@@ -86,6 +86,9 @@ export default {
 
             publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
 
+            this.createAppointments(3, clinic?.id)
+            console.log('CREATED APPOINTMENTS')
+
             setTimeout(() => {
               this.$router.push('/login')
             }, 2000)
@@ -100,8 +103,6 @@ export default {
               password
             }
             publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-
-            this.createAppointments(5)
 
             setTimeout(() => {
               this.$router.push('/login')
@@ -127,7 +128,7 @@ export default {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }
     },
-    async createAppointments(noOfDays) {
+    async createAppointments(noOfDays, clinicId) {
       try {
         // Increments the time of the appointments by 30 mins
         const incrementTime = (time) => {
@@ -155,7 +156,8 @@ export default {
               status: 'unavailable',
               date: formattedDate,
               startTime,
-              endTime
+              endTime,
+              clinic: clinicId
             }
 
             await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
