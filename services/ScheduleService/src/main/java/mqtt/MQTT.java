@@ -26,7 +26,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
-     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment", "ScheduleService/Appointment/changeAppointmentStatus"}; 
+     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
+     "ScheduleService/Appointment/changeAppointmentStatus", "ScheduleService/Appointment/getAppointmentsByClinic"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -99,23 +100,21 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws MqttException prints the Error Stack trace
      */
-    private void publishAppointmentList(){
+    private void publishAppointmentList(String topic, String message){
         try {
-            String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
-            String emptyMessage = "";
             //Publish the payload as bytes to the topic.
-            System.out.println(appointmentListJson);
-            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 1, false);
+            System.out.println(message);
+            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 1, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     } 
-
+/* 
     public void createAppointment(AppointmentSchema appointmentInformation) {
         System.out.println("AppointmentInfo has been saved into the database: " + appointmentInformation);
         this.appointmentService.createAppointment(appointmentInformation);
     }
-
+*/
     @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
@@ -146,12 +145,22 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload());
             System.out.println("Message recieved: " + stringMessage);
+            System.out.println("Topic given: " + topic);
             switch (topic) {
                 case "ScheduleService/Appointment/getAppointments": {
                     if(stringMessage.equals("Get Appointments")){
                         System.out.println("Will publish all appointments");
-                        this.publishAppointmentList();
+                        String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                        this.publishAppointmentList(topic, appointmentListJson);
                     }   
+                    break;
+                }
+
+                case "ScheduleService/Appointment/getAppointmentsByClinic": {
+                    System.out.println("Will publish all appointments per clinic");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
                     break;
                 }
 
@@ -159,7 +168,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered createAppointment if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.createAppointment(appointmentInfo);
+                    this.appointmentService.createAppointment(appointmentInfo);
                     break;
                 }
 

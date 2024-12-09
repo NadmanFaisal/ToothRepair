@@ -67,5 +67,9 @@ public class AppointmentService {
         }
 
     }
+
+    public List<AppointmentSchema> getAppointmentsByClinic(AppointmentSchema appointmentInfo) {
+        return appointmentRepository.findByClinic(appointmentInfo.getClinic());
+    }
     
 }

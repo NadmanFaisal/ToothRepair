@@ -123,7 +123,7 @@ export default {
       this.$router.push({
         path: '/patientAppointmentPage',
         query: {
-          clinicId: store.getSelectedClinicId()
+          clinicId: this.selectedClinicId
         }
       })
     },

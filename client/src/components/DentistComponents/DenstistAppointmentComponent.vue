@@ -132,7 +132,7 @@ export default {
     async getAppointments() {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointments', 'Get Appointments')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "674a01ce4d3aa16b1e5f5f4a"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             console.log('Received Appointment list:', message)
