@@ -60,6 +60,7 @@ public class MQTT implements MqttCallback {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
     }
+    
 
 
     /**
@@ -169,7 +170,8 @@ public class MQTT implements MqttCallback {
         }  
         System.out.println("Successfully Reconnected to the Broker");
         this.subscribeToTopics();
-    }
+    }  
+    
 
 
     /**
