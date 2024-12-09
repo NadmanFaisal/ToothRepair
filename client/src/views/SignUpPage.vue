@@ -49,7 +49,7 @@
             <div class="col-6 middle-right-section">
 
               <div class="col-12 phone-section">
-                <label class="phone-label">Phone</label>
+                <label class="phone-label">Phone <label class="optional-label">(optional)</label></label>
                 <input class="form-control phone-input" v-model="phone" placeholder="073*******">
               </div>
 
@@ -415,6 +415,17 @@ export default {
 .email-label, .password-label, .phone-label, .confirm-password-label {
   padding: 5px;
   color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.optional-label {
+  padding: 5px;
+  color: #BBB9B9;
   text-align: center;
   font-family: Inter;
   font-size: 20px;
