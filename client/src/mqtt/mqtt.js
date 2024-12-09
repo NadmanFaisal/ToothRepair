@@ -2,7 +2,7 @@
 import mqtt from 'mqtt'
 
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export const client = mqtt.connect('wss://test.mosquitto.org:8081')
+export const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt')
 
 // On connection to client,  print connected
 client.on('connect', () => {

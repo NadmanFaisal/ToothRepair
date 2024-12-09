@@ -23,7 +23,7 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
+    private static final String BROKER_URL = "tcp://broker.hivemq.com";  // Replace with your broker address
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
     private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
@@ -188,6 +188,10 @@ public class MQTT implements MqttCallback {
             if(!patientService.checkDuplicatePatient(patient)){
                 System.out.println(!patientService.checkDuplicatePatient(patient));
                 patientService.createPatient(patient);
+                String successfulSignUpStatus = "Sign Up Successful!";
+                System.out.println(successfulSignUpStatus);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, successfulSignUpStatus.getBytes(), 2, false);
+                System.out.println("has published");
                 
             }else{
                 String errorMessage = "Error: An account with this email already exists";
@@ -204,7 +208,7 @@ public class MQTT implements MqttCallback {
 
 
     /**
-     * Logic to sign up a patient. It reads the value as a DemtistSchema and checks for duplicate in the 
+     * Logic to sign up a dentist. It reads the value as a DentistSchema and checks for duplicate in the 
      * database, if no duplicates creates a dentist otherwise sends an errorMessage
      * 
      * @param stringPayload the payload that is converted to a String
@@ -219,8 +223,10 @@ public class MQTT implements MqttCallback {
             if(!dentistService.checkDuplicateDentist(dentist)){
                 dentistService.createDentist(dentist);
                 String messageToClinicService = "{ \"clinicId\": " + "\""+dentist.getClinic()+"\"" +","+"\"dentistId\": "+ "\""+dentist.getId()+"\""+" }";
+                String successfulSignUpStatus = "Sign Up Successful!";
                 System.out.println(messageToClinicService);
                 middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, successfulSignUpStatus.getBytes(), 2, false);
                 
             }else{
                 String errorMessage = "Error: An account with this email already exists";
