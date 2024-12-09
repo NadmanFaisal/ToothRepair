@@ -131,16 +131,16 @@ export default {
     },
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp() {
-      if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match. Try again.')
-        return
-      }
-
       const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
       const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
       const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
       console.log('This is the clinics ' + this.selectedClinicId)
+      if (this.password !== this.confirmPassword) {
+        alert('Passwords do not match. Try again.')
+        return
+      }
+
       try {
         await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
         if (this.isDentist) {
@@ -153,12 +153,9 @@ export default {
             }
 
             publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
-
-            setTimeout(() => {
-              this.$router.push('/login')
-            }, 2000)
           } else {
             alert('Error: Input field left empty, please provide values for all input fields')
+            return
           }
         } else {
           if (this.username && this.password && emailVerification.test(this.email)) {
@@ -168,27 +165,25 @@ export default {
               password: this.password
             }
             publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-
-            setTimeout(() => {
-              this.$router.push('/login')
-            }, 2000)
           } else {
             alert('Error: Input field left empty, please provide values for all input fields')
+            return
           }
         }
         messageArrived((topic, message) => {
           if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
             console.log(message)
-            alert(message)
+            if (message === 'Sign Up Successful!') { // alert successful message then push to login
+              alert(message)
+              setTimeout(() => {
+                this.$router.push('/login')
+              }, 2000)
+            } else { // alert error message
+              alert(message)
+            }
             unsubscribeFromTopic('authentication/status')
           }
         })
-
-        // waits a while to display the Sign Up Successful message to user until we move him to login
-
-        /*
-
-          */
       } catch (error) {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }

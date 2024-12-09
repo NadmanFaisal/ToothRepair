@@ -22,7 +22,7 @@ import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";
+    private static final String BROKER_URL = "tcp://broker.hivemq.com";
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC_CLIENT = "test/clinicList";
     private static final String PUBLISHED_TOPIC_DENTIST = "clinicService/clinicList";
