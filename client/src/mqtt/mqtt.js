@@ -8,34 +8,36 @@ const BROKER_URLS = [
 let currentBrokerIndex = 0
 const MAX_RETRIES = 3
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export let client = await initializeClient()
+export let client 
 
+initializeClient()
+.then((mqttClient) => {
+  client = mqttClient
 
+  client.on('connect', () => {
+    console.log('Successfully connected to broker: ' + BROKER_URLS[currentBrokerIndex])
+  })
 
-// On connection to client,  print connected
-client.on('connect', () => {
-  console.log('Connected to broker: ', BROKER_URLS[currentBrokerIndex])
+  client.on('error', (error) => {
+    console.error('MQTT error has occurred: ', error)
+  })
+
+  client.on('close', () => {
+    console.log('Connection to the broker has been lost, triggering reconnection...')
+    client = handleReconnection()
+  })
 })
 
-// If error occured, print error in console
-client.on('error', (error) => {
-  console.error('MQTT Error:', error)
-})
 
-client.on('close', () => {
-  console.log('Connection to broker has been lost, triggering reconnection')
-  client = handleReconnection()
-})
-
-function initializeClient()  {
+async function initializeClient()  {
   console.log("Trying to initialize client");
   
-  return new Promise((resolve, reject) => {
   for (let i = 0; i < BROKER_URLS.length; i++) {
     console.log('Connecting to this broker: ' + BROKER_URLS[i])
+    
     let middleware = mqtt.connect(BROKER_URLS[i])
     
-    try {
+    const clientPromise = new Promise((resolve, reject) => {
         middleware.on('connect', () => {
           console.log('Successfully connected to broker: ' + BROKER_URLS[i])
           currentBrokerIndex = i
@@ -45,13 +47,15 @@ function initializeClient()  {
         middleware.on('error', (error) => {
           reject(error)
         })
-        
-      } catch (error) {
-        console.log('Error while connecting to broker: ', BROKER_URLS[currentBrokerIndex], error)
-      }
+      })
       
+      try {
+        return await clientPromise;
+      } catch (error) {
+        console.error('Error while connecting to broker: ', BROKER_URLS[currentBrokerIndex])
+      }
     }
-  })
+    throw new Error('Failed to connect to any broker')
 }
 
 function handleReconnection() {
