@@ -46,6 +46,15 @@ public class DentistService {
         
     }
 
+    public String getClinicIdByDentistId(String dentistId) {
+        Optional<DentistSchema> dentist = dentistRepository.findById(dentistId);
+        if (dentist.isPresent()) {
+            return dentist.get().getClinic();
+        } else {
+            return "Dentist with id: " + dentistId + " not found";
+        }
+    }
+
 
 
 }

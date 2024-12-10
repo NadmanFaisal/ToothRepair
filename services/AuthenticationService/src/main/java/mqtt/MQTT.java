@@ -31,9 +31,10 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_LOGIN_TOPIC = "authentication/alert/login";
     private static final String PUBLISHED_DENTIST_TOPIC = "authentication/dentist/getDentistNames";
     private static final String PUBLISHED_USER_ID_TOPIC = "authentication/userID";
+    private static final String PUBLISHED_CLINIC_ID_TOPIC = "Client/AuthenticationService/ClinicId";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login", "authentication/dentist/getDentistNamesAlert"};
+    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authetication/login", "authentication/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
 
@@ -166,6 +167,12 @@ public class MQTT implements MqttCallback {
                 ArrayList dentistList = objectMap.readValue(stringMessage, ArrayList.class);
                 System.out.println("This fixes our problem" + objectMap.readValue(stringMessage, List.class));
                 this.publishDentistNames(dentistList);
+            } else if(topic.equals(SUBSCRIBED_TOPICS[6])) {
+                String dentistId = objectMap.readTree(stringMessage).get("id").asText();
+                String clinicId = dentistService.getClinicIdByDentistId(dentistId);
+                String responseMessage = objectMap.writeValueAsString(clinicId);
+                middleware.publish(PUBLISHED_CLINIC_ID_TOPIC, responseMessage.getBytes(), 1, false);
+                System.out.println("Published clinicId: " + clinicId + " to topic: " + PUBLISHED_CLINIC_ID_TOPIC);
             }
         } catch (Exception e) {
             e.printStackTrace();

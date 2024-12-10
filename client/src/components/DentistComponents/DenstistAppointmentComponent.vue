@@ -16,7 +16,7 @@
               <label class="time-label">9:00 AM to 12:00 PM</label>
               <!--Buttons for testing purposes-->
               <button @click="getAppointments">Get appointments</button>
-              <button @click="createAppointment">create appointments</button>
+              <button @click="getClinicId">get clinic id printed</button>
             </div>
 
           </div>
@@ -83,7 +83,9 @@ export default {
   data() {
     return {
       appointments: [],
-      selectedAppointmentId: null
+      selectedAppointmentId: null,
+      dentistId: localStorage.getItem('UserID'),
+      clinicId: null
     }
   },
   created() {
@@ -135,11 +137,27 @@ export default {
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "674a01ce4d3aa16b1e5f5f4a"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            console.log('Received Appointment list:', message)
-
             // Check if the receiving message is already a JSON string, if not, parse it
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             this.appointments = parsedMessage
+          }
+        })
+      } catch (error) {
+        console.error('This bombaclaat wont work' + error)
+      }
+    },
+    async getClinicId() {
+      try {
+        await subscribeToTopic('Client/AuthenticationService/ClinicId')
+        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.dentistId + '}')
+        messageArrived((topic, message) => {
+          if (topic === 'Client/AuthenticationService/ClinicId') {
+            console.log('Received Clinic ID:', message)
+
+            // Check if the receiving message is already a JSON string, if not, parse it
+            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
+            this.clinicId = parsedMessage
+            console.log('This is the clinic Id: ' + this.clinicId)
           }
         })
       } catch (error) {
