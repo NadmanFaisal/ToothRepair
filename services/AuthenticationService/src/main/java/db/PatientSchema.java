@@ -51,5 +51,22 @@ public class PatientSchema {
         return patientRepresentation;
 
     }
+    public boolean equals (PatientSchema otherPatient){
+        boolean isEqual = false;
+        if(otherPatient == this){
+            isEqual = true;
+        }else if (otherPatient == null){
+            isEqual = false;
+        }else if (otherPatient instanceof PatientSchema){
+            boolean sameName = this.getName().equals(otherPatient.getName());
+            boolean samePassword = this.getPassword().equals(otherPatient.getPassword());
+            boolean sameEmail = this.getEmail().equals(otherPatient.getEmail());
+            isEqual = sameEmail && sameName && samePassword;
+        }else{
+            return isEqual;
+        }
 
+        return isEqual;
+
+    }
 }
