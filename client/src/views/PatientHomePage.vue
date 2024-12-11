@@ -114,6 +114,8 @@ export default {
     selectAClinic(clinic) {
       store.setSelectedClinic(clinic)
       this.selectedClinicName = store.getSelectedClinicName()
+      this.selectedClinicId = store.getSelectedClinicId()
+      console.log(this.selectedClinicId)
     },
     gotToAppointmentPage() {
       if (!store.getSelectedClinicId()) {

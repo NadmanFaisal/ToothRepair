@@ -97,13 +97,13 @@ export default {
     }
   },
   props: {
-    selectedDate: {
+    dentistSelectedDate: {
       type: String,
       required: true
     }
   },
   watch: {
-    selectedDate: {
+    dentistSelectedDate: {
       handler(newDate) {
         console.log('New selected date in DentistAppointmentComponent:', newDate)
       }
@@ -112,7 +112,7 @@ export default {
   computed: {
     // computed because the changes are cached only if selectedDate changes
     filteredAppointments() {
-      return this.appointments.filter(appointment => appointment.date === this.selectedDate)
+      return this.appointments.filter(appointment => appointment.date === this.dentistSelectedDate)
     }
   },
   created() {

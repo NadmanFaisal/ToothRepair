@@ -8,13 +8,13 @@
 
             <div class="col-3 left-section">
 
-                <DentistCalendarComponent @selectedDate="updateSelectedDate" />
+                <DentistCalendarComponent @dentistSelectedDate="updateSelectedDate" />
 
             </div>
 
             <div class="col-9 right-section">
 
-                <DenstistAppointmentComponent :selectedDate="selectedDate"/>
+                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate"/>
 
             </div>
 
@@ -31,7 +31,7 @@ export default {
   name: 'MyBookingsPage',
   data() {
     return {
-      selectedDate: null
+      dentistSelectedDate: null
     }
   },
   components: {
@@ -46,7 +46,7 @@ export default {
     },
     updateSelectedDate(date) {
       console.log('Parent received selectedDate from child:', date)
-      this.selectedDate = date
+      this.dentistSelectedDate = date
     }
   }
 }
