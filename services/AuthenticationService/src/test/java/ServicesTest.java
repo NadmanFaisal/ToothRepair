@@ -2,25 +2,27 @@ package test.java;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.stereotype.Component;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import main.java.db.DentistRepository;
 import main.java.db.DentistSchema;
-import main.java.db.PatientRepository;
 import main.java.db.PatientSchema;
 import main.java.service.DentistService;
 import main.java.service.PatientService;
 
-
+@SpringBootTest
 public class ServicesTest {
+    @Mock
     private PatientService patientService;
+    @Mock
     private DentistService dentistService;
+    @InjectMocks
     private PatientSchema testPatient;
+    @InjectMocks
     private DentistSchema testDentist;
     
     @BeforeEach
