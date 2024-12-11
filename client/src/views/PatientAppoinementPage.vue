@@ -8,7 +8,7 @@
 
             <div class="col-3 left-section">
 
-              <CalendarComponent />
+              <CalendarComponent @patientSelectedDate="updateSelectedDate"/>
 
               <MapComponent :clinics="clinics"></MapComponent>
 
@@ -16,7 +16,7 @@
 
             <div class="col-9 right-section">
 
-                <AppointmentComponent />
+                <AppointmentComponent :patientSelectedDate="patientSelectedDate"/>
 
             </div>
 
@@ -43,7 +43,8 @@ export default {
   },
   data() {
     return {
-      clinics: []
+      clinics: [],
+      patientSelectedDate: null
     }
   },
   mounted() {
@@ -55,6 +56,10 @@ export default {
     })
   },
   methods: {
+    updateSelectedDate(date) {
+      console.log('Parent received selectedDate from child:', date)
+      this.patientSelectedDate = date
+    },
     async getAllClinics() {
       try {
         await subscribeToTopic('test/clinicList')

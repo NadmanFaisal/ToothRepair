@@ -79,7 +79,6 @@
 import { subscribeToTopic, messageArrived, publishToTopic, client } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
-import { store } from '@/store.js'
 
 export default {
   name: 'AppointmentComponent',
@@ -87,6 +86,12 @@ export default {
     return {
       appointments: [],
       selectedAppointmentId: null
+    }
+  },
+  props: {
+    patientSelectedDate: {
+      type: String,
+      required: true
     }
   },
   created() {
@@ -105,7 +110,6 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.$route.query.clinicId + '"}')
         messageArrived((topic, message) => {
