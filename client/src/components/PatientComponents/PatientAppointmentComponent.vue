@@ -102,7 +102,9 @@ export default {
     )
   },
   mounted() {
+    console.log('Component mounted')
     client.on('connect', () => {
+      console.log('MQTT Client connected')
       this.getAppointments()
       console.log(this.appointments)
     })
@@ -116,19 +118,24 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.$route.query.clinicId + '"}')
+        console.log('Setting up message listener...')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            console.log('Received Appointment list:', message)
-
-            // Check if the receiving message is already a JSON string, if not, parse it
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            this.appointments = parsedMessage
+            console.log('Received appointments:', parsedMessage)
+            // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
+            this.appointments = [...parsedMessage]
           }
         })
+
+        console.log('Subscribing to topic...')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        console.log('Subscribed successfully')
+
+        console.log('Publishing request for appointments...')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
       } catch (error) {
-        console.error('This bombaclaat wont work' + error)
+        console.error('Error in getAppointments:', error)
       }
     },
     getStatusImage(status) {

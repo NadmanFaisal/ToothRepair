@@ -82,7 +82,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, client } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -114,6 +114,14 @@ export default {
     filteredAppointments() {
       return this.appointments.filter(appointment => appointment.date === this.dentistSelectedDate)
     }
+  },
+  mounted() {
+    console.log('Component mounted')
+    client.on('connect', () => {
+      console.log('MQTT Client connected')
+      this.getAppointments()
+      console.log(this.appointments)
+    })
   },
   created() {
     this.$watch(
@@ -160,15 +168,16 @@ export default {
     },
     async getAppointments() {
       try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "674a01ce4d3aa16b1e5f5f4a"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             // Check if the receiving message is already a JSON string, if not, parse it
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            this.appointments = parsedMessage
+            // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
+            this.appointments = [...parsedMessage]
           }
         })
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "674a01ce4d3aa16b1e5f5f4a"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

@@ -44,7 +44,7 @@ export default {
   data() {
     return {
       clinics: [],
-      patientSelectedDate: null
+      patientSelectedDate: new Date().toISOString().split('T')[0]
     }
   },
   mounted() {

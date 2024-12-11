@@ -31,7 +31,7 @@ export default {
   name: 'MyBookingsPage',
   data() {
     return {
-      dentistSelectedDate: null
+      dentistSelectedDate: new Date().toISOString().split('T')[0]
     }
   },
   components: {
