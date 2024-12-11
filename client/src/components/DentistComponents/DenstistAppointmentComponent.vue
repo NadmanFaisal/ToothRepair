@@ -1,5 +1,5 @@
 <template>
-    <div class="col-12 appointment-container">
+    <div class="col-12 content-container">
 
       <div class="col-12 appointment-content-container">
 
@@ -25,7 +25,7 @@
 
             <!-- Dynamically sets the color of the slots according to the status -->
             <div class="col-2 appointment-slot-container"
-            v-for="appointment in appointments"
+            v-for="appointment in filteredAppointments"
             :key="appointment.id"
             :class="{
               'available-slot': appointment.status === 'available',
@@ -37,7 +37,15 @@
                 <img :src="getStatusImage(appointment.status)" class="status-mark-image">
               </div>
               <div class="col-8 appointment-information-container">
-                <label class="appointment-information-label" :class="{ 'available-label': appointment.status === 'available', 'available-label': appointment.status === 'booked', 'unavailable-label': appointment.status === 'unavailable' }">{{ appointment.startTime }} PM</label>
+                <label class="appointment-information-label"
+                :class="{
+                  'available-label': appointment.status === 'available',
+                  'available-label': appointment.status === 'booked',
+                  'unavailable-label': appointment.status === 'unavailable'
+                  }"
+                  >
+                    {{ appointment.startTime }} AM
+                  </label>
               </div>
             </div>
 
@@ -86,6 +94,25 @@ export default {
       selectedAppointmentId: null,
       dentistId: localStorage.getItem('UserID'),
       clinicId: null
+    }
+  },
+  props: {
+    selectedDate: {
+      type: String,
+      required: true
+    }
+  },
+  watch: {
+    selectedDate: {
+      handler(newDate) {
+        console.log('New selected date in DentistAppointmentComponent:', newDate)
+      }
+    }
+  },
+  computed: {
+    // computed because the changes are cached only if selectedDate changes
+    filteredAppointments() {
+      return this.appointments.filter(appointment => appointment.date === this.selectedDate)
     }
   },
   created() {
@@ -198,7 +225,7 @@ export default {
 </script>
 
 <style scoped>
-.appointment-container {
+.content-container {
   display: flex;
   flex-direction: column;
   justify-items: center;

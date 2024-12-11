@@ -49,7 +49,7 @@
             <div class="col-6 middle-right-section">
 
               <div class="col-12 phone-section">
-                <label class="phone-label">Phone <label class="optional-label">(optional)</label></label>
+                <label class="phone-label">Phone <span class="optional-label">(optional)</span></label>
                 <input class="form-control phone-input" v-model="phone" placeholder="073*******">
               </div>
 

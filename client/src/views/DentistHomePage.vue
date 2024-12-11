@@ -8,13 +8,13 @@
 
             <div class="col-3 left-section">
 
-                <DentistCalendarComponent />
+                <DentistCalendarComponent @selectedDate="updateSelectedDate" />
 
             </div>
 
             <div class="col-9 right-section">
 
-                <DenstistAppointmentComponent />
+                <DenstistAppointmentComponent :selectedDate="selectedDate"/>
 
             </div>
 
@@ -29,6 +29,11 @@ import DentistCalendarComponent from '../components/DentistComponents/DentistCal
 
 export default {
   name: 'MyBookingsPage',
+  data() {
+    return {
+      selectedDate: null
+    }
+  },
   components: {
     DenstistAppointmentComponent,
     DentistCalendarComponent,
@@ -38,6 +43,10 @@ export default {
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       this.$router.push('/login')
+    },
+    updateSelectedDate(date) {
+      console.log('Parent received selectedDate from child:', date)
+      this.selectedDate = date
     }
   }
 }
