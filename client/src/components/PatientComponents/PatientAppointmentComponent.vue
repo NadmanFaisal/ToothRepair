@@ -25,7 +25,7 @@
           <!-- Dynamically sets the color of the slots according to the status -->
           <div
           class="col-2 appointment-slot-container"
-          v-for="appointment in appointments"
+          v-for="appointment in filteredAppointments"
           :key="appointment.id"
           :class="{
             'available-slot': appointment.status === 'available',
@@ -106,6 +106,12 @@ export default {
       this.getAppointments()
       console.log(this.appointments)
     })
+  },
+  computed: {
+    // computed because the changes are cached only if selectedDate changes
+    filteredAppointments() {
+      return this.appointments.filter(appointment => appointment.date === this.patientSelectedDate)
+    }
   },
   methods: {
     async getAppointments() {
