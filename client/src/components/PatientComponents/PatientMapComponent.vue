@@ -25,6 +25,9 @@ export default {
     }
   },
   methods: {
+    navigateToClinic() {
+      console.log('Will work')
+    },
     addMarkers() {
       console.log('Access addMarkers')
       if (this.markerGroup) {
@@ -49,7 +52,8 @@ export default {
         })
 
         const dentistNames = clinic.dentists.map(dentist => dentist.dentistName).join(', ')
-        const popUpContent =
+        const popUpContent = document.createElement('div')
+        popUpContent.innerHTML =
         `
         <div>
           <h3>${clinic.name}</h3>
@@ -57,8 +61,13 @@ export default {
           <p><strong>Contact Info:</strong> ${clinic.contactInfo.number}, ${clinic.contactInfo.email}</p>
           <p><strong>Open Hours:</strong> ${clinic.openHours}</p>
           <p><strong>Dentists: </strong> ${dentistNames || 'No dentists registered'} </p>
-          </div>
+          <button id="navigate-btn">Navigate</button>
+        </div>
           `
+
+        const button = popUpContent.querySelector('#navigate-btn')
+        button.addEventListener('click', this.navigateToClinic)
+
         const popUp = L.popup().setContent(popUpContent)
         marker.bindPopup(popUp)
         this.markerGroup.addLayer(marker)
