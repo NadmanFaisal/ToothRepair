@@ -1,7 +1,6 @@
 package test.java;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +19,10 @@ import main.java.db.PatientRepository;
 import main.java.db.PatientSchema;
 import main.java.service.DentistService;
 import main.java.service.PatientService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class ServicesTest {
@@ -100,7 +103,29 @@ public class ServicesTest {
         
     }
     
+    @Test
+    @DisplayName("Get all dentists")
+    void getAllDentistsTest() {
+        ArrayList<DentistSchema> testDentistList = new ArrayList<DentistSchema>();
 
+        testDentist.setEmail("Mohamed.Taha@gmail.com");
+        testDentist.setName("Vaibhav Puram");
+        testDentist.setPassword("12345678");
+        testDentist.setClinic("Taha Jasser Teeth Repair");
+        testDentistList.add(testDentist);
+        
+        DentistSchema secondDentist = new DentistSchema();
+        secondDentist.setEmail("Danis.Music@gmail.com");
+        secondDentist.setName("Nadman Puram");
+        secondDentist.setPassword("1234567");
+        secondDentist.setClinic("GoodWill Clinic");
+        testDentistList.add(secondDentist);
+    
+        when(dentistRepository.findAll()).thenReturn(testDentistList);
+        
+        assertEquals(testDentistList, dentistService.getAllDentists(), "The returned list should match the test list");
+        verify(dentistRepository, times(1)).findAll();
+    }
     
 
 
