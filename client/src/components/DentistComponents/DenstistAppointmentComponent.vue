@@ -25,7 +25,7 @@
 
             <!-- Dynamically sets the color of the slots according to the status -->
             <div class="col-2 appointment-slot-container"
-            v-for="appointment in filteredAppointments"
+            v-for="appointment in morningFilteredAppointments"
             :key="appointment.id"
             :class="{
               'available-slot': appointment.status === 'available',
@@ -44,7 +44,7 @@
                   'unavailable-label': appointment.status === 'unavailable'
                   }"
                   >
-                    {{ appointment.startTime }} AM
+                    {{ getTypeOfTime(appointment.startTime) }}
                   </label>
               </div>
             </div>
@@ -69,6 +69,36 @@
               <h1 class="title-label">Evening</h1>
               <label class="time-label">12:00 PM to 17:00 PM</label>
               <button type="button" @click="makeAvailable" class="btn btn-primary confirm-booking-button">Confirm</button>
+            </div>
+
+          </div>
+
+          <div class="col-10 slot-section">
+
+            <!-- Dynamically sets the color of the slots according to the status -->
+            <div class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="appointment.id"
+            :class="{
+              'available-slot': appointment.status === 'available',
+              'unavailable-slot': appointment.status !== 'available',
+              'selected-slot': appointment.id === selectedAppointmentId
+              }
+              " @click="selectAppointment(appointment)">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label"
+                :class="{
+                  'available-label': appointment.status === 'available',
+                  'available-label': appointment.status === 'booked',
+                  'unavailable-label': appointment.status === 'unavailable'
+                  }"
+                  >
+                    {{ getTypeOfTime(appointment.startTime) }}
+                </label>
+              </div>
             </div>
 
           </div>
@@ -111,8 +141,41 @@ export default {
   },
   computed: {
     // computed because the changes are cached only if selectedDate changes
-    filteredAppointments() {
-      return this.appointments.filter(appointment => appointment.date === this.dentistSelectedDate)
+    // computed because the changes are cached only if selectedDate changes
+    morningFilteredAppointments() {
+      // Filters the appointments according to its time
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Morning start time threshold
+        const morningStartTime = 5 * 60
+        // Morning end time threshold
+        const morningEndTime = 12 * 60
+        return (
+          appointment.date === this.dentistSelectedDate &&
+          startTimeInMinutes >= morningStartTime &&
+          startTimeInMinutes <= morningEndTime
+        )
+      })
+    },
+    eveningFilteredAppointments() {
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Evening start time threshold
+        const eveningStartTime = 12 * 60
+        // Evening end time threshold
+        const eveningEndTime = 20 * 60
+        return (
+          appointment.date === this.dentistSelectedDate &&
+          startTimeInMinutes > eveningStartTime &&
+          startTimeInMinutes <= eveningEndTime
+        )
+      })
     }
   },
   mounted() {
@@ -214,6 +277,12 @@ export default {
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
+    },
+    getTypeOfTime(time) {
+      const [hour, minute] = time.split(':').map(Number) // Split the time into hour and minute
+      const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
+      const adjustedHour = hour % 12 || 12 // Convert 0 hour to 12 for AM and handle 12-hour format
+      return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${period}` // Format the time with leading zeros
     },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
