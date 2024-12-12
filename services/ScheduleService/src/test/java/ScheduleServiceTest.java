@@ -111,6 +111,19 @@ public class ScheduleServiceTest {
     }
 
 
+    @Test
+    @DisplayName("Change appointment status for an appointment in db")
+    void changeAppointmentStatusTest(){
+
+        when(appointmentRepository.findById(testAppointment.getId())).thenReturn(Optional.of(testAppointment));
+
+        AppointmentSchema result = testAppointment;
+        result.setStatus("available");
+
+        assertEquals(Optional.of(result), appointmentService.changeAppointmentStatus(testAppointment), "The result of this test object should match the available appointment object");
+
+        verify(appointmentRepository, times(1)).findById(testAppointment.getId());
+    }
 
 
 
