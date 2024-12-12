@@ -126,6 +126,30 @@ public class ServicesTest {
         assertEquals(testDentistList, dentistService.getAllDentists(), "The returned list should match the test list");
         verify(dentistRepository, times(1)).findAll();
     }
+
+    @Test
+    @DisplayName("Get all patients")
+    void getAllPatientsTest() {
+        ArrayList<PatientSchema> testPatientList = new ArrayList<PatientSchema>();
+
+        testPatient.setEmail("Mohamed.Taha@gmail.com");
+        testPatient.setName("Vaibhav Puram");
+        testPatient.setPassword("12345678");
+        testPatientList.add(testPatient);
+        
+        PatientSchema secondPatient = new PatientSchema();
+        secondPatient.setEmail("Danis.Music@gmail.com");
+        secondPatient.setName("Nadman Puram");
+        secondPatient.setPassword("1234567");
+        testPatientList.add(secondPatient);
+    
+        when(patientRepository.findAll()).thenReturn(testPatientList);
+        
+        assertEquals(testPatientList, patientService.getAllPatients(), "The returned list should match the test list");
+        verify(patientRepository, times(1)).findAll();
+        
+    }
+
     
 
 
