@@ -63,19 +63,40 @@ function handleReconnection() {
       return
     } else if (retryCount < MAX_RETRIES) {
       console.log(`Reconnection attempt ${retryCount + 1} of ${MAX_RETRIES}`)
+      retryCount++
+      if (client) {
+        client.removeAllListeners('connect')
+        client.removeAllListeners('error')
+        client.removeAllListeners('close')
+        console.log('Event handlers cleaned up')
+      }
+
       client.end(true, () => {
-        client.reconnect()
-        retryCount++
+        setTimeout(() => {
+          console.log(`Reconnecting to broker; ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
+          client.reconnect()
+
+        }, 1000)
       })
     } else {
       console.log('Max retries reached, switching to another broker...')
       retryCount = 0
+      if (client) {
+        client.removeAllListeners('connect')
+        client.removeAllListeners('error')
+        client.removeAllListeners('close')
+        console.log('Event handlers cleaned up')
+      }
       currentBrokerIndex = (currentBrokerIndex + 1) % BROKER_URLS.length
 
       console.log(`Switching to another broker: ${BROKER_URLS[currentBrokerIndex]}`)
 
       client.end(true, () => {
-        client = mqtt.connect(BROKER_URLS[currentBrokerIndex])
+        setTimeout(() => {
+          console.log('Disconnected from current broker, reconnecting...')
+          client = mqtt.connect(BROKER_URLS[currentBrokerIndex])
+
+        }, 1000) 
       })
     }
   }, 2000)
