@@ -25,8 +25,15 @@ export default {
     }
   },
   methods: {
-    navigateToClinic() {
+    navigateToClinic(clinic) {
       console.log('Will work')
+      console.log(clinic.name)
+      this.$router.push({
+        path: '/patientAppointmentPage',
+        query: {
+          clinicId: clinic.id
+        }
+      })
     },
     addMarkers() {
       console.log('Access addMarkers')
@@ -66,7 +73,7 @@ export default {
           `
 
         const button = popUpContent.querySelector('#navigate-btn')
-        button.addEventListener('click', this.navigateToClinic)
+        button.addEventListener('click', () => this.navigateToClinic(clinic))
 
         const popUp = L.popup().setContent(popUpContent)
         marker.bindPopup(popUp)
