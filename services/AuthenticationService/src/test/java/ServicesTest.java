@@ -169,7 +169,7 @@ public class ServicesTest {
     
     @Test
     @DisplayName("Get an individual dentist by their email")
-    void getADentistTest() {
+    void getDentistTest() {
         testDentist.setEmail("Mohamed.Taha@gmail.com");
         testDentist.setName("Vaibhav Puram");
         testDentist.setPassword("12345678");
@@ -177,12 +177,12 @@ public class ServicesTest {
 
         when(dentistRepository.findByEmail("Mohamed.Taha@gmail.com")).thenReturn(testDentist);
         
-        assertEquals(testDentist, dentistService.getDentist(testDentist), "The returned patient should match the current patient");
+        assertEquals(testDentist, dentistService.getDentist(testDentist), "The returned dentist should match the current dentist");
         verify(dentistRepository, times(1)).findByEmail("Mohamed.Taha@gmail.com");
     }
 
     @Test
-    @DisplayName("Get an individual dentist by their email")
+    @DisplayName("Get a dentists name by their id")
     void getDentistNameByIDTest() {
         testDentist.setId("6fa123456ed9vjr34567");
         testDentist.setEmail("Mohamed.Taha@gmail.com");
@@ -195,7 +195,7 @@ public class ServicesTest {
 
         String dentistName = testDentist.getName();
 
-        assertEquals(dentistName, dentistService.getNameByID(testDentist.getId()), "The returned patient should match the current patient");
+        assertEquals(dentistName, dentistService.getNameByID(testDentist.getId()), "The returned dentist name should match the current dentist name");
         verify(dentistRepository, times(1)).findById(testDentist.getId());
     }
 
