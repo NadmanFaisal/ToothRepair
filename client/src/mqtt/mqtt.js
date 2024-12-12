@@ -1,76 +1,70 @@
 // Import mqtt
 import mqtt from 'mqtt'
-const BROKER_URLS = [
-  'wss://test.mosquitto.org:8081',
-  'wss://broker.hivemq.com:8000/mqtt',
-  'wss://broker.emqx.io:8084/mqtt'
-]
 let currentBrokerIndex = 0
 const MAX_RETRIES = 3
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export let client 
 
-initializeClient()
-.then((mqttClient) => {
-  client = mqttClient
+const BROKER_URLS = [
+  {
+    host: 'potatosmotato',
+    port: 0,
+    protocol: 'wss'
+  },
+  {
+    host: 'test.mosquitto.org',
+    port: 8081,
+    protocol: 'wss'
+  },
+  {
+    host: 'broker.hivemq.com',
+    port: 8000,
+    protocol: 'wss'
+  },
+  {
+    host: 'broker.emqx.io',
+    port: 8084,
+    protocol: 'wss'
+  }
+  ]
 
-  client.on('connect', () => {
-    console.log('Successfully connected to broker: ' + BROKER_URLS[currentBrokerIndex])
-  })
-
-  client.on('error', (error) => {
-    console.error('MQTT error has occurred: ', error)
-  })
-
-  client.on('close', () => {
-    console.log('Connection to the broker has been lost, triggering reconnection...')
-    client = handleReconnection()
-  })
+export let client = mqtt.connect({
+  servers: BROKER_URLS 
 })
 
+client.on('connect', () => {
+  const connectedHost = client.options.host
+  const connectedPort = client.options.port
 
-async function initializeClient()  {
-  console.log("Trying to initialize client");
-  
-  for (let i = 0; i < BROKER_URLS.length; i++) {
-    console.log('Connecting to this broker: ' + BROKER_URLS[i])
-    
-    let middleware = mqtt.connect(BROKER_URLS[i])
-    
-    const clientPromise = new Promise((resolve, reject) => {
-        middleware.on('connect', () => {
-          console.log('Successfully connected to broker: ' + BROKER_URLS[i])
-          currentBrokerIndex = i
-          resolve(middleware)
-        })
-    
-        middleware.on('error', (error) => {
-          reject(error)
-        })
-      })
-      
-      try {
-        return await clientPromise;
-      } catch (error) {
-        console.error('Error while connecting to broker: ', BROKER_URLS[currentBrokerIndex])
-      }
-    }
-    throw new Error('Failed to connect to any broker')
-}
+  currentBrokerIndex = BROKER_URLS.findIndex((broker) => {
+    return broker.host === connectedHost && broker.port === Number(connectedPort)
+  })
+  if (currentBrokerIndex >= 0) {
+    console.log(`Successfully connected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
+  } else {
+    console.warn('Connected to unknown broker!')
+  }
+})
+
+client.on('close', () => {
+  console.log('Lost connection to current broker, trying for reconnection...')
+  handleReconnection()
+})
+
 
 function handleReconnection() {
   let retryCount = 0
   console.log('Connection lost, attempting to reconnect...')
   
   const reconnectInterval = setInterval(() => {
-    if(client.connected) {
+    if(client && client.connected) {
       clearInterval(reconnectInterval)
-      console.log('Successfully reconnected to the broker!')
+      console.log(`Successfully reconnected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
       retryCount = 0
+      return
     } else if (retryCount < MAX_RETRIES) {
-      console.log(`Reconnection attempt ${retryCount} of ${MAX_RETRIES}`)
+      console.log(`Reconnection attempt ${retryCount + 1} of ${MAX_RETRIES}`)
       client.end(true, () => {
-        client.connect()
+        client.reconnect()
         retryCount++
       })
     } else {
@@ -85,16 +79,6 @@ function handleReconnection() {
       })
     }
   }, 2000)
-
-  client.on('connect', () => {
-    clearInterval(reconnectInterval)
-    console.log('Successfully reconnected to broker: ', BROKER_URLS[currentBrokerIndex])
-    retryCount = 0
-  })
-
-  client.on('error', (error) => {
-    console.error('Error during reconnection', error)
-  })
 }
 
 /**
@@ -149,10 +133,10 @@ export function messageArrived(callback) {
   client.removeAllListeners('message')
   client.on('message', (topic, message) => {
     try {
-      console.log('This is the JSON format of the patient list' + message)
+      console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
     } catch (error) {
-      console.error('Error Parsing the Patient list', error)
+      console.error('Error Parsing the message', error)
       callback(topic, message.toString())
     }
     return message
