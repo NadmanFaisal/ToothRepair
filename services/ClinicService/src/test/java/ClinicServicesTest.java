@@ -104,7 +104,23 @@ public class ClinicServicesTest {
 
     }
 
+    @Test
+    @DisplayName("Add a dentist to a clinic")
+    void addDentistToClinicTest(){
+       ArrayList<String> dentists = (ArrayList<String>) testClinic.getDentists();
+        String dentistID = "6fa234567890asd34567";
+        dentists.add(dentistID);
+        
+        when(clinicRepository.findById(testClinic.getId())).thenReturn(Optional.of(testClinic));
 
+        ClinicSchema result = testClinic;
+
+        result.setDentists(dentists);
+
+        assertEquals(Optional.of(result), clinicService.addDentist(testClinic.getId(), dentistID ), "Both clinics should be equals and should have a list of 2 clinics");
+        verify(clinicRepository, times(1)).findById(testClinic.getId());
+
+    }
 
 
 
