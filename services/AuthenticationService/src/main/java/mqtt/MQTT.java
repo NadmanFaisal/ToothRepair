@@ -25,17 +25,16 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp:test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
-    private static final String PUBLISHED_STATUS_TOPIC = "authentication/status";
-    private static final String PUBLISHED_PATIENT_TOPIC = "authentication/patientList";
-    private static final String PUBLISHED_CLINIC_TOPIC = "dentist/clinicService/addDentist";
-    private static final String PUBLISHED_LOGIN_TOPIC = "authentication/alert/login";
-    private static final String PUBLISHED_DENTIST_TOPIC = "authentication/dentist/getDentistNames";
-    private static final String PUBLISHED_USER_ID_TOPIC = "authentication/userID";
+    private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
+    private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
+    private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
+    private static final String PUBLISHED_DENTIST_TOPIC = "authenticationService/dentist/getDentistNames";
+    private static final String PUBLISHED_USER_ID_TOPIC = "authenticationService/dentist&patient/userID";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "test/patientAlert", "patient/authentication/signup", "dentist/authentication/signup", "patient/authentication/login", "dentist/authentication/login", "authentication/dentist/getDentistNamesAlert"};
+    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -88,6 +87,9 @@ public class MQTT implements MqttCallback {
                 return; // Exit the loop once connected
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
+                if (middleware != null && middleware.isConnected()) {
+                    middleware.disconnect();
+                }
             }
         }
         throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
@@ -189,19 +191,19 @@ public class MQTT implements MqttCallback {
             System.out.println("Message recieved: " + stringMessage + " Topic: " + topic);
 
             switch (topic) {
-                case "patient/authentication/signup":
+                case "authenticationService/patient/signup":
                     this.signupPatient(stringMessage);
                     break;
-                case "dentist/authentication/signup":
+                case "authenticationService/dentist/signup":
                     this.signupDentist(stringMessage);
                     break;
-                case "patient/authentication/login":
+                case "authenticationService/patient/login":
                     this.loginPatient(stringMessage);
                     break;    
-                case "dentist/authentication/login":
+                case "authenticationService/dentist/login":
                     this.loginDentist(stringMessage);
                     break;
-                case "authentication/dentist/getDentistNamesAlert":
+                case "authenticationService/dentist/getDentistNamesAlert":
                     List<String> dentistList = objectMapper.readValue(stringMessage, List.class);
                     System.out.println("List of dentist names: " + dentistList);
                     this.publishDentistNames(dentistList);
@@ -223,11 +225,9 @@ public class MQTT implements MqttCallback {
      * @throws Exception prints the Error Stack trace
      */
     public void signupPatient(String stringPayload){
-        ObjectMapper objectMap = new ObjectMapper();
-
         try {
             System.out.println("Message recieved: " + stringPayload);
-            PatientSchema patient = objectMap.readValue(stringPayload, PatientSchema.class);
+            PatientSchema patient = objectMapper.readValue(stringPayload, PatientSchema.class);
             
             if (checkPatientInfo(patient)) {
 
@@ -257,10 +257,7 @@ public class MQTT implements MqttCallback {
      */
     public boolean checkPatientInfo(PatientSchema patientInfo) {
         boolean patientInfoExists = true;
-        if (patientInfo.getId().isEmpty()) {
-            System.err.print("Patient id was not found in the payload");
-            patientInfoExists = false;
-        } else if (patientInfo.getEmail().isEmpty()) {
+        if (patientInfo.getEmail().isEmpty()) {
             System.err.print("Patient email was not found in the payload");
             patientInfoExists = false;
         } else if (patientInfo.getName().isEmpty()) {
@@ -317,10 +314,7 @@ public class MQTT implements MqttCallback {
      */
     public boolean checkDentistInfo(DentistSchema dentistInfo) {
         boolean dentistInfoExists = true;
-        if (dentistInfo.getId().isEmpty()) {
-            System.err.print("Patient id was not found in the payload");
-            dentistInfoExists = false;
-        } else if (dentistInfo.getEmail().isEmpty()) {
+        if (dentistInfo.getEmail().isEmpty()) {
             System.err.print("Patient email was not found in the payload");
             dentistInfoExists = false;
         } else if (dentistInfo.getName().isEmpty()) {
@@ -417,22 +411,25 @@ public class MQTT implements MqttCallback {
     public void loginDentist(String stringPayload){
         try{
             
-        DentistSchema dentist = objectMapper.readValue(stringPayload, DentistSchema.class);
-        DentistSchema checkDentist = dentistService.getDentist(dentist);
+            DentistSchema dentist = objectMapper.readValue(stringPayload, DentistSchema.class);
+            DentistSchema checkDentist = dentistService.getDentist(dentist);
+            if (checkDentist == null) {
+                String failureMessage = "Invalid login information, there is no dentist with that information";
+                System.out.println(failureMessage);
+                middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
+            } else if (!dentistService.checkDuplicateDentist(dentist) && !dentist.checkPassword(checkDentist.getPassword())){ 
+                String failureMessage = "Invalid email or Password please try again";
+                System.out.println(failureMessage);
+                middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
+            } else {
+                String successMessage = "User is sucessfully logged in!";
+                String id = checkDentist.getId();
 
-        if (!dentistService.checkDuplicateDentist(dentist) && !dentist.checkPassword(checkDentist.getPassword())){ 
-            String failureMessage = "Invalid email or Password please try again";
-            System.out.println(failureMessage);
-            middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
-        } else {
-            String successMessage = "User is sucessfully logged in!";
-            String id = checkDentist.getId();
-
-            System.out.println(successMessage);
-            middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
-            middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
-            System.out.println("Published the Dentist ID " + id+ " to topic: " + PUBLISHED_USER_ID_TOPIC);
-        }
+                System.out.println(successMessage);
+                middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+                middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
+                System.out.println("Published the Dentist ID " + id+ " to topic: " + PUBLISHED_USER_ID_TOPIC);
+            }
         } catch(Exception e){
             System.err.println("Error ocurred whilst processing login:");
             e.printStackTrace();

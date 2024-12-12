@@ -22,13 +22,12 @@ import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp:test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC_CLIENT = "test/clinicList";
-    private static final String PUBLISHED_TOPIC_DENTIST = "clinicService/clinicList";
+    private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
 
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic", "dentist/clinicService/alert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic",}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -72,13 +71,18 @@ public class MQTT implements MqttCallback {
                 middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
                 middleware.connect();
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
+                
                 middleware.setCallback(this);
                 this.subscribeToTopics();
+                
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
+                if (middleware != null && middleware.isConnected()) {
+                    middleware.disconnect();
+                }
             }
         }
         throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
@@ -100,9 +104,9 @@ public class MQTT implements MqttCallback {
                 try {
                     if (middleware.isConnected()) {
                         middleware.subscribe(topic, 1); //Subscribe to topic
-                        System.out.println("ScheduleService subscribed to topic: " + topic);
+                        System.out.println("ClinicService subscribed to topic: " + topic);
                     } else {
-                        System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
+                        System.out.println("ClinicService is not connected to the broker. Cannot subscribe to topic: " + topic);
                     }
                 } catch (Exception e) {
                     System.out.println("Failed to subscribe to topic " + topic + ": " + e.getMessage());
@@ -210,16 +214,13 @@ public class MQTT implements MqttCallback {
                    
             System.out.println("Message recieved: " + stringMessage + " Topic: " + topic);
             switch (topic) {
-                case "test/clinicAlert":
-                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLIENT);
+                case "clinicService/clinic/getClinicAlert":
+                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLINICS);
                     break;
-                case "dentist/clinicService/alert":
-                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_DENTIST);
-                    break;
-                case "test/createClinic":
+                case "clinicService/clinic/createClinic":
                     handleCreateClinic(stringMessage);
                     break;
-                case "dentist/clinicService/addDentist":
+                case "clinicService/dentist/addDentist":
                     handleAddingDentist(stringMessage);
                     break;
                 default:

@@ -21,12 +21,12 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp:test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
+    private static final String PUBLISHED_TOPIC = "client/scheduleService/appointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
-     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment", "ScheduleService/Appointment/changeAppointmentStatus"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"scheduleService/appointment/getAppointments",
+     "scheduleService/appointment/createAppointment", "scheduleService/appointment/bookAppointment", "scheduleService/appointment/changeAppointmentStatus"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -71,13 +71,18 @@ public class MQTT implements MqttCallback {
                 middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
                 middleware.connect();
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
+                
                 middleware.setCallback(this);
                 this.subscribeToTopics();
+                
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
+                if (middleware != null && middleware.isConnected()) {
+                    middleware.disconnect();
+                }
             }
         }
         throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
@@ -206,26 +211,38 @@ public class MQTT implements MqttCallback {
             String stringMessage = new String(message.getPayload()); 
                    
             System.out.println("Message recieved: " + stringMessage);
-            if (topic.equals("ScheduleService/Appointment/getAppointments")) {
-                if(stringMessage.equals("Get Appointments")){
-                    System.out.println("Will publish all appointments");
-                    this.publishAppointmentList();
-                }
-            } else if (topic.equals("ScheduleService/Appointment/createAppointment") ) {
-                System.out.println("Entered createAppointment if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.createAppointment(appointmentInfo);
-            } else if (topic.equals("ScheduleService/Appointment/bookAppointment") ) {
-                System.out.println("Entered bookAppointment if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.bookAppointment(appointmentInfo);
-            } else if (topic.equals("ScheduleService/Appointment/changeAppointmentStatus") ) {
-                System.out.println("Entered changeAppointmentStatus if statement");
-                AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                System.out.println(appointmentInfo.toString());
-                appointmentService.changeAppointmentStatus(appointmentInfo);
+            switch (topic) {
+                case "scheduleService/appointment/getAppointments":
+                    if(stringMessage.equals("Get Appointments")){
+                        System.out.println("Will publish all appointments");
+                        this.publishAppointmentList();
+                    }   break;
+                case "scheduleService/appointment/createAppointment":
+                    {
+                        System.out.println("Entered createAppointment if statement");
+                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                        System.out.println(appointmentInfo.toString());
+                        appointmentService.createAppointment(appointmentInfo);
+                        break;
+                    }
+                case "scheduleService/appointment/bookAppointment":
+                    {
+                        System.out.println("Entered bookAppointment if statement");
+                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                        System.out.println(appointmentInfo.toString());
+                        appointmentService.bookAppointment(appointmentInfo);
+                        break;
+                    }
+                case "scheduleService/appointment/changeAppointmentStatus":
+                    {
+                        System.out.println("Entered changeAppointmentStatus if statement");
+                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                        System.out.println(appointmentInfo.toString());
+                        appointmentService.changeAppointmentStatus(appointmentInfo);
+                        break;
+                    }
+                default:
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
