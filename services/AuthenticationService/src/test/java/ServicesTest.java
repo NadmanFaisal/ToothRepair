@@ -151,6 +151,20 @@ public class ServicesTest {
     }
 
     
+    @Test
+    @DisplayName("Get all dentists")
+    void getADentistTest() {
+        testDentist.setEmail("Mohamed.Taha@gmail.com");
+        testDentist.setName("Vaibhav Puram");
+        testDentist.setPassword("12345678");
+        testDentist.setClinic("Taha Jasser Teeth Repair");
+
+        when(dentistRepository.findByEmail("Mohamed.Taha@gmail.com")).thenReturn(testDentist);
+        
+        assertEquals(testDentist, dentistService.getDentist(testDentist), "The returned patient should match the current patient");
+        verify(dentistRepository, times(1)).findByEmail("Mohamed.Taha@gmail.com");
+    }
+
 
 
 }
