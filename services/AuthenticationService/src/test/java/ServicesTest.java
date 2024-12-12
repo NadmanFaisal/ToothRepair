@@ -147,8 +147,23 @@ public class ServicesTest {
         
         assertEquals(testPatientList, patientService.getAllPatients(), "The returned list should match the test list");
         verify(patientRepository, times(1)).findAll();
+
+    }
+
+    @Test
+    @DisplayName("Get an individual patient by their email")
+    void getPatientTest() {
+        testPatient.setEmail("Mohamed.Taha@gmail.com");
+        testPatient.setName("Vaibhav Puram");
+        testPatient.setPassword("12345678");
+    
+        when(patientRepository.findByEmail("Mohamed.Taha@gmail.com")).thenReturn(testPatient);
+        
+        assertEquals(testPatient, patientService.getPatient(testPatient), "The returned list should match the test list");
+        verify(patientRepository, times(1)).findByEmail("Mohamed.Taha@gmail.com");
         
     }
+
 
     
     @Test
