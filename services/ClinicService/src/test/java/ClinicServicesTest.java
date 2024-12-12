@@ -39,11 +39,6 @@ public class ClinicServicesTest {
     void setup(){
         clinicService = new ClinicService(clinicRepository, mongoTemplate);
         testClinic = new ClinicSchema();
-    }
-
-    @Test
-    @DisplayName("Test to create a clinic")
-    void createClinic(){
         testClinic.setAddress("Nordstan, Gothenburg");
         Coordinate clinicCoordinate = new Coordinate(12.34567, 3.456789);
         testClinic.setCoordinates(clinicCoordinate);
@@ -54,11 +49,42 @@ public class ClinicServicesTest {
         dentistIDs.add("6edcvhy12345678jhgfvbyte34567");
         testClinic.setOpenHours("10:00 AM : 12:00PM");
         testClinic.setDentists(dentistIDs);
+
+    }
+
+    @Test
+    @DisplayName("Test to create a clinic")
+    void createClinic(){
         
         when(clinicRepository.save(testClinic)).thenReturn(testClinic);
 
-        assertEquals(testClinic, clinicService.createClinic(testClinic));
+        assertEquals(testClinic, clinicService.createClinic(testClinic), "The two clinics should match");
         verify(clinicRepository,times(1)).save(testClinic);
+
+    }
+
+    @Test
+    @DisplayName("Test getting all clinics in the database")
+    void getAllClinics(){
+        ClinicSchema secondClinic = new ClinicSchema();
+        testClinic.setAddress("Angered Village, Nowhere");
+        Coordinate clinicCoordinate = new Coordinate(12.33456789067, 3.4234567889);
+        secondClinic.setCoordinates(clinicCoordinate);
+        secondClinic.setName("Taha's tooh repair clinic");
+        ContactInfo clinicContactInfo = new ContactInfo("1234567890", "Taha.jasser@gmail.com");
+        secondClinic.setContactInfo(clinicContactInfo);
+        ArrayList<String> dentistIDs = new ArrayList<>();
+        dentistIDs.add("6789farergvcdfgf3456789");
+        secondClinic.setOpenHours("6:00 AM : 12:00PM");
+        secondClinic.setDentists(dentistIDs);
+        ArrayList<ClinicSchema> clinics = new ArrayList<>();
+        clinics.add(secondClinic);
+        clinics.add(testClinic);
+
+        when(clinicRepository.findAll()).thenReturn(clinics);
+
+        assertEquals(clinics, clinicService.getAllClinics(), "The two clinic lists should match");
+        verify(clinicRepository, times(1)).findAll();
 
     }
 
