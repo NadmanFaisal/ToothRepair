@@ -67,9 +67,9 @@ export default {
   methods: {
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp({ username, email, password, clinic }) {
-      const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
-      const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
-      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+      const PUBLISH_PATIENT_TOPIC = 'authenticationService/patient/signup'
+      const PUBLISH_DENTIST_TOPIC = 'authenticationService/dentist/signup'
+      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authenticationService/dentist&patient/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
       console.log("This is the clinics " + clinic?.id)
       try{

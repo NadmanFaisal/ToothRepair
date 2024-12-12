@@ -68,7 +68,7 @@
   </template>
 
 <script>
-import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
   data() {
@@ -85,11 +85,12 @@ export default {
         alert('Please specify your role.')
         return
       }
+
       this.error = null
-      const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
-      const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authentication/login'
-      const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
-      const SUBSCRIBE_USER_ID = 'authentication/userID'
+      const PUBLISH_PATIENT_LOGIN_ALERT = 'authenticationService/patient/login'
+      const PUBLISH_DENTIST_LOGIN_ALERT = 'authenticationService/dentist/login'
+      const SUBCRIBE_AUTHENTICATION_ALERT = 'authenticationService/alert/login'
+      const SUBSCRIBE_USER_ID = 'authenticationService/dentist&patient/userID'
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
       await subscribeToTopic(SUBSCRIBE_USER_ID)
