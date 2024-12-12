@@ -117,24 +117,24 @@ export default {
         }
 
         // Creates new appointment with next available time slot
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
         const newAppointment = {
           status: 'available',
           date: '1111-11-11',
           startTime,
           endTime: incrementTime(startTime)
         }
-        publishToTopic('ScheduleService/Appointment/createAppointment', JSON.stringify(newAppointment))
+        publishToTopic('scheduleService/appointment/createAppointment', JSON.stringify(newAppointment))
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
     },
     async getAppointments() {
       try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointments', 'Get Appointments')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
+        publishToTopic('scheduleService/appointment/getAppointments', 'Get Appointments')
         messageArrived((topic, message) => {
-          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+          if (topic === 'client/scheduleService/appointmentInfo') {
             console.log('Received Appointment list:', message)
 
             // Check if the receiving message is already a JSON string, if not, parse it
@@ -153,8 +153,8 @@ export default {
       }
       try {
         const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
+        publishToTopic('scheduleService/appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {
