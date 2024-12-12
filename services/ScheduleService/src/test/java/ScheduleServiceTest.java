@@ -1,7 +1,6 @@
 package test.java;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,9 +8,8 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Optional;
 
-import org.bson.codecs.jsr310.LocalDateCodec;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -97,6 +95,20 @@ public class ScheduleServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Book an appointment in the db")
+    void bookAppointmentTest(){
+
+        when(appointmentRepository.findById(testAppointment.getId())).thenReturn(Optional.of(testAppointment));
+        AppointmentSchema result = testAppointment;
+        result.setStatus("booked");
+
+        assertEquals(Optional.of(result), appointmentService.bookAppointment(testAppointment), "The result of this test object should match the booked appointment object");
+        
+        verify(appointmentRepository, times(1)).findById(testAppointment.getId());
+
+
+    }
 
 
 
