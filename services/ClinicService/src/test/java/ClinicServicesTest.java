@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +66,7 @@ public class ClinicServicesTest {
 
     @Test
     @DisplayName("Test getting all clinics in the database")
-    void getAllClinics(){
+    void getAllClinicsTest(){
         ClinicSchema secondClinic = new ClinicSchema();
         testClinic.setAddress("Angered Village, Nowhere");
         Coordinate clinicCoordinate = new Coordinate(12.33456789067, 3.4234567889);
@@ -85,6 +86,21 @@ public class ClinicServicesTest {
 
         assertEquals(clinics, clinicService.getAllClinics(), "The two clinic lists should match");
         verify(clinicRepository, times(1)).findAll();
+
+    }
+
+
+    @Test
+    @DisplayName("Get a clinic by its ID")
+    void getClinicByIdTest(){
+
+        testClinic.setId("6fa246fdbh23456");
+
+        when(clinicRepository.findById(testClinic.getId())).thenReturn(Optional.of(testClinic));
+
+        assertEquals(clinicService.getClinic(testClinic.getId()), Optional.of(testClinic), "The two clinics should be equal in the test");
+
+        verify(clinicRepository, times(1)).findById(testClinic.getId());
 
     }
 
