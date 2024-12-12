@@ -47,56 +47,53 @@ public class ServicesTest {
     }
     
     
-    /* 
     @Test
     @DisplayName("Try to search for a patient by email and return true if they exists, false if they dont")
     void checkDuplicatePatientTest(){
         testPatient.setEmail("tokyo@gmail.com");
-        when(patientService.checkDuplicatePatient(testPatient)).thenReturn(true);
+        when(patientRepository.findByEmail("tokyo@gmail.com")).thenReturn(testPatient);
         assertEquals(true, patientService.checkDuplicatePatient(testPatient), "Duplicate email should exists and true should be returned");
     }
 
+    
     @Test
     @DisplayName("Try to search for a dentist by email and return true if they exists, false if they dont")
     void checkDuplicateDentistTest(){
         testDentist.setEmail("vaibhavpuram05@gmail.com");
-        when(dentistService.checkDuplicateDentist(testDentist)).thenReturn(true);
+        when(dentistRepository.findByEmail("vaibhavpuram05@gmail.com")).thenReturn(testDentist);
         assertEquals(true, dentistService.checkDuplicateDentist(testDentist), "Duplicate email should exists and true should be returned");
     }
     
-    */
 
     @Test
     @DisplayName("Create a patient and successfully save it to the database to be stored")
     void createPatientTest(){
-        PatientSchema newPatient = new PatientSchema();
-        newPatient.setEmail("YouAreMySunshine@gmail.com");  
-        newPatient.setName("Taha");
-        newPatient.setPassword("1234567890");     
+        testPatient.setEmail("YouAreMySunshine@gmail.com");  
+        testPatient.setName("Taha");
+        testPatient.setPassword("1234567890");     
         
-        when(patientRepository.save(newPatient)).thenReturn(newPatient);
+        when(patientRepository.save(testPatient)).thenReturn(testPatient);
 
-        PatientSchema result = patientService.createPatient(newPatient);
+        PatientSchema result = patientService.createPatient(testPatient);
 
-        assertEquals(newPatient, result, "The saved patient should match the input patient.");
-        verify(patientRepository).save(newPatient); 
+        assertEquals(testPatient, result, "The saved patient should match the input patient.");
+        verify(patientRepository).save(testPatient); 
     }
 
     @Test
     @DisplayName("Create a dentist and successfully save it to the database to be stored")
     void createDentistTest(){
-        DentistSchema newDentist = new DentistSchema();
-        newDentist.setEmail("Mohamed.Taha@gmail.com");
-        newDentist.setName("Vaibhav Puram");
-        newDentist.setPassword("12345678");
-        newDentist.setClinic("Taha Jasser Teeth Repair");
+        testDentist.setEmail("Mohamed.Taha@gmail.com");
+        testDentist.setName("Vaibhav Puram");
+        testDentist.setPassword("12345678");
+        testDentist.setClinic("Taha Jasser Teeth Repair");
 
-        when(dentistRepository.save(newDentist)).thenReturn(newDentist);
+        when(dentistRepository.save(testDentist)).thenReturn(testDentist);
 
-        DentistSchema result = dentistService.createDentist(newDentist);
+        DentistSchema result = dentistService.createDentist(testDentist);
 
-        assertEquals(newDentist, result, "The saved dentist should match the input dentist.");
-        verify(dentistRepository).save(newDentist);
+        assertEquals(testDentist, result, "The saved dentist should match the input dentist.");
+        verify(dentistRepository).save(testDentist);
         
     }
     
