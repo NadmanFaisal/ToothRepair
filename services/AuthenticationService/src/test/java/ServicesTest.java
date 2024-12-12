@@ -2,6 +2,7 @@ package test.java;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +54,7 @@ public class ServicesTest {
         testPatient.setEmail("tokyo@gmail.com");
         when(patientRepository.findByEmail("tokyo@gmail.com")).thenReturn(testPatient);
         assertEquals(true, patientService.checkDuplicatePatient(testPatient), "Duplicate email should exists and true should be returned");
+        verify(patientRepository, times(1)).findByEmail("tokyo@gmail.com");
     }
 
     
@@ -62,6 +64,7 @@ public class ServicesTest {
         testDentist.setEmail("vaibhavpuram05@gmail.com");
         when(dentistRepository.findByEmail("vaibhavpuram05@gmail.com")).thenReturn(testDentist);
         assertEquals(true, dentistService.checkDuplicateDentist(testDentist), "Duplicate email should exists and true should be returned");
+        verify(dentistRepository, times(1)).findByEmail("vaibhavpuram05@gmail.com");
     }
     
 
