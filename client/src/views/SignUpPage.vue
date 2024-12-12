@@ -114,6 +114,7 @@ export default {
       phone: null,
       confirmPassword: '',
       clinics: [],
+      selectedClinic: null,
       selectedClinicId: null,
       selectedClinicName: null,
       message: '',
@@ -126,6 +127,7 @@ export default {
       this.$router.push('/login')
     },
     selectAClinic(clinic) {
+      this.selectedClinic = clinic
       this.selectedClinicId = clinic.id
       this.selectedClinicName = clinic.name
     },
@@ -194,6 +196,9 @@ export default {
       }
     },
     async createAppointments(noOfDays, clinicId) {
+      if (this.selectedClinic.dentists && this.selectedClinic.dentists.length > 0) {
+        return
+      }
       try {
         // Increments the time of the appointments by 30 mins
         const incrementTime = (time) => {
