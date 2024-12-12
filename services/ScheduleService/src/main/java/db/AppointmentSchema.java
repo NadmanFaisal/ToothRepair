@@ -16,8 +16,8 @@ public class AppointmentSchema {
     
     private String patient;
     
-    // @DBRef
-    // private String clinic;
+    
+    private String clinic;
     
     private String dentist;
     
@@ -43,9 +43,9 @@ public class AppointmentSchema {
         return this.patient;
     }
 
-    // public ClinicSchema getClinic() {
-    //     return this.clinic;
-    // }
+    public String getClinic() {
+         return this.clinic;
+     }
 
     public String getDentist() {
         return this.dentist;
@@ -72,9 +72,9 @@ public class AppointmentSchema {
         this.patient = patient;
     }
 
-    // public void setClinic(ClinicSchema clinic) {
-    //     this.clinic = clinic;
-    // }
+    public void setClinic(String clinic) {
+         this.clinic = clinic;
+    }
 
     public void setDentist(String dentist) {
         this.dentist = dentist;
