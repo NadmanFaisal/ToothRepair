@@ -23,6 +23,7 @@ import main.java.service.PatientService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class ServicesTest {
@@ -167,7 +168,7 @@ public class ServicesTest {
 
     
     @Test
-    @DisplayName("Get all dentists")
+    @DisplayName("Get an individual dentist by their email")
     void getADentistTest() {
         testDentist.setEmail("Mohamed.Taha@gmail.com");
         testDentist.setName("Vaibhav Puram");
@@ -178,6 +179,24 @@ public class ServicesTest {
         
         assertEquals(testDentist, dentistService.getDentist(testDentist), "The returned patient should match the current patient");
         verify(dentistRepository, times(1)).findByEmail("Mohamed.Taha@gmail.com");
+    }
+
+    @Test
+    @DisplayName("Get an individual dentist by their email")
+    void getDentistNameByIDTest() {
+        testDentist.setId("6fa123456ed9vjr34567");
+        testDentist.setEmail("Mohamed.Taha@gmail.com");
+        testDentist.setName("Vaibhav Puram");
+        testDentist.setPassword("12345678");
+        testDentist.setClinic("Taha Jasser Teeth Repair");
+
+
+        when(dentistRepository.findById(testDentist.getId())).thenReturn(Optional.of(testDentist));
+
+        String dentistName = testDentist.getName();
+
+        assertEquals(dentistName, dentistService.getNameByID(testDentist.getId()), "The returned patient should match the current patient");
+        verify(dentistRepository, times(1)).findById(testDentist.getId());
     }
 
 
