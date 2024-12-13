@@ -7,4 +7,6 @@ public interface AppointmentRepository extends MongoRepository<AppointmentSchema
 
 List<AppointmentSchema> findByClinic(String clinic);
 
+List<AppointmentSchema> findByPatient(String patient);
+
 }

@@ -71,5 +71,9 @@ public class AppointmentService {
     public List<AppointmentSchema> getAppointmentsByClinic(AppointmentSchema appointmentInfo) {
         return appointmentRepository.findByClinic(appointmentInfo.getClinic());
     }
+
+    public List<AppointmentSchema> getAppointmentsByPatient(AppointmentSchema appointmentInfo) {
+        return appointmentRepository.findByPatient(appointmentInfo.getPatient());
+    }
     
 }

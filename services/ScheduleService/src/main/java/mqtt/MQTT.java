@@ -27,7 +27,7 @@ public class MQTT implements MqttCallback {
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
-     "ScheduleService/Appointment/changeAppointmentStatus", "ScheduleService/Appointment/getAppointmentsByClinic"}; 
+     "ScheduleService/Appointment/changeAppointmentStatus", "ScheduleService/Appointment/getAppointmentsByClinic", "ScheduleService/Appointment/getAppointmentsByPatient"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -160,6 +160,14 @@ public class MQTT implements MqttCallback {
                     System.out.println("Will publish all appointments per clinic");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/getAppointmentsByPatient": {
+                    System.out.println("Will publish all appointments per patient");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
                     this.publishAppointmentList(topic, appointmentListJson);
                     break;
                 }

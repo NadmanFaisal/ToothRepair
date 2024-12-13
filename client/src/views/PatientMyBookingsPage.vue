@@ -14,51 +14,52 @@
                     </div>
 
                     <div class="col-4 right-title-container">
-                        <button class="col-8 btn book-appointment-button" @click="navigateToAppointmentsPage">Book Appointments Now!</button>
+                        <button class="col-8 btn book-appointment-button" @click="getAppointments">Book Appointments Now!</button>
                      </div>
                 </div>
 
                 <div class="appointment-container">
 
-                    <div class="col-12 appointment-title-container">
-                        <label class="appointment-title-label">My Appointments</label>
-                    </div>
+                  <div class="col-12 appointment-title-container">
+                    <label class="appointment-title-label">My Appointments</label>
+                  </div>
 
-                    <hr>
+                  <hr>
 
-                    <div class="col-12 appointment-content-section">
+                  <div class="col-12 appointment-content-section">
 
-                      <div class="col-12 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id">
+                    <div class="col-12 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id">
 
-                        <diiv class="col-1 logo-container">
-                          <img src="../assets/appointment-slot-image.png" class="appointment-image">
-                        </diiv>
+                      <div class="col-1 logo-container">
+                        <img src="../assets/appointment-slot-image.png" class="appointment-image">
+                        <div class="vl"></div>
+                      </div>
 
-                        <div class="col-4 date-container">
-                          <label class="appointment-day-label">{{ formatAppointmentDate(appointment.date).day }}</label>
-                          <label class="appointment-month-day-label">{{ formatAppointmentDate(appointment.date).monthAndDay }} at <span class="appointment-start-time-span">{{ appointment.startTime }}</span></label>
+                      <div class="col-4 date-container">
+                        <label class="appointment-day-label">{{ formatAppointmentDate(appointment.date).day }}</label>
+                        <label class="appointment-month-day-label">{{ formatAppointmentDate(appointment.date).monthAndDay }} at <span class="appointment-start-time-span">{{ appointment.startTime }}</span></label>
+                      </div>
+
+                      <div class="col-4 clinic-details-container">
+                        <label class="clinic-name-label">{{ appointment.clinic }}</label>
+                      </div>
+
+                      <div class="col-3 status-container">
+
+                        <div v-if="today > appointment.date" class="col-12 button-container">
+                          <button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>
+                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
                         </div>
 
-                        <div class="col-4 clinic-details-container">
-                          <label class="clinic-name-label">{{ appointment.clinic }}</label>
-                        </div>
-
-                        <div class="col-3 status-container">
-
-                          <div v-if="today > appointment.date" class="col-12 button-container">
-                            <button class="col-10 btn reschedule-button">Reschedule</button>
-                            <button class="col-10 btn cancel-button">Cancel</button>
-                          </div>
-
-                          <div v-else class="col-12 completed-container">
-                            <label class="completed-label">COMPLETED!</label>
-                          </div>
-
+                        <div v-else class="col-12 completed-container">
+                          <label class="completed-label">COMPLETED!</label>
                         </div>
 
                       </div>
 
                     </div>
+
+                  </div>
 
                 </div>
 
@@ -73,11 +74,13 @@
 
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
+import { subscribeToTopic, messageArrived, publishToTopic } from '@/mqtt/mqtt'
 
 export default {
   data() {
     return {
       today: new Date().toISOString().split('T')[0],
+      userId: localStorage.getItem('UserID'),
       appointments: [
         { id: 'abcdefg', status: 'booked', date: '2024-12-09', startTime: '9:00', endTime: '9:30', clinic: 'SEM Clinic' }
       ],
@@ -88,6 +91,40 @@ export default {
     PatientTopBar
   },
   methods: {
+    async getAppointments() {
+      try {
+        console.log('Setting up message listener...')
+
+        if (!this.userId) {
+          throw new Error('User ID not found in localStorage')
+        }
+
+        messageArrived((topic, message) => {
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
+            console.log('Received appointments for specific patient:', parsedMessage)
+
+            // Update appointments state for reactivity
+            this.appointments = [...parsedMessage]
+          }
+        })
+
+        console.log('Subscribing to topic...')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        console.log('Subscribed successfully')
+
+        console.log('Publishing request for appointments...')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
+      } catch (error) {
+        console.error('Error in getAppointments:', error)
+      }
+    },
+    rescheduleAppointment(appointmentId) {
+      console.log('reshceduling: ', appointmentId)
+    },
+    cancelAppointment(appointmentId) {
+      console.log('cancelling: ', appointmentId)
+    },
     navigateToAppointmentsPage() {
       this.$router.push('/patientAppointmentPage')
     },
@@ -265,10 +302,16 @@ export default {
 
 .logo-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
   justify-content: center;
   align-items: center;
+}
+
+.vl {
+  border-left: 2px solid #c5c5c5;
+  height: 70%;
+  margin: 8px;
 }
 
 .appointment-image {
