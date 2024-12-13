@@ -48,7 +48,18 @@ public class ServicesTest {
         dentistService = new DentistService(dentistRepository);
         
         testPatient = new PatientSchema();
+
+        testPatient.setEmail("YouAreMySunshine@gmail.com");  
+        testPatient.setName("Taha");
+        testPatient.setPassword("1234567890");   
+        
         testDentist = new DentistSchema();
+
+        testDentist.setEmail("Mohamed.Taha@gmail.com");
+        testDentist.setName("Vaibhav Puram");
+        testDentist.setPassword("12345678");
+        testDentist.setClinic("Taha Jasser Teeth Repair");
+
     }
     
     
@@ -75,10 +86,7 @@ public class ServicesTest {
     @Test
     @DisplayName("Create a patient and successfully save it to the database to be stored")
     void createPatientTest(){
-        testPatient.setEmail("YouAreMySunshine@gmail.com");  
-        testPatient.setName("Taha");
-        testPatient.setPassword("1234567890");     
-        
+    
         when(patientRepository.save(testPatient)).thenReturn(testPatient);
 
         PatientSchema result = patientService.createPatient(testPatient);
@@ -109,10 +117,6 @@ public class ServicesTest {
     void getAllDentistsTest() {
         ArrayList<DentistSchema> testDentistList = new ArrayList<DentistSchema>();
 
-        testDentist.setEmail("Mohamed.Taha@gmail.com");
-        testDentist.setName("Vaibhav Puram");
-        testDentist.setPassword("12345678");
-        testDentist.setClinic("Taha Jasser Teeth Repair");
         testDentistList.add(testDentist);
         
         DentistSchema secondDentist = new DentistSchema();

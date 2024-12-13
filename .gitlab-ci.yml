@@ -73,7 +73,7 @@ Schedule-service-build:
     paths:
       - services/ScheduleService/target/
 
-# Tests the authentication service
+# Tests the authentication service 
 Authentication-service-test:
   stage: test
   image: maven:3.9.4-eclipse-temurin-17
