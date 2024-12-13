@@ -38,7 +38,8 @@ export default {
     return {
       navItems: [
         { name: 'My Home', route: '/patientHomePage' },
-        { name: 'My Bookings', route: '/patientAppointmentPage' }
+        { name: 'Book Appointments', route: '/patientAppointmentPage' },
+        { name: 'My Bookings', route: '/patientMyBookingsPage' }
         // Add more navigation items here
       ]
     }
