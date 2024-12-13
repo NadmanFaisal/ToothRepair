@@ -242,7 +242,9 @@ public class MQTT implements MqttCallback {
                     patientService.createPatient(patient); 
                 }            
             } else {
-                System.err.println("Some part of the payload for the patient is missing");
+                String errorMessage = "Some part of the payload for the patient is missing";
+                System.out.println(errorMessage);
+                middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -284,21 +286,22 @@ public class MQTT implements MqttCallback {
             DentistSchema dentist = objectMapper.readValue(stringPayload, DentistSchema.class);
 
             if (!checkDentistInfo(dentist)) {
-            } else {
-                System.err.println("Some part of the payload for the dentist is missing");
-                return;
-            }
+                if(dentistService.checkDuplicateDentist(dentist)){
+                    String errorMessage = "Error: An account with this email already exists";
+                    System.out.println(errorMessage);
+                    middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
+                }else{
 
-            if(dentistService.checkDuplicateDentist(dentist)){
-                String errorMessage = "Error: An account with this email already exists";
+                    dentistService.createDentist(dentist);
+                    String messageToClinicService = String.format("{ \"clinicId\": " + "\"%s\"" +","+"\"dentistId\": "+ "\"%s\"" +" }", dentist.getClinic(), dentist.getId());
+                    System.out.println("Publishing message to clinic service: " + messageToClinicService);
+                    middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
+                }
+
+            } else {
+                String errorMessage = "Some part of the payload for the dentist is missing";
                 System.out.println(errorMessage);
                 middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
-            }else{
-
-                dentistService.createDentist(dentist);
-                String messageToClinicService = String.format("{ \"clinicId\": " + "\"%s\"" +","+"\"dentistId\": "+ "\"%s\"" +" }", dentist.getClinic(), dentist.getId());
-                System.out.println("Publishing message to clinic service: " + messageToClinicService);
-                middleware.publish(PUBLISHED_CLINIC_TOPIC, messageToClinicService.getBytes(), 2,false);
             }
         } catch (Exception e) {
             System.err.println("An error occurred during dentist singup");
@@ -380,6 +383,11 @@ public class MQTT implements MqttCallback {
             PatientSchema patient = objectMapper.readValue(stringPayload, PatientSchema.class);
             PatientSchema checkPatient = patientService.getPatient(patient);
 
+            if (checkPatient == null) {
+                String failureMessage = "Invalid login information, there is no patient with that information";
+                System.out.println(failureMessage);
+                middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
+            }
             if (!patientService.checkDuplicatePatient(patient) && !patient.checkPassword(checkPatient.getPassword()) ){ 
                 String failureMessage = "Invalid email or Password please try again";
                 System.out.println(failureMessage);
