@@ -8,12 +8,9 @@
 
             <div class="col-3 left-section">
 
-                <CalendarComponent />
+              <CalendarComponent />
 
-                <div class="mapCompContainer">
-                    <p>This is the Leaflet map</p>
-                    <MapComponent :clinics="clinics"></MapComponent>
-                </div>
+              <MapComponent :clinics="clinics"></MapComponent>
 
             </div>
 
@@ -31,9 +28,9 @@
 import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishToTopic } from '../mqtt/mqtt.js'
 
 import TopBarComponent from '../components/TopBar.vue'
-import CalendarComponent from '../components/PatientHomePageComponents/CalendarComponent.vue'
-import MapComponent from '../components/MapComponent.vue'
-import AppointmentComponent from '../components/PatientHomePageComponents/AppointmentComponent.vue'
+import CalendarComponent from '../components/PatientHomePageComponents/PatientCalendarComponent.vue'
+import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
+import AppointmentComponent from '../components/PatientHomePageComponents/PatientAppointmentComponent.vue'
 
 export default {
   name: 'PatientHomePage',

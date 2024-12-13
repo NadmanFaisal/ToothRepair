@@ -230,7 +230,6 @@ public class MQTT implements MqttCallback {
             PatientSchema patient = objectMapper.readValue(stringPayload, PatientSchema.class);
             
             if (checkPatientInfo(patient)) {
-
                 if(patientService.checkDuplicatePatient(patient)){
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);
@@ -273,7 +272,7 @@ public class MQTT implements MqttCallback {
     }
 
     /**
-     * Logic to sign up a patient. It reads the value as a DemtistSchema and checks for duplicate in the 
+     * Logic to sign up a dentist. It reads the value as a DentistSchema and checks for duplicate in the 
      * database, if no duplicates creates a dentist otherwise sends an errorMessage
      * 
      * @param stringPayload the payload that is converted to a String
@@ -285,7 +284,7 @@ public class MQTT implements MqttCallback {
             System.out.println("Message recieved: " + stringPayload);
             DentistSchema dentist = objectMapper.readValue(stringPayload, DentistSchema.class);
 
-            if (!checkDentistInfo(dentist)) {
+            if (checkDentistInfo(dentist)) {
                 if(dentistService.checkDuplicateDentist(dentist)){
                     String errorMessage = "Error: An account with this email already exists";
                     System.out.println(errorMessage);

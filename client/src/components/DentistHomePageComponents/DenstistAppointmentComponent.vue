@@ -148,7 +148,7 @@ export default {
     },
     async makeAvailable() {
       if (!this.selectedAppointmentId) {
-        console.error('No booking slot has been selected')
+        alert('No booking slot has been selected')
         return
       }
       try {

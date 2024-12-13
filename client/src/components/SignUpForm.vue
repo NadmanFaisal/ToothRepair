@@ -60,8 +60,8 @@ export default {
     email: String,
     password: String,
     clinics: {
-      type : Array,
-      required : true
+      type: Array,
+      required: true
     },
     isDentist: Boolean
   },

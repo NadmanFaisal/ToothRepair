@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - upload-docker
 
 # Build the frontend
 frontend-build:
@@ -71,3 +72,63 @@ Schedule-service-build:
   artifacts:
     paths:
       - services/ScheduleService/target/
+
+# Builds and pushes the AuthenticationService docker image
+Authentication-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Authentication-service-build
+  script:
+    - cd services/AuthenticationService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service
+  tags:
+    - docker-build
+
+# Builds and pushes the ClinicService docker image
+Clinic-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Clinic-service-build
+  script:
+    - cd services/ClinicService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service
+  tags:
+    - docker-build
+
+# Builds and pushes the scheduleService docker image
+Schedule-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Schedule-service-build
+  script:
+    - cd services/ScheduleService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service
+  tags:
+    - docker-build
