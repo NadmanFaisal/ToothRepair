@@ -101,7 +101,6 @@
 </template>
 
 <script>
-import SignUpForm from '@/components/SignUpForm.vue'
 import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
