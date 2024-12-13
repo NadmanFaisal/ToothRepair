@@ -151,7 +151,6 @@ export function unsubscribeFromTopic(topic) {
  * @returns {message} returns the message recieved from the topic
  */
 export function messageArrived(callback) {
-  client.removeAllListeners('message')
   client.on('message', (topic, message) => {
     try {
       console.log('This is the JSON format of the message' + message)
