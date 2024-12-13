@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
@@ -130,10 +130,10 @@ export default {
       this.selectedClinicName = clinic.name
     },
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp() {
-      const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
-      const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
-      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+    async submitSignUp({ username, email, password, clinic }) {
+      const PUBLISH_PATIENT_TOPIC = 'authenticationService/patient/signup'
+      const PUBLISH_DENTIST_TOPIC = 'authenticationService/dentist/signup'
+      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authenticationService/dentist&patient/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
       console.log('This is the clinics ' + this.selectedClinicId)
       if (this.password !== this.confirmPassword) {
@@ -152,38 +152,37 @@ export default {
               clinic: this.selectedClinicId
             }
 
-            publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
-          } else {
-            alert('Error: Input field left empty, please provide values for all input fields')
-            return
-          }
-        } else {
-          if (this.username && this.password && emailVerification.test(this.email)) {
-            const newPatient = {
-              name: this.username,
-              email: this.email,
-              password: this.password
-            }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-          } else {
-            alert('Error: Input field left empty, please provide values for all input fields')
-            return
-          }
+          publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+
+          setTimeout(() => {
+            this.$router.push('/login')
+          }, 2000)
+        }else{
+          alert('Error: Input field left empty, please provide values for all input fields')
         }
-        messageArrived((topic, message) => {
-          if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
-            console.log(message)
-            if (message === 'Sign Up Successful!') { // alert successful message then push to login
-              alert(message)
-              setTimeout(() => {
-                this.$router.push('/login')
-              }, 2000)
-            } else { // alert error message
+      }else{
+        if(username && password && emailVerification.test(email)){
+          const newPatient = {
+                name: username,
+                email,
+                password
+          }
+            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+            
+            setTimeout(() => {
+            this.$router.push('/login')
+          }, 2000)
+        }else{
+          alert('Error: Input field left empty, please provide values for all input fields')
+        }
+      }
+          messageArrived((topic, message) => {
+            if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
+              console.log(message)
               alert(message)
             }
             unsubscribeFromTopic('authentication/status')
-          }
-        })
+          })
       } catch (error) {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }
@@ -194,7 +193,7 @@ export default {
       const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
         if (topic === SUBCRIBED_CLINIC_TOPIC) {
           console.log('Received clinics list:', message)

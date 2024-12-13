@@ -132,3 +132,23 @@ Schedule-service-docker:
     - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service
   tags:
     - docker-build
+
+# Builds and pushes the notificationService docker image
+Notification-service-docker:
+  stage: upload-docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
+  dependencies:
+    - Notification-service-build
+  script:
+    - cd services/NotificationService
+    - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/notification-service .
+    - docker push registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/notification-service
+  tags:
+    - docker-build

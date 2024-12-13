@@ -93,12 +93,10 @@ public class AppointmentSchema {
     }
 
     // Stringyfies the appointment data
+    @Override
     public String toString() {
-        String appointmentRepresentation = "";
-        appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + 
+        return "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + 
         ", startTime: " + this.startTime + ", endTime: " + this.endTime + ", patient: " + this.patient +
         ", dentist: " + this.dentist +  " }";
-
-        return appointmentRepresentation;
     }
 }
