@@ -14,7 +14,7 @@
                     </div>
 
                     <div class="col-4 right-title-container">
-                        <button class="col-8 btn book-appointment-button" @click="getAppointments">Book Appointments Now!</button>
+                        <button class="col-8 btn book-appointment-button" @click="navigateToHomePage">Book Appointments Now!</button>
                      </div>
                 </div>
 
@@ -104,7 +104,7 @@ export default {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             console.log('Received appointments for specific patient:', parsedMessage)
 
-            // Update appointments state for reactivity
+            // Updates the appointments list state for reactivity
             this.appointments = [...parsedMessage]
           }
         })
@@ -119,14 +119,41 @@ export default {
         console.error('Error in getAppointments:', error)
       }
     },
+    async getClinic(clinicId) {
+      try {
+        console.log('Setting up message listener for clinic info...')
+
+        messageArrived((topic, message) => {
+          if (topic === 'Client/ClinicService/ClinicInfo') {
+            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
+            console.log('Received clinic info:', parsedMessage)
+
+            if (Object.keys(parsedMessage).length === 0) {
+              console.warn('No clinic found for the given ID.')
+            } else {
+              this.clinic.push(parsedMessage)
+            }
+          }
+        })
+
+        console.log('Subscribing to topic...')
+        await subscribeToTopic('Client/ClinicService/ClinicInfo')
+        console.log('Subscribed successfully')
+
+        console.log('Publishing request for clinic info...')
+        publishToTopic('ClinicService/Clinic/getClinicById', clinicId)
+      } catch (error) {
+        console.error('Error in getClinic:', error)
+      }
+    },
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
     cancelAppointment(appointmentId) {
       console.log('cancelling: ', appointmentId)
     },
-    navigateToAppointmentsPage() {
-      this.$router.push('/patientAppointmentPage')
+    navigateToHomePage() {
+      this.$router.push('/patientHomePage')
     },
     formatAppointmentDate(dateString) {
       const date = new Date(dateString)
