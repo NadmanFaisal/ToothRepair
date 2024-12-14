@@ -13,7 +13,7 @@ import main.java.db.PatientSchema;
 @Service
 public class PatientService{
 
-    private PatientRepository patientRepository;
+    private final PatientRepository patientRepository;
     @Autowired
     public PatientService(PatientRepository patientRepository) {
         this.patientRepository = patientRepository;
@@ -30,10 +30,7 @@ public class PatientService{
 
     public Boolean checkDuplicatePatient(PatientSchema patient ) {
         
-        if(patientRepository.findByEmail(patient.getEmail()) != null){
-            return true;
-        }
-        return false;
+        return patientRepository.findByEmail(patient.getEmail()) != null;
     }
 
     public PatientSchema getPatient(PatientSchema patient){

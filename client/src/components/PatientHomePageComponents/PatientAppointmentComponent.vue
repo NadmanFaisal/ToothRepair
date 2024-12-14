@@ -98,10 +98,10 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointments', 'Get Appointments')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
+        publishToTopic('scheduleService/appointment/getAppointments', 'Get Appointments')
         messageArrived((topic, message) => {
-          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+          if (topic === 'client/scheduleService/appointmentInfo') {
             console.log('Received Appointment list:', message)
 
             // Check if the receiving message is already a JSON string, if not, parse it
@@ -123,8 +123,8 @@ export default {
       }
       try {
         const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
+        publishToTopic('scheduleService/appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {

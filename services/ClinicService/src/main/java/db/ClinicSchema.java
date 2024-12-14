@@ -84,4 +84,11 @@ public class ClinicSchema {
         this.dentists = dentists;
     }
 
+    @Override
+    public String toString() {
+        return "{ id: " + getId() + ", name: " + getName() + ", coordinate: " + getCoordinate() + 
+        ", address: " + getAddress() + ", open_hours: " + getOpenHours() + ", contact_info: " + getContactInfo() +
+        ", dentists: " + getDentists() +  " }";
+    }
+
 }

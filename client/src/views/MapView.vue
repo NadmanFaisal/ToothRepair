@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, messageArrived, publishMsgToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
 export default {
   name: 'MapView',
@@ -84,12 +84,12 @@ export default {
   methods: {
     async getAllClinics() {
       try {
-        await subscribeToTopic('test/clinicList')
-        await subscribeToTopic('authentication/dentist/getDentistNames')
-        publishMsgToTopic('test/clinicAlert', 'Get Clinics')
+        await subscribeToTopic('clinicService/clinics/getClinicList')
+        await subscribeToTopic('authenticationService/dentist/getDentistNames')
+        publishToTopic('clinicService/clinic/getClinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
-          if (topic === 'test/clinicList') {
+          if (topic === 'clinicService/clinics/getClinicList') {
             console.log('Recieved clinic list: ', message)
             this.clinics = JSON.parse(message)
             if (this.clinics) {
@@ -101,11 +101,11 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              publishMsgToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              publishToTopic('authenticationService/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
-            unsubscribeFromTopic('test/clinicList')
-          } else if (topic === 'authentication/dentist/getDentistNames') {
+            unsubscribeFromTopic('clinicService/clinics/getClinicList')
+          } else if (topic === 'authenticationService/dentist/getDentistNames') {
             const fixedMessage = '[' + message + ']'
             const newMessage = JSON.parse(fixedMessage)
             console.log('fixed message: ', newMessage)
@@ -156,7 +156,7 @@ export default {
 
       try {
         console.log('Publishing clinic information to test/createClinic')
-        publishMsgToTopic('test/createClinic', JSON.stringify(newClinic))
+        publishToTopic('test/createClinic', JSON.stringify(newClinic))
       } catch (error) {
         console.error('Tried to create a clinic: ', error)
       }
