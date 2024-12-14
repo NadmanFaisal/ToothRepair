@@ -76,6 +76,25 @@ export function messageArrived(callback) {
 }
 
 /**
+ * This function handles received messages and ensures one-time handling.
+ *
+ * Use this when constant listening is not required
+ *
+ * @param {*} callback Callback to process the received message.
+ */
+export function messageArrivedOnce(callback) {
+  client.once('message', (topic, message) => {
+    try {
+      console.log('Received message:', message.toString())
+      callback(topic, message.toString())
+    } catch (error) {
+      console.error('Error parsing the message:', error)
+      callback(topic, message.toString())
+    }
+  })
+}
+
+/**
  * This function sends a message to the topic which is provided
  *
  * @param {*} topic specifies the topic that the message is being sent to

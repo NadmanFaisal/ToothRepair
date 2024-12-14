@@ -74,21 +74,37 @@
 
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
-import { subscribeToTopic, messageArrived, publishToTopic } from '@/mqtt/mqtt'
+import { subscribeToTopic, messageArrivedOnce, unsubscribeFromTopic, publishToTopic, client } from '../mqtt/mqtt'
 
 export default {
   data() {
     return {
       today: new Date().toISOString().split('T')[0],
       userId: localStorage.getItem('UserID'),
-      appointments: [
-        { id: 'abcdefg', status: 'booked', date: '2024-12-09', startTime: '9:00', endTime: '9:30', clinic: 'SEM Clinic' }
-      ],
-      clinics: []
+      appointments: [],
+      clinics: [],
+      subscribedTopics: []
     }
   },
   components: {
     PatientTopBar
+  },
+
+  created() {
+    this.$watch(
+      () => this.$route,
+      this.getAppointments,
+      { immediate: true }
+    )
+  },
+  mounted() {
+    client.on('connect', () => {
+      this.getAppointments()
+      console.log(this.appointments)
+    })
+  },
+  unmounted() {
+    this.cleanupSubscriptions()
   },
   methods: {
     async getAppointments() {
@@ -99,7 +115,7 @@ export default {
           throw new Error('User ID not found in localStorage')
         }
 
-        messageArrived((topic, message) => {
+        messageArrivedOnce((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             console.log('Received appointments for specific patient:', parsedMessage)
@@ -110,9 +126,12 @@ export default {
         })
 
         console.log('Subscribing to topic...')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        console.log('Subscribed successfully')
-
+        const topic = 'Client/ScheduleService/AppointmentInfo'
+        if (!this.subscribedTopics.includes(topic)) {
+          await subscribeToTopic(topic)
+          this.subscribedTopics.push(topic)
+          console.log('Subscribed successfully')
+        }
         console.log('Publishing request for appointments...')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
       } catch (error) {
@@ -123,7 +142,7 @@ export default {
       try {
         console.log('Setting up message listener for clinic info...')
 
-        messageArrived((topic, message) => {
+        messageArrivedOnce((topic, message) => {
           if (topic === 'Client/ClinicService/ClinicInfo') {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             console.log('Received clinic info:', parsedMessage)
@@ -131,7 +150,7 @@ export default {
             if (Object.keys(parsedMessage).length === 0) {
               console.warn('No clinic found for the given ID.')
             } else {
-              this.clinic.push(parsedMessage)
+              this.clinics.push(parsedMessage)
             }
           }
         })
@@ -144,6 +163,18 @@ export default {
         publishToTopic('ClinicService/Clinic/getClinicById', clinicId)
       } catch (error) {
         console.error('Error in getClinic:', error)
+      }
+    },
+    async cleanupSubscriptions() {
+      try {
+        for (const topic of this.subscribedTopics) {
+          console.log(`Unsubscribing from topic: ${topic}`)
+          unsubscribeFromTopic(topic)
+        }
+        this.subscribedTopics = []
+        console.log('Unsubscribed from all topics.')
+      } catch (error) {
+        console.error('Error unsubscribing from topics:', error)
       }
     },
     rescheduleAppointment(appointmentId) {
