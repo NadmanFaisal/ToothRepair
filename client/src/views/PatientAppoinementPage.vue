@@ -1,27 +1,27 @@
 <template>
-    <div class="col-12 screen-container">
-      <BButton @click="logout"> Log Out button</BButton>
+  <div class="col-12 screen-container">
+    <BButton @click="logout"> Log Out button</BButton>
 
-        <TopBarComponent />
+      <TopBarComponent />
 
-        <div class="col-12 content-section">
+      <div class="col-12 content-section">
 
-            <div class="col-3 left-section">
+          <div class="col-3 left-section">
 
-              <CalendarComponent @patientSelectedDate="updateSelectedDate"/>
+            <CalendarComponent @patientSelectedDate="updateSelectedDate"/>
 
-              <MapComponent :clinics="clinics"></MapComponent>
+            <MapComponent :clinics="clinics"></MapComponent>
 
-            </div>
+          </div>
 
-            <div class="col-9 right-section">
+          <div class="col-9 right-section">
 
-                <AppointmentComponent :patientSelectedDate="patientSelectedDate"/>
+              <AppointmentComponent :patientSelectedDate="patientSelectedDate" :appointments="appointments"/>
 
-            </div>
+          </div>
 
-        </div>
-    </div>
+      </div>
+  </div>
 </template>
 
 <script>
@@ -44,18 +44,38 @@ export default {
   data() {
     return {
       clinics: [],
-      patientSelectedDate: new Date().toISOString().split('T')[0]
+      patientSelectedDate: new Date().toISOString().split('T')[0],
+      appointments: []
     }
   },
   mounted() {
-    const clinicId = store.getSelectedClinicId()
-    console.log('Clinic ID received')
-    console.log(clinicId)
-    client.on('connect', () => {
-      this.getAllClinics()
+    console.log('Mounted initialized')
+    client.on('connect', async () => {
+      await this.getAllClinics()
+      await this.getAppointments()
     })
   },
   methods: {
+    async getAppointments() {
+      try {
+        console.log('Subscribing to topic...')
+        console.log('Publishing request for appointments...')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
+        console.log('Subscribed successfully')
+
+        console.log('Setting up message listener...')
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            this.appointments = [...JSON.parse(message)]
+          }
+        })
+        console.log(`This should be working: ${this.appointments}`)
+      } catch (error) {
+        console.error('Error in getAppointments:', error)
+      }
+    },
     updateSelectedDate(date) {
       console.log('Parent received selectedDate from child:', date)
       this.patientSelectedDate = date
@@ -107,6 +127,12 @@ export default {
       } catch (error) {
         console.error('Tried to retrieve all clinics: ', error)
       }
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('Clinic ID fetched')
+          resolve()
+        }, 500)
+      })
     },
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
@@ -117,8 +143,7 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAllClinics,
-      { immediate: true }
+      this.getAppointments
     )
   }
 }
@@ -127,17 +152,17 @@ export default {
 <style scoped>
 
 .screen-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .content-section {
-    display: flex;
-    flex-direction: row;
-    height: 93%;
-    background-image: linear-gradient(0deg, rgba(31, 194, 194, 0.24) 0%, rgba(31, 194, 194, 0.24) 100%), url('@/assets/patient-home-bg-image.jpeg');
-    background-size: contain;
+  display: flex;
+  flex-direction: row;
+  height: 93%;
+  background-image: linear-gradient(0deg, rgba(31, 194, 194, 0.24) 0%, rgba(31, 194, 194, 0.24) 100%), url('@/assets/patient-home-bg-image.jpeg');
+  background-size: contain;
 }
 
 </style>

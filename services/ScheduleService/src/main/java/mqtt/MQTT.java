@@ -104,7 +104,7 @@ public class MQTT implements MqttCallback {
         try {
             //Publish the payload as bytes to the topic.
             System.out.println(message);
-            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 1, false);
+            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
         } catch (Exception e) {
             e.printStackTrace();
         }

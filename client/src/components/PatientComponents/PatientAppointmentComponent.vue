@@ -101,7 +101,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic, client } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, client } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -109,7 +109,6 @@ export default {
   name: 'AppointmentComponent',
   data() {
     return {
-      appointments: [],
       selectedAppointmentId: null
     }
   },
@@ -117,20 +116,16 @@ export default {
     patientSelectedDate: {
       type: String,
       required: true
+    },
+    appointments: {
+      type: Array,
+      default: () => []
     }
-  },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments,
-      { immediate: true }
-    )
   },
   mounted() {
     console.log('Component mounted')
     client.on('connect', () => {
       console.log('MQTT Client connected')
-      this.getAppointments()
       console.log(this.appointments)
     })
   },
@@ -173,8 +168,14 @@ export default {
     }
   },
   methods: {
-    async getAppointments() {
+    /* async getAppointments() {
       try {
+        console.log('Subscribing to topic...')
+        console.log('Publishing request for appointments...')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
+        console.log('Subscribed successfully')
+
         console.log('Setting up message listener...')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
@@ -184,17 +185,10 @@ export default {
             this.appointments = [...parsedMessage]
           }
         })
-
-        console.log('Subscribing to topic...')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        console.log('Subscribed successfully')
-
-        console.log('Publishing request for appointments...')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
-    },
+    }, */
     getTypeOfTime(time) {
       const [hour, minute] = time.split(':').map(Number) // Split the time into hour and minute
       const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
