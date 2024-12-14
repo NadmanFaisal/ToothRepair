@@ -6,8 +6,8 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: 'potatosmotato',
-    port: 0,
+    host: '193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud',
+    port: 8884,
     protocol: 'wss'
   },
   {
@@ -17,7 +17,7 @@ const BROKER_URLS = [
   },
   {
     host: 'broker.hivemq.com',
-    port: 8000,
+    port: 8884,
     protocol: 'wss'
   },
   {
@@ -25,10 +25,10 @@ const BROKER_URLS = [
     port: 8084,
     protocol: 'wss'
   }
-  ]
+]
 
 export let client = mqtt.connect({
-  servers: BROKER_URLS 
+  servers: BROKER_URLS
 })
 
 client.on('connect', () => {
@@ -50,17 +50,15 @@ client.on('close', () => {
   handleReconnection()
 })
 
-
 function handleReconnection() {
   let retryCount = 0
   console.log('Connection lost, attempting to reconnect...')
-  
+
   const reconnectInterval = setInterval(() => {
-    if(client && client.connected) {
+    if (client && client.connected) {
       clearInterval(reconnectInterval)
       console.log(`Successfully reconnected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
       retryCount = 0
-      return
     } else if (retryCount < MAX_RETRIES) {
       console.log(`Reconnection attempt ${retryCount + 1} of ${MAX_RETRIES}`)
       retryCount++
@@ -75,7 +73,6 @@ function handleReconnection() {
         setTimeout(() => {
           console.log(`Reconnecting to broker; ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
           client.reconnect()
-
         }, 1000)
       })
     } else {
@@ -95,8 +92,7 @@ function handleReconnection() {
         setTimeout(() => {
           console.log('Disconnected from current broker, reconnecting...')
           client = mqtt.connect(BROKER_URLS[currentBrokerIndex])
-
-        }, 1000) 
+        }, 1000)
       })
     }
   }, 2000)
@@ -175,4 +171,3 @@ export function publishToTopic(topic, message) {
     console.log('Published the message: ' + message + 'to topic: ' + topic)
   }
 }
-
