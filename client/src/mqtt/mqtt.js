@@ -25,7 +25,7 @@ const BROKER_URLS = [
   }
 ]
 
-export let client = await mqtt.connect({
+export let client = mqtt.connect({
   host: BROKER_URLS[currentBrokerIndex].host,
   port: BROKER_URLS[currentBrokerIndex].port,
   protocol: BROKER_URLS[currentBrokerIndex].protocol,
