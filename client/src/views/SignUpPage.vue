@@ -189,8 +189,8 @@ export default {
     },
 
     async getAllClinics() {
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinics/getClinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'clinicService/clinic/getClinicAlert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
       publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
