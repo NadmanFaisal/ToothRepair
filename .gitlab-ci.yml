@@ -143,6 +143,7 @@ Authentication-service-docker:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
   dependencies:
     - Authentication-service-build
+    - Authentication-service-test
   script:
     - cd services/AuthenticationService
     - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service .
@@ -163,6 +164,7 @@ Clinic-service-docker:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
   dependencies:
     - Clinic-service-build
+    - Clinic-service-test
   script:
     - cd services/ClinicService
     - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service .
@@ -183,6 +185,7 @@ Schedule-service-docker:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
   dependencies:
     - Schedule-service-build
+    - Schedule-service-test
   script:
     - cd services/ScheduleService
     - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service .
@@ -203,6 +206,7 @@ Notification-service-docker:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin registry.git.chalmers.se
   dependencies:
     - Notification-service-build
+    - Notification-service-test
   script:
     - cd services/NotificationService
     - docker build -t registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/notification-service .
