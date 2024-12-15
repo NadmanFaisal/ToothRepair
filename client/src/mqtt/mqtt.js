@@ -8,7 +8,7 @@ const BROKER_URLS = [
   {
     host: 'test.mosquitto.org',
     port: 8081,
-    protocol: 'wss',
+    protocol: 'wss'
   },
   {
     host: 'broker.hivemq.com',
