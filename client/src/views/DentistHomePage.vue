@@ -26,6 +26,7 @@
 import TopBarComponent from '../components/TopBar.vue'
 import DenstistAppointmentComponent from '../components/DentistHomePageComponents/DenstistAppointmentComponent.vue'
 import DentistCalendarComponent from '../components/DentistHomePageComponents/DentistCalendarComponent.vue'
+import { unsubscribeFromTopic} from '../mqtt/mqtt.js'
 
 export default {
   name: 'MyBookingsPage',
@@ -37,6 +38,8 @@ export default {
   methods: {
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      unsubscribeFromTopic('client/scheduleService/appointmentInfo');
+      localStorage.clear();
       this.$router.push('/login')
     }
   }

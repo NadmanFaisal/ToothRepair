@@ -156,22 +156,21 @@ export default {
 
           setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }
       }else{
-        if(username && password && emailVerification.test(email)){
+        if(this.username && this.password && emailVerification.test(this.email)){
           const newPatient = {
-                name: username,
-                email,
-                password
+                name: this.username,
+                email: this.email,
+                password: this.password
           }
             publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-            
             setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }

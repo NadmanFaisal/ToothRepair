@@ -32,6 +32,7 @@ import CalendarComponent from '../components/PatientHomePageComponents/PatientCa
 import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
 import AppointmentComponent from '../components/PatientHomePageComponents/PatientAppointmentComponent.vue'
 
+
 export default {
   name: 'PatientHomePage',
   components: {
@@ -99,6 +100,8 @@ export default {
     },
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      unsubscribeFromTopic('client/scheduleService/appointmentInfo');
+      localStorage.clear();
       this.$router.push('/login')
     }
   },
