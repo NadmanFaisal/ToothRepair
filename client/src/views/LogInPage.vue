@@ -151,10 +151,13 @@ export default {
               alert(message)
             }, 500)
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
-          } else if (topic === SUBSCRIBE_USER_ID) {
+          }
+          if (topic === SUBSCRIBE_USER_ID) {
+            console.log("I AM IN THE CORRECT IF STATEMENT")
             localStorage.setItem('UserID', JSON.stringify(message))
-            console.log('This is the stored User ID: ' + JSON.stringify(message))
+            console.log('This is the stored User ID:  '  + JSON.stringify(message))
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
+            
           }
         })
       } catch (err) {

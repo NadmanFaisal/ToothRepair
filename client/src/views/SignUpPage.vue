@@ -156,22 +156,21 @@ export default {
 
           setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }
       }else{
-        if(username && password && emailVerification.test(email)){
+        if(this.username && this.password && emailVerification.test(this.email)){
           const newPatient = {
-                name: username,
-                email,
-                password
+                name: this.username,
+                email: this.email,
+                password: this.password
           }
             publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-            
             setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }
@@ -189,8 +188,8 @@ export default {
     },
 
     async getAllClinics() {
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinics/getClinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'clinicService/clinic/getClinicAlert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
       publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)

@@ -6,29 +6,38 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: 'potatosmotato',
-    port: 0,
-    protocol: 'wss'
-  },
-  {
     host: 'test.mosquitto.org',
     port: 8081,
     protocol: 'wss'
   },
   {
     host: 'broker.hivemq.com',
-    port: 8000,
-    protocol: 'wss'
+    port: 8884,
+    protocol: 'wss',
+    path: '/mqtt'
   },
   {
     host: 'broker.emqx.io',
     port: 8084,
-    protocol: 'wss'
+    protocol: 'wss',
+    path: '/mqtt'
+
   }
-  ]
+]
 
 export let client = mqtt.connect({
-  servers: BROKER_URLS 
+  host: BROKER_URLS[currentBrokerIndex].host,
+  port: BROKER_URLS[currentBrokerIndex].port,
+  protocol: BROKER_URLS[currentBrokerIndex].protocol,
+  path: BROKER_URLS[currentBrokerIndex].path || '',
+  reconnectPeriod: 2000,
+  connectTimeout: 4000,
+  will: {
+    topic: 'status',
+    payload: 'offline',
+    qos: 1,
+    retains: true
+  }
 })
 
 client.on('connect', () => {
@@ -150,8 +159,14 @@ export function unsubscribeFromTopic(topic) {
  * @param {*} callback callback to keep checking for arrived messages.
  * @returns {message} returns the message recieved from the topic
  */
+let currentCallback = null
 export function messageArrived(callback) {
-  client.on('message', (topic, message) => {
+  console.log("THIS IS THE NUMBER OF LISTENERS: " +   client.listenerCount())
+  if(currentCallback){
+    client.off('message', currentCallback)
+  }
+
+  currentCallback = (topic, message) => {
     try {
       console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
@@ -160,7 +175,8 @@ export function messageArrived(callback) {
       callback(topic, message.toString())
     }
     return message
-  })
+  }
+  client.on('message', currentCallback)
 }
 
 /**
