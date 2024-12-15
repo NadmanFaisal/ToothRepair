@@ -16,7 +16,7 @@
 
           <div class="col-9 right-section">
 
-              <AppointmentComponent :patientSelectedDate="patientSelectedDate" :appointments="appointments"/>
+                <AppointmentComponent :patientSelectedDate="patientSelectedDate" :appointments="appointments" :triggerGetAppointments="getAppointments"/>
 
           </div>
 
@@ -49,11 +49,21 @@ export default {
     }
   },
   mounted() {
-    console.log('Mounted initialized')
-    client.on('connect', async () => {
-      await this.getAllClinics()
-      await this.getAppointments()
-    })
+    const connectAndRun = async () => {
+      if (!client.connected) {
+        console.log('Waiting for MQTT connection...')
+        setTimeout(connectAndRun, 500)
+        return
+      }
+      console.log('MQTT connected, fetching data...')
+      try {
+        await this.getAllClinics()
+        await this.getAppointments()
+      } catch (error) {
+        console.error('Error during data fetch:', error)
+      }
+    }
+    connectAndRun()
   },
   methods: {
     async getAppointments() {

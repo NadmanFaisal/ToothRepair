@@ -179,18 +179,25 @@ export default {
     }
   },
   mounted() {
-    console.log('Component mounted')
-    client.on('connect', () => {
-      console.log('MQTT Client connected')
-      this.getAppointments()
-      console.log(this.appointments)
-    })
+    const connectAndRun = async () => {
+      if (!client.connected) {
+        console.log('Waiting for MQTT connection...')
+        setTimeout(connectAndRun, 500)
+        return
+      }
+      console.log('MQTT connected, fetching data...')
+      try {
+        await this.getAppointments()
+      } catch (error) {
+        console.error('Error during data fetch:', error)
+      }
+    }
+    connectAndRun()
   },
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments,
-      { immediate: true }
+      this.getAppointments
     )
   },
   methods: {
@@ -231,6 +238,7 @@ export default {
     },
     async getAppointments() {
       try {
+        await this.getClinicId()
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             // Check if the receiving message is already a JSON string, if not, parse it
@@ -240,25 +248,32 @@ export default {
           }
         })
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "674a01ce4d3aa16b1e5f5f4a"}')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
     },
     async getClinicId() {
       try {
+        const clinicIdPromise = new Promise((resolve, reject) => {
+          messageArrived((topic, message) => {
+            if (topic === 'Client/AuthenticationService/ClinicId') {
+              console.log('Received Clinic ID:', message)
+
+              // Check if the receiving message is already a JSON string, if not, parse it
+              const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
+              this.clinicId = parsedMessage
+              console.log('This is the clinic Id: ' + this.clinicId)
+              resolve()
+            }
+          })
+        })
+
+        console.log(this.dentistId)
         await subscribeToTopic('Client/AuthenticationService/ClinicId')
         publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.dentistId + '}')
-        messageArrived((topic, message) => {
-          if (topic === 'Client/AuthenticationService/ClinicId') {
-            console.log('Received Clinic ID:', message)
 
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            this.clinicId = parsedMessage
-            console.log('This is the clinic Id: ' + this.clinicId)
-          }
-        })
+        await clinicIdPromise
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -269,9 +284,8 @@ export default {
         return
       }
       try {
-        const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.dentistId + '}')
         this.selectedAppointmentId = null
         this.getAppointments()
       } catch (error) {

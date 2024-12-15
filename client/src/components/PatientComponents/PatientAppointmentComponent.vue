@@ -114,7 +114,10 @@ export default {
   },
   props: {
     patientSelectedDate: {
-      type: String,
+      type: String
+    },
+    triggerGetAppointments: {
+      type: Function,
       required: true
     },
     appointments: {
@@ -168,27 +171,6 @@ export default {
     }
   },
   methods: {
-    /* async getAppointments() {
-      try {
-        console.log('Subscribing to topic...')
-        console.log('Publishing request for appointments...')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
-        console.log('Subscribed successfully')
-
-        console.log('Setting up message listener...')
-        messageArrived((topic, message) => {
-          if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            console.log('Received appointments:', parsedMessage)
-            // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
-            this.appointments = [...parsedMessage]
-          }
-        })
-      } catch (error) {
-        console.error('Error in getAppointments:', error)
-      }
-    }, */
     getTypeOfTime(time) {
       const [hour, minute] = time.split(':').map(Number) // Split the time into hour and minute
       const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
@@ -208,7 +190,7 @@ export default {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
-        this.getAppointments()
+        this.triggerGetAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

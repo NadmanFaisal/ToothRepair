@@ -157,7 +157,7 @@ export default {
             }
 
             publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
-            this.createAppointments(3, this.selectedClinicId)
+            this.createAppointments(7, this.selectedClinicId)
             this.$router.push('/login')
           } else {
             alert('Error: Input field left empty, please provide values for all input fields')
