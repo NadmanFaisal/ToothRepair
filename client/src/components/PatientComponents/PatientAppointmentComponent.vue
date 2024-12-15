@@ -15,7 +15,6 @@
             <h1 class="title-label">Morning</h1>
             <label class="time-label">9:00 AM to 12:00 PM</label>
             <!--Buttons for testing purposes-->
-            <button @click="getAppointments">Get appointments</button>
           </div>
 
         </div>
@@ -187,8 +186,8 @@ export default {
       }
       try {
         const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
+        publishToTopic('scheduleService/appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
       } catch (error) {

@@ -84,13 +84,12 @@ export default {
   methods: {
     async getAllClinics() {
       try {
-        await subscribeToTopic('test/clinicList')
-        await subscribeToTopic('authentication/dentist/getDentistNames')
-        // fix topic
-        publishToTopic('test/clinicAlert', 'Get Clinics')
+        await subscribeToTopic('clinicService/clinics/getClinicList')
+        await subscribeToTopic('authenticationService/dentist/getDentistNames')
+        publishToTopic('clinicService/clinic/getClinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
-          if (topic === 'test/clinicList') {
+          if (topic === 'clinicService/clinics/getClinicList') {
             console.log('Recieved clinic list: ', message)
             this.clinics = JSON.parse(message)
             if (this.clinics) {
@@ -102,12 +101,11 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              // fix topic
-              publishToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              publishToTopic('authenticationService/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
-            unsubscribeFromTopic('test/clinicList')
-          } else if (topic === 'authentication/dentist/getDentistNames') {
+            unsubscribeFromTopic('clinicService/clinics/getClinicList')
+          } else if (topic === 'authenticationService/dentist/getDentistNames') {
             const fixedMessage = '[' + message + ']'
             const newMessage = JSON.parse(fixedMessage)
             console.log('fixed message: ', newMessage)
@@ -158,7 +156,6 @@ export default {
 
       try {
         console.log('Publishing clinic information to test/createClinic')
-        // fix topic
         publishToTopic('test/createClinic', JSON.stringify(newClinic))
       } catch (error) {
         console.error('Tried to create a clinic: ', error)

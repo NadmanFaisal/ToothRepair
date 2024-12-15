@@ -1,18 +1,111 @@
 // Import mqtt
 import mqtt from 'mqtt'
-
+let currentBrokerIndex = 0
+const MAX_RETRIES = 3
 // Connect to WebSocket version of MQTT since Web Browsers only do WebSocket for connections
-export const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt')
 
-// On connection to client,  print connected
+const BROKER_URLS = [
+  {
+    host: 'test.mosquitto.org',
+    port: 8081,
+    protocol: 'wss'
+  },
+  {
+    host: 'broker.hivemq.com',
+    port: 8884,
+    protocol: 'wss',
+    path: '/mqtt'
+  },
+  {
+    host: 'broker.emqx.io',
+    port: 8084,
+    protocol: 'wss',
+    path: '/mqtt'
+
+  }
+]
+
+export let client = mqtt.connect({
+  host: BROKER_URLS[currentBrokerIndex].host,
+  port: BROKER_URLS[currentBrokerIndex].port,
+  protocol: BROKER_URLS[currentBrokerIndex].protocol,
+  path: BROKER_URLS[currentBrokerIndex].path || '',
+  reconnectPeriod: 2000,
+  connectTimeout: 4000,
+  will: {
+    topic: 'status',
+    payload: 'offline',
+    qos: 1,
+    retains: true
+  }
+})
+
 client.on('connect', () => {
-  console.log('Connected to Mosquitto broker')
+  const connectedHost = client.options.host
+  const connectedPort = client.options.port
+
+  currentBrokerIndex = BROKER_URLS.findIndex((broker) => {
+    return broker.host === connectedHost && broker.port === Number(connectedPort)
+  })
+  if (currentBrokerIndex >= 0) {
+    console.log(`Successfully connected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
+  } else {
+    console.warn('Connected to unknown broker!')
+  }
 })
 
-// If error occured, print error in console
-client.on('error', (error) => {
-  console.error('MQTT Error:', error)
+client.on('close', () => {
+  console.log('Lost connection to current broker, trying for reconnection...')
+  handleReconnection()
 })
+
+function handleReconnection() {
+  let retryCount = 0
+  console.log('Connection lost, attempting to reconnect...')
+
+  const reconnectInterval = setInterval(() => {
+    if (client && client.connected) {
+      clearInterval(reconnectInterval)
+      console.log(`Successfully reconnected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
+      retryCount = 0
+    } else if (retryCount < MAX_RETRIES) {
+      console.log(`Reconnection attempt ${retryCount + 1} of ${MAX_RETRIES}`)
+      retryCount++
+      if (client) {
+        client.removeAllListeners('connect')
+        client.removeAllListeners('error')
+        client.removeAllListeners('close')
+        console.log('Event handlers cleaned up')
+      }
+
+      client.end(true, () => {
+        setTimeout(() => {
+          console.log(`Reconnecting to broker; ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
+          client.reconnect()
+        }, 1000)
+      })
+    } else {
+      console.log('Max retries reached, switching to another broker...')
+      retryCount = 0
+      if (client) {
+        client.removeAllListeners('connect')
+        client.removeAllListeners('error')
+        client.removeAllListeners('close')
+        console.log('Event handlers cleaned up')
+      }
+      currentBrokerIndex = (currentBrokerIndex + 1) % BROKER_URLS.length
+
+      console.log(`Switching to another broker: ${BROKER_URLS[currentBrokerIndex]}`)
+
+      client.end(true, () => {
+        setTimeout(() => {
+          console.log('Disconnected from current broker, reconnecting...')
+          client = mqtt.connect(BROKER_URLS[currentBrokerIndex])
+        }, 1000)
+      })
+    }
+  }, 2000)
+}
 
 /**
  * This function subscribes using the topic and throws error if client is not connected.
@@ -65,32 +158,13 @@ export function unsubscribeFromTopic(topic) {
 export function messageArrived(callback) {
   client.on('message', (topic, message) => {
     try {
-      console.log('This is the JSON format of the patient list' + message)
+      console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
     } catch (error) {
-      console.error('Error Parsing the Patient list', error)
+      console.error('Error Parsing the message', error)
       callback(topic, message.toString())
     }
     return message
-  })
-}
-
-/**
- * This function handles received messages and ensures one-time handling.
- *
- * Use this when constant listening is not required
- *
- * @param {*} callback Callback to process the received message.
- */
-export function messageArrivedOnce(callback) {
-  client.once('message', (topic, message) => {
-    try {
-      console.log('Received message:', message.toString())
-      callback(topic, message.toString())
-    } catch (error) {
-      console.error('Error parsing the message:', error)
-      callback(topic, message.toString())
-    }
   })
 }
 
@@ -102,24 +176,7 @@ export function messageArrivedOnce(callback) {
  */
 export function publishToTopic(topic, message) {
   if (client.connected) {
-    console.log('Im trying to publish to the broker')
-    client.publish(topic, message, { qos: 2, retain: false }) // publishes Get Appointments as a message to recieve all patients
-    console.log(`I have published to ${message} to ${topic}`)
-  } else {
-    console.log('Client did not connect')
+    client.publish(topic, message, { qos: 2, retain: false })
+    console.log('Published the message: ' + message + 'to topic: ' + topic)
   }
-  /* this topic is used pls change it
-  } else if (client.connected && topic === 'test/clinicAlert') {
-    console.log('Im trying to publish to the "test/clinicAlert" topic')
-    client.publish(topic, 'Get Clinics') // publishes Get Patients as a message to recieve all patients
-    console.log('I have published "Get Clinics" to the "test/clinicAlert" topic')
-
-    Nadman this is only used in the hello world once we get rid of it we should also get rid of this one
-  } else if (client.connected && topic === 'test/patientAlert') {
-    console.log('Im trying to publish to the broker')
-    client.publish(topic, 'Get Patients') // publishes Get Patients as a message to recieve all patients
-    console.log('I have published get patients to the broker')
-  }
-  Files to update topics: MapView, PatientAppointmentPage, LogInPage, PatientHomePage, SignUpPage
-  */
 }

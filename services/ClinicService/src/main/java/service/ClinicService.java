@@ -12,7 +12,7 @@ import main.java.db.ClinicSchema;
 @Service
 public class ClinicService {
 
-    private ClinicRepository ClinicRepository;
+    private final ClinicRepository ClinicRepository;
 
     @Autowired
     public ClinicService(ClinicRepository ClinicRepository, MongoTemplate mongoTemplate) {

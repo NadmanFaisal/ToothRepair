@@ -105,12 +105,12 @@ export default {
         alert('Please specify your role.')
         return
       }
+
       this.error = null
-      // fix topic
-      const PUBLISH_PATIENT_LOGIN_ALERT = 'patient/authentication/login'
-      const PUBLISH_DENTIST_LOGIN_ALERT = 'dentist/authetication/login'
-      const SUBCRIBE_AUTHENTICATION_ALERT = 'authentication/alert/login'
-      const SUBSCRIBE_USER_ID = 'authentication/userID'
+      const PUBLISH_PATIENT_LOGIN_ALERT = 'authenticationService/patient/login'
+      const PUBLISH_DENTIST_LOGIN_ALERT = 'authenticationService/dentist/login'
+      const SUBCRIBE_AUTHENTICATION_ALERT = 'authenticationService/alert/login'
+      const SUBSCRIBE_USER_ID = 'authenticationService/dentist&patient/userID'
 
       await subscribeToTopic(SUBCRIBE_AUTHENTICATION_ALERT)
       await subscribeToTopic(SUBSCRIBE_USER_ID)
@@ -151,9 +151,11 @@ export default {
               alert(message)
             }, 500)
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
-          } else if (topic === SUBSCRIBE_USER_ID) {
+          }
+          if (topic === SUBSCRIBE_USER_ID) {
+            console.log('I AM IN THE CORRECT IF STATEMENT')
             localStorage.setItem('UserID', JSON.stringify(message))
-            console.log('This is the stored User ID: ' + JSON.stringify(message))
+            console.log('This is the stored User ID:  ' + JSON.stringify(message))
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
           }
         })

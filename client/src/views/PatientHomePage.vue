@@ -130,19 +130,56 @@ export default {
       })
     },
     async getAllClinics() {
-      // fix topic
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
-      const publishMessage = 'Get Clinics'
-      await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
-      messageArrived((topic, message) => {
-        if (topic === SUBCRIBED_CLINIC_TOPIC) {
-          console.log('Received clinics list:', message)
-          this.clinics = JSON.parse(message)
-          unsubscribeFromTopic(SUBCRIBED_CLINIC_TOPIC)
-        }
-      })
+      try {
+        await subscribeToTopic('clinicService/clinics/getClinicList')
+        await subscribeToTopic('authenticationService/dentist/getDentistNames')
+        publishToTopic('clinicService/clinic/getClinicAlert', 'Get Clinics')
+
+        messageArrived((topic, message) => {
+          if (topic === 'clinicService/clinics/getClinicList') {
+            console.log('Recieved clinic list: ', message)
+            this.clinics = JSON.parse(message)
+            if (this.clinics) {
+              this.clinics.forEach(clinic => {
+                clinic.dentists = clinic.dentists.map(dentistId => ({
+                  dentistId,
+                  dentistName: ''
+                }))
+              })
+              const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
+              console.log('dentistIds: ', allDentistIds)
+              publishToTopic('authenticationService/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+            }
+
+            unsubscribeFromTopic('clinicService/clinics/getClinicList')
+          } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            const newMessage = JSON.parse(message)
+            console.log('fixed message: ', newMessage)
+            if (message) {
+              newMessage.forEach(dentistData => {
+                this.clinics.forEach(clinic => {
+                  clinic.dentists.forEach(dentist => {
+                    if (dentist.dentistId === dentistData.id) {
+                      dentist.dentistName = dentistData.name
+                      console.log('Dentist id: ' + dentist.dentistId + 'Dentist name: ' + dentist.dentistName)
+                    }
+                  })
+                })
+                console.log('Here are all the clinics', this.clinics)
+              })
+              unsubscribeFromTopic('authenticationService/dentist/getDentistNames')
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve all clinics: ', error)
+      }
+    },
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
+      localStorage.clear()
+      this.$router.push('/login')
     }
   },
   created() {

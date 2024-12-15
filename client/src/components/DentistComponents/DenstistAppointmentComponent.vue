@@ -224,14 +224,14 @@ export default {
         }
 
         // Creates new appointment with next available time slot
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        await subscribeToTopic('client/scheduleService/appointmentInfo')
         const newAppointment = {
           status: 'available',
           date: '1111-11-11',
           startTime,
           endTime: incrementTime(startTime)
         }
-        publishToTopic('ScheduleService/Appointment/createAppointment', JSON.stringify(newAppointment))
+        publishToTopic('scheduleService/appointment/createAppointment', JSON.stringify(newAppointment))
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -239,6 +239,7 @@ export default {
     async getAppointments() {
       try {
         await this.getClinicId()
+        console.log('Entered')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             // Check if the receiving message is already a JSON string, if not, parse it

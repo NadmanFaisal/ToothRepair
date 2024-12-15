@@ -92,13 +92,12 @@ export default {
     },
     async getAllClinics() {
       try {
-        await subscribeToTopic('test/clinicList')
-        await subscribeToTopic('authentication/dentist/getDentistNames')
-        // fix topic
-        publishToTopic('test/clinicAlert', 'Get Clinics')
+        await subscribeToTopic('clinicService/clinics/getClinicList')
+        await subscribeToTopic('authenticationService/dentist/getDentistNames')
+        publishToTopic('clinicService/clinic/getClinicAlert', 'Get Clinics')
 
         messageArrived((topic, message) => {
-          if (topic === 'test/clinicList') {
+          if (topic === 'clinicService/clinics/getClinicList') {
             console.log('Recieved clinic list: ', message)
             this.clinics = JSON.parse(message)
             if (this.clinics) {
@@ -110,14 +109,12 @@ export default {
               })
               const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
               console.log('dentistIds: ', allDentistIds)
-              // fix topic
-              publishToTopic('authentication/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+              publishToTopic('authenticationService/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
             }
 
-            unsubscribeFromTopic('test/clinicList')
-          } else if (topic === 'authentication/dentist/getDentistNames') {
-            const fixedMessage = '[' + message + ']'
-            const newMessage = JSON.parse(fixedMessage)
+            unsubscribeFromTopic('clinicService/clinics/getClinicList')
+          } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            const newMessage = JSON.parse(message)
             console.log('fixed message: ', newMessage)
             if (message) {
               newMessage.forEach(dentistData => {
@@ -131,6 +128,7 @@ export default {
                 })
                 console.log('Here are all the clinics', this.clinics)
               })
+              unsubscribeFromTopic('authenticationService/dentist/getDentistNames')
             }
           }
         })
@@ -148,6 +146,7 @@ export default {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       this.$router.push('/login')
       store.reset()
+      localStorage.clear()
     }
   },
   created() {

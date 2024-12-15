@@ -132,12 +132,10 @@ export default {
       this.selectedClinicName = clinic.name
     },
     // post the email, name and password of the businessOwner and creates a new one in backend
-    async submitSignUp() {
-      // Fix topics
-
-      const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
-      const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
-      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+    async submitSignUp({ username, email, password, clinic }) {
+      const PUBLISH_PATIENT_TOPIC = 'authenticationService/patient/signup'
+      const PUBLISH_DENTIST_TOPIC = 'authenticationService/dentist/signup'
+      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authenticationService/dentist&patient/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
       console.log('This is the clinics ' + this.selectedClinicId)
       if (this.password !== this.confirmPassword) {
@@ -158,10 +156,11 @@ export default {
 
             publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
             this.createAppointments(7, this.selectedClinicId)
-            this.$router.push('/login')
+            setTimeout(() => {
+              this.$router.push('/login')
+            }, 1000)
           } else {
             alert('Error: Input field left empty, please provide values for all input fields')
-            return
           }
         } else {
           if (this.username && this.password && emailVerification.test(this.email)) {
@@ -171,25 +170,19 @@ export default {
               password: this.password
             }
             publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-            this.$router.push('/login')
+            setTimeout(() => {
+              this.$router.push('/login')
+            }, 1000)
           } else {
             alert('Error: Input field left empty, please provide values for all input fields')
-            return
           }
         }
         messageArrived((topic, message) => {
           if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
             console.log(message)
-            if (message === 'Sign Up Successful!') { // alert successful message then push to login
-              alert(message)
-              setTimeout(() => {
-                this.$router.push('/login')
-              }, 2000)
-            } else { // alert error message
-              alert(message)
-            }
-            unsubscribeFromTopic('authentication/status')
+            alert(message)
           }
+          unsubscribeFromTopic('authentication/status')
         })
       } catch (error) {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
@@ -242,9 +235,8 @@ export default {
       }
     },
     async getAllClinics() {
-      // fix topic
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinics/getClinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'clinicService/clinic/getClinicAlert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
       publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
