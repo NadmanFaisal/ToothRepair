@@ -26,8 +26,8 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud","tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
-    private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String CLIENT_ID = "AuthenticationServiceClient4";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
@@ -68,7 +68,9 @@ public class MQTT implements MqttCallback {
         } catch (MqttException e) {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
+        
     }
+
     
 
 
@@ -175,7 +177,7 @@ public class MQTT implements MqttCallback {
                     middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
 
                     System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
-                    if(BROKER_URLS[currentBrokerIndex].equals("tcp://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                    if(BROKER_URLS[currentBrokerIndex].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
                         middleware.connect(options);
                     } else {
                         middleware.connect();
