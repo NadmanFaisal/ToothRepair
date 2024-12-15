@@ -41,6 +41,7 @@ public class MQTT implements MqttCallback {
     private ObjectMapper objectMapper = new ObjectMapper();
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
+    private boolean STRESS_TEST_MODE = true;
 
     /**
      * MQTT class Constructor
@@ -55,10 +56,13 @@ public class MQTT implements MqttCallback {
         this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread pool
         this.patientService = patientService;
         this.dentistService = dentistService;
+        
+        if(STRESS_TEST_MODE){
         options.setUserName("Administrator");
         String passwordString = "Vaibhav12Taha";
         char[] passwordChars = passwordString.toCharArray();
         options.setPassword(passwordChars);
+        }
         try {
             initializeClient();
         } catch (MqttException e) {
@@ -84,7 +88,7 @@ public class MQTT implements MqttCallback {
             
             try {
                 middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
-                if(BROKER_URLS[i].equals("tcp://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
                     middleware.connect(options);
                 } else {
                     middleware.connect();

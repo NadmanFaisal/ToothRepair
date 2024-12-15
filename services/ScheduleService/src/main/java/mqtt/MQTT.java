@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "client/scheduleService/appointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
@@ -30,7 +31,9 @@ public class MQTT implements MqttCallback {
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
+    private boolean STRESS_TEST_MODE = true;
 
 
     
@@ -46,6 +49,12 @@ public class MQTT implements MqttCallback {
     public MQTT(AppointmentService appointmentService){
         this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
         this.appointmentService = appointmentService;
+        if(STRESS_TEST_MODE){
+            options.setUserName("Administrator");
+            String passwordString = "Vaibhav12Taha";
+            char[] passwordChars = passwordString.toCharArray();
+            options.setPassword(passwordChars);
+        }
         try {
             initializeClient();
         } catch (MqttException e) {
@@ -69,15 +78,18 @@ public class MQTT implements MqttCallback {
             
             try {
                 middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
-                middleware.connect();
+                if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                    middleware.connect(options);
+                } else {
+                    middleware.connect();
+                }
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
-                
                 middleware.setCallback(this);
                 this.subscribeToTopics();
-                
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
+
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
                 if (middleware != null && middleware.isConnected()) {
