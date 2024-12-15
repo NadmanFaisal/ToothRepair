@@ -27,7 +27,9 @@ public class MQTT implements MqttCallback {
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
-     "ScheduleService/Appointment/changeAppointmentStatus", "ScheduleService/Appointment/getAppointmentsByClinic", "ScheduleService/Appointment/getAppointmentsByPatient"}; 
+     "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
+     "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
+    "ScheduleService/Appointment/patientCancelAppointments"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private final IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -172,6 +174,14 @@ public class MQTT implements MqttCallback {
                     break;
                 }
 
+                case "ScheduleService/Appointment/getAppointmentsByDentist": {
+                    System.out.println("Will publish all appointments per dentist");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
+                    break;
+                }
+
                 case "ScheduleService/Appointment/createAppointment": {
                     System.out.println("Entered createAppointment if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
@@ -188,11 +198,27 @@ public class MQTT implements MqttCallback {
                     break;
                 }
 
-                case "ScheduleService/Appointment/changeAppointmentStatus": {
-                    System.out.println("Entered changeAppointmentStatus if statement");
+                case "ScheduleService/Appointment/makeAppointmentAvailable": {
+                    System.out.println("Entered makeAppointmentAvailable if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.changeAppointmentStatus(appointmentInfo);
+                    appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/dentistCancelAppointments": {
+                    System.out.println("Entered dentist cancel if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.dentistCancel(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/patientCancelAppointments": {
+                    System.out.println("Entered patient cancel if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.patientCancel(appointmentInfo);
                     break;
                 }
 

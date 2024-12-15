@@ -9,4 +9,6 @@ List<AppointmentSchema> findByClinic(String clinic);
 
 List<AppointmentSchema> findByPatient(String patient);
 
+List<AppointmentSchema> findByDentist(String dentist);
+
 }
