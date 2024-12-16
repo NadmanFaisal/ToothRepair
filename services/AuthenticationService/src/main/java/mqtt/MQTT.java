@@ -415,7 +415,6 @@ public class MQTT implements MqttCallback {
             } else {
                 String successMessage = "User is sucessfully logged in!";
                 String id = checkPatient.getId();
-
                 System.out.println(successMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
                 middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
