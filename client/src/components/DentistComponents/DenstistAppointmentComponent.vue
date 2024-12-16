@@ -112,7 +112,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic, client } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -120,15 +120,20 @@ export default {
   name: 'DentistAppointmentComponent',
   data() {
     return {
-      appointments: [],
-      selectedAppointmentId: null,
-      dentistId: localStorage.getItem('UserID'),
-      clinicId: null
+      selectedAppointmentId: null
     }
   },
   props: {
     dentistSelectedDate: {
       type: String,
+      required: true
+    },
+    appointments: {
+      type: Array,
+      default: () => []
+    },
+    triggerGetAppointments: {
+      type: Function,
       required: true
     }
   },
@@ -178,82 +183,18 @@ export default {
       })
     }
   },
-  mounted() {
-    const connectAndRun = async () => {
-      if (!client.connected) {
-        console.log('Waiting for MQTT connection...')
-        setTimeout(connectAndRun, 500)
-        return
-      }
-      console.log('MQTT connected, fetching data...')
-      try {
-        await this.getAppointments()
-      } catch (error) {
-        console.error('Error during data fetch:', error)
-      }
-    }
-    connectAndRun()
-  },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments
-    )
-  },
   methods: {
-    async getAppointments() {
-      try {
-        await this.getClinicId()
-        console.log('Entered')
-        messageArrived((topic, message) => {
-          if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
-            this.appointments = [...parsedMessage]
-          }
-        })
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
-    async getClinicId() {
-      try {
-        const clinicIdPromise = new Promise((resolve, reject) => {
-          messageArrived((topic, message) => {
-            if (topic === 'Client/AuthenticationService/ClinicId') {
-              console.log('Received Clinic ID:', message)
-
-              // Check if the receiving message is already a JSON string, if not, parse it
-              const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-              this.clinicId = parsedMessage
-              console.log('This is the clinic Id: ' + this.clinicId)
-              resolve()
-            }
-          })
-        })
-
-        console.log(this.dentistId)
-        await subscribeToTopic('Client/AuthenticationService/ClinicId')
-        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.dentistId + '}')
-
-        await clinicIdPromise
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
     async makeAvailable() {
+      const userId = localStorage.getItem('UserID')
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
         return
       }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.dentistId + '}')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
-        this.getAppointments()
+        this.triggerGetAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

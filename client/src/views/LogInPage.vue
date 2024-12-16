@@ -140,12 +140,6 @@ export default {
               console.log(encodedUserInfo)
               document.cookie = `userInfo=${encodedUserInfo}; path=/; max-age=3600`
               console.log(document.cookie)
-
-              if (this.isDentist) {
-                this.$router.push('/dentistHomePage')
-              } else {
-                this.$router.push('/patientHomePage')
-              }
             }
             setTimeout(function () {
               alert(message)
@@ -156,6 +150,11 @@ export default {
             console.log('I AM IN THE CORRECT IF STATEMENT')
             localStorage.setItem('UserID', JSON.stringify(message))
             console.log('This is the stored User ID:  ' + JSON.stringify(message))
+            if (this.isDentist) {
+              this.$router.push('/dentistHomePage')
+            } else {
+              this.$router.push('/patientHomePage')
+            }
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
           }
         })
