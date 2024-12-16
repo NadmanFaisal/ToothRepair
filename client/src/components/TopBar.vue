@@ -31,7 +31,7 @@ export default {
   data() {
     return {
       navItems: [
-        { name: 'My Bookings', route: '/myBookingsPage' }
+        { name: 'My Bookings', route: '/patientHomePage' }
         // Add more navigation items here
       ]
     }
@@ -77,6 +77,7 @@ export default {
 }
 
 .router-label {
+    margin-left: 20px;
     color: #040404;
     text-align: center;
     font-family: Inter;

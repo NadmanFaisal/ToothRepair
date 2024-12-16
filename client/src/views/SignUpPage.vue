@@ -1,108 +1,176 @@
 <template>
-    <b-col class="white-background">
-      <b-container fluid class="vh-100 d-flex align-items-center justify-content-center">
-        <b-row class="justify-content-center align-items-center w-100">
-          <b-col md="8" class="signup-blue-container d-flex justify-content-center align-items-center">
+  <div class="col-12 screen-container">
 
-            <!-- Navigable Login/SignUp page-->
-            <b-col class="login-signup-button-container">
-                <BButton type="button" class="login-button" @click="setDentistFalse()">I am a Patient</BButton>
-                <BButton type="button" class="login-button" @click="setDentistTrue()">I am a Dentist</BButton>
-              <BButton type="button" class="login-button" @click="goToLoginPage()">Log In</BButton>
-              <BButton type="button" class="signup-button" @click="goToSignUpPage()">Sign up</BButton>
-            </b-col>
+    <div class="col-7 left-section">
 
-            <b-col class="white-container-signup p-4">
-              <h1 class="signup-title mb-4">Sign Up</h1>
+      <div class="col-12 logo-section">
+        <img src="../assets/app-logo.png" class="logo-image">
+        <h1 class="logo-title">TEETH REPAIR</h1>
+      </div>
 
-              <!-- the whole SignUpForm -->
-              <SignUpForm
-                :username="username"
-                :email="email"
-                :password="password"
-                :clinics="clinics"
-                :isDentist="isDentist"
-                @submit="submitSignUp"
-              />
+      <div class="col-12 login-content-section">
 
-              <!-- checks for error message response -->
-              <p
-                v-if="message"
-                :class="{
-                  'text-success': message === 'Sign Up Successful!',
-                  'text-danger': message !== 'Sign Up Successful!'
-                }"
-                class="mt-3"
-              >
-                {{ message }}
-              </p>
-            </b-col>
-          </b-col>
-        </b-row>
-      </b-container>
-    </b-col>
-  </template>
+        <div class="col-2 left-empty-section">
+        </div>
+
+        <div class="col-8 middle-login-section">
+
+          <div class="col-12 register-section">
+              <h1 class="register-title">Register</h1>
+              <label class="login-label">Already have an account? <span class="highlighted-text" @click="navigateToLoginPage">Log in!</span></label>
+          </div>
+
+          <div class="col-12 patient-dentist-selection-section">
+            <button type="button" class="btn patient-button" :class="{ activeButton: !isDentist }" @click="setDentistFalse()">Patient</button>
+            <button type="button" class="btn dentist-button" :class="{ activeButton: isDentist }" @click="setDentistTrue()">Dentist</button>
+          </div>
+
+          <div class="col-12 username-section">
+            <label class="username-label">Name</label>
+            <input class="form-control username-input" v-model="username" placeholder="Your name...">
+          </div>
+
+          <div class="col-12 middle-middle-section">
+
+            <div class="col-6 middle-left-section">
+
+              <div class="col-12 email-section">
+                <label class="email-label">Email</label>
+                <input class="form-control email-input" v-model="email" placeholder="example@email.com">
+              </div>
+
+              <div class="col-12 password-section">
+                <label class="password-label">Password</label>
+                <input class="form-control password-input" v-model="password" placeholder="**********">
+              </div>
+
+            </div>
+
+            <div class="col-6 middle-right-section">
+
+              <div class="col-12 phone-section">
+                <label class="phone-label">Phone <label class="optional-label">(optional)</label></label>
+                <input class="form-control phone-input" v-model="phone" placeholder="073*******">
+              </div>
+
+              <div class="col-12 confirm-password-section">
+                <label class="confirm-password-label">Confirm Password</label>
+                <input class="form-control confirm-password-input" v-model="confirmPassword" placeholder="**********">
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-12 bottom-section">
+
+            <div class="col-12 dropdown clinic-container" v-if="isDentist">
+
+              <button
+                class="btn btn-secondary dropdown-toggle clinic-dropdown-button"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                text="Select a clinic"
+                >
+                {{ selectedClinicName || 'Select a clinic' }}
+              </button>
+
+              <ul class="dropdown-menu">
+                <li class="dropdown-item" v-for="clinic in clinics" :key="clinic.id" @click="selectAClinic(clinic)">{{ clinic.name }}</li>
+              </ul>
+
+            </div>
+
+            <button class="col-8 btn signup-button" @click="submitSignUp">Sign Up</button>
+          </div>
+
+        </div>
+
+        <div class="col-2 right-empty-section">
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="col-5 right-section">
+    </div>
+
+  </div>
+</template>
 
 <script>
-import SignUpForm from '@/components/SignUpForm.vue'
-import { subscribeToTopic, publishValue, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
-  components: {
-    SignUpForm
-  },
 
   data() {
     return {
       username: '',
       email: '',
       password: '',
+      phone: null,
+      confirmPassword: '',
       clinics: [],
+      selectedClinicId: null,
+      selectedClinicName: null,
       message: '',
       isDentist: false
     }
   },
 
   methods: {
+    navigateToLoginPage() {
+      this.$router.push('/login')
+    },
+    selectAClinic(clinic) {
+      this.selectedClinicId = clinic.id
+      this.selectedClinicName = clinic.name
+    },
     // post the email, name and password of the businessOwner and creates a new one in backend
     async submitSignUp({ username, email, password, clinic }) {
-      const PUBLISH_PATIENT_TOPIC = 'patient/authentication/signup'
-      const PUBLISH_DENTIST_TOPIC = 'dentist/authentication/signup'
-      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authentication/status'
+      const PUBLISH_PATIENT_TOPIC = 'authenticationService/patient/signup'
+      const PUBLISH_DENTIST_TOPIC = 'authenticationService/dentist/signup'
+      const SUBCRIBE_AUTHENTICATION_TOPIC = 'authenticationService/dentist&patient/status'
       const emailVerification = /^[^\s@]+@[^\s@]+.[^\s@]+$/
-      console.log("This is the clinics " + clinic?.id)
-      try{
-      await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
-      if(this.isDentist){
-        if(username && password && emailVerification.test(email) && clinic?.id){
-          const newDentist = {
-                  name: username,
-                  email,
-                  password,
-                  clinic: clinic?.id
-          }
+      console.log('This is the clinics ' + this.selectedClinicId)
+      if (this.password !== this.confirmPassword) {
+        alert('Passwords do not match. Try again.')
+        return
+      }
 
-          publishValue(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+      try {
+        await subscribeToTopic(SUBCRIBE_AUTHENTICATION_TOPIC)
+        if (this.isDentist) {
+          if (this.username && this.password && emailVerification.test(this.email) && this.selectedClinicId) {
+            const newDentist = {
+              name: this.username,
+              email: this.email,
+              password: this.password,
+              clinic: this.selectedClinicId
+            }
+
+          publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
 
           setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }
       }else{
-        if(username && password && emailVerification.test(email)){
+        if(this.username && this.password && emailVerification.test(this.email)){
           const newPatient = {
-                name: username,
-                email,
-                password
+                name: this.username,
+                email: this.email,
+                password: this.password
           }
-            publishValue(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-            
+            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
             setTimeout(() => {
             this.$router.push('/login')
-          }, 2000)
+          }, 1000)
         }else{
           alert('Error: Input field left empty, please provide values for all input fields')
         }
@@ -111,26 +179,20 @@ export default {
             if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
               console.log(message)
               alert(message)
-              unsubscribeFromTopic('authentication/status')
             }
+            unsubscribeFromTopic('authentication/status')
           })
-
-          // waits a while to display the Sign Up Successful message to user until we move him to login
-          
-          /*
-          
-          */
-        } catch (error) {
-          this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
-        }
+      } catch (error) {
+        this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
+      }
     },
 
     async getAllClinics() {
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinics/getClinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'clinicService/clinic/getClinicAlert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
-      publishValue(PUBLISHED_CLINIC_TOPIC, publishMessage)
+      publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)
       messageArrived((topic, message) => {
         if (topic === SUBCRIBED_CLINIC_TOPIC) {
           console.log('Received clinics list:', message)
@@ -158,108 +220,290 @@ export default {
 }
 </script>
 
-  <style scoped>
-  .white-background {
-    background: #FFF;
-    min-height: 100vh;
+<style scoped>
+.screen-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.left-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.right-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-image: linear-gradient(0deg, rgba(31, 194, 194, 0.24) 0%, rgba(31, 194, 194, 0.24) 100%), url('@/assets/login-image.jpeg');
+  background-size: contain;
+
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: row;
+  height: 15%;
+  align-items: center;
+}
+
+.logo-image {
+  margin-left: 40px;
+  height: 55%;
+}
+
+.logo-title {
+  margin-left: 20px;
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: normal;
+}
+
+.login-content-section {
+  display: flex;
+  flex-direction: row;
+  height: 85%;
+  flex-wrap: wrap;
+}
+
+.register-section {
+  display: flex;
+  flex-direction: column;
+  height: 15%;
+  align-items: start;
+  justify-content: center;
+
+}
+
+.register-title {
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.login-label {
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.highlighted-text {
+  color: #1FC2C2;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  text-decoration: underline;
+}
+
+.patient-dentist-selection-section {
+  display: flex;
+  flex-direction: row;
+  height: 10%;
+}
+
+.patient-button {
+  width: 50%;
+  height: 65%;
+  border-radius: 10px 0px 0px 10px;
+  border: 1px solid #D2D1D1;
+  color: #1FC2C2;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.dentist-button {
+  width: 50%;
+  height: 65%;
+  border-radius: 0px 10px 10px 0px;
+  border: 1px solid #D2D1D1;
+  color: #1FC2C2;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.activeButton {
+  background: #1FC2C2;
+  color: #FFF;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.username-section {
+  display: flex;
+  flex-direction: column;
+  height: 15%;
+  align-items: start;
+}
+
+.username-label {
+  padding: 5px;
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.username-input {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+
+  height: 45%;
+  width: 100%;
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.middle-middle-section {
+  display: flex;
+  flex-direction: row;
+  height: 35%;
+  flex-wrap: wrap;
+}
+
+.middle-left-section, .middle-right-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-section, .password-section, .phone-section, .confirm-password-section {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  height: 50%;
+  align-items: start;
+}
+
+.email-label, .password-label, .phone-label, .confirm-password-label {
+  padding: 5px;
+  color: #515151;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.optional-label {
+  padding: 5px;
+  color: #BBB9B9;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.email-input, .password-input, .phone-input, .confirm-password-input {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+
+  height: 45%;
+  width: 100%;
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.bottom-section {
+  height: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clinic-dropdown-button {
+  border-radius: 15px;
+  border: 1px solid #D2D1D1;
+  background: #FFF;
+  width: 100%;
+  height: 50px;
+
+  color: #BBB9B9;
+  text-align: left;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.signup-button {
+  margin-top: 20px;
+  border-radius: 15px;
+  background: #1FC2C2;
+  box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
+  color: #FFF;
+  height: 25%;
+  width: 30%;
+
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+@media screen and (max-width: 750px) {
+  .right-section {
+    display: none;
   }
 
-  .signup-blue-container {
-    background: #37F;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    width: 100%;
-    max-width: 800px;
-    position: relative;
-    border-radius: 0;
+  .left-section {
+    flex: 1;
   }
 
-  .white-container-signup {
-    width: 100%;
-    max-width: 404px;
-    border-radius: 50px;
-    background: #FFF;
-    box-shadow: -15px 15px 4px 0px rgba(0, 0, 0, 0.25);
-    padding: 40px 60px;
+  .logo-title {
+    align-self: center;
+    text-align: start;
   }
 
-  .signup-title {
-    font-family: 'Istok Web', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    color: #000;
-    text-align: center;
+  .login-button {
+    margin-top: 20px;
   }
-
-  @media (max-width: 768px) {
-    .signup-blue-container {
-      max-width: 100%;
-      padding: 30px;
-    }
-
-    .white-container-signup {
-      padding: 30px 40px;
-    }
-
-    .signup-title {
-      font-size: 28px;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .signup-title {
-      font-size: 24px;
-    }
-
-    .white-container-signup {
-      padding: 20px 30px;
-    }
-  }
-
-  .login-signup-button-container {
-    position: absolute;
-    top: 50px;
-    right: 50px;
-    display: flex;
-    gap: 20px;
-  }
-
-  button.login-button {
-    width: 130px;
-    height: 50px;
-    border: none;
-    border-radius: 50px;
-    background: #FFF;
-    color: #37F;
-    font-family: "Istok Web";
-    font-size: 16px;
-    font-weight: 400;
-    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-  }
-
-  button.signup-button {
-    width: 130px;
-    height: 50px;
-    border: none;
-    border-radius: 50px;
-    background: #37F;
-    color: #FFF;
-    font-family: "Istok Web";
-    font-size: 16px;
-    font-weight: 400;
-    line-height: normal;
-    box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-  }
-
-  button.login-button:hover {
-    background-color: rgb(235, 235, 235);
-  }
-
-  button.signup-button:hover {
-    background-color: rgb(0, 85, 255);
-  }
-
+}
 </style>

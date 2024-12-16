@@ -22,36 +22,70 @@ import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";
+    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC_CLIENT = "test/clinicList";
-    private static final String PUBLISHED_TOPIC_DENTIST = "clinicService/clinicList";
+    private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
 
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"test/clinicAlert", "dentist/clinicService/addDentist", "test/createClinic", "dentist/clinicService/alert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic",}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private final IMqttClient middleware; // MQTT client
+    private IMqttClient middleware; // MQTT client
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private int currentBrokerIndex = 0;
 
+
+   
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
      * 
-     * @param clinicService Connection to the database, where it interacts withe the MongoDB database using CRUD operators
+     * @param patientSerivce Connection to the database, where it interacts withe the MongoDB database using CRUD operators
      * @throws MqttException throws a RuntimeException showing the error
-     */
-
+    */
     @Autowired
     public MQTT(ClinicService clinicService){
+        this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
+        this.clinicService = clinicService;
         try {
-            this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
-            this.clinicService = clinicService;
-            middleware = new MqttClient(BROKER_URL, CLIENT_ID);
-            middleware.connect();
-            middleware.setCallback(this);
-            this.subscribeToTopics();
+            initializeClient();
         } catch (MqttException e) {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
+    }
+
+    /**
+     * Handles the logic for initializing a connection to the a public MQTT broker
+     * If the current broker is not reachable, then the method tries to connect to another broker url  within the for-loop
+     *
+     * Method is called within the constructor to initialize the connection
+     * Method also calls the subscribeToTopics function to ensure the subscription of all topics
+     * 
+     * @param N/A no params needed
+     * @throws InterruptedException prints Error Stack trace
+     */
+    private void initializeClient() throws MqttException {
+        System.out.println("Trying to initialize client");
+        for (int i = 0; i < BROKER_URLS.length; i++) {
+            
+            try {
+                middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
+                middleware.connect();
+                System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
+                
+                middleware.setCallback(this);
+                this.subscribeToTopics();
+                
+                System.out.println("Connected to broker: " + BROKER_URLS[i]);
+                this.currentBrokerIndex = i;
+                return; // Exit the loop once connected
+            } catch (MqttException e) {
+                System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
+                if (middleware != null && middleware.isConnected()) {
+                    middleware.disconnect();
+                }
+            }
+        }
+        throw new MqttException(new Throwable("All brokers failed")); // Throw after all retries
     }
 
      /**
@@ -70,8 +104,9 @@ public class MQTT implements MqttCallback {
                 try {
                     if (middleware.isConnected()) {
                         middleware.subscribe(topic, 1); //Subscribe to topic
+                        System.out.println("ClinicService subscribed to topic: " + topic);
                     } else {
-                        System.out.println("ClientService is not connected to the broker. Cannot subscribe to topic: " + topic);
+                        System.out.println("ClinicService is not connected to the broker. Cannot subscribe to topic: " + topic);
                     }
                 } catch (Exception e) {
                     System.out.println("Failed to subscribe to topic " + topic + ": " + e.getMessage());
@@ -100,10 +135,7 @@ public class MQTT implements MqttCallback {
      */
     private void publishClinicList(String topic){
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String clinicListJson = objectMapper.writeValueAsString(this.clinicService.getAllClinics());
-            String emptyMessage = "";
-            //Publish the payload as bytes to the topic.
             
             middleware.publish(topic, clinicListJson.getBytes(), 2, false);
         } catch (Exception e) {
@@ -122,30 +154,48 @@ public class MQTT implements MqttCallback {
     }
 
     /**
-     * Publishes the topic as a String in JSON notation.
+     * Tries to reconnect to the current broker, if unsuccessfull it will try to connect to another broker. 
+     * Afterwards it subscribes to topics
      * 
-     * Publishing happening with QoS 1.
-     * 
-     * It publishes with the conected client
-     * 
-     * @param N/A no params needed
-     * @throws MqttException prints the Error Stack trace
+     * @param cause to throw the error stack trace
+     * @throws Exception prints the Error Stack trace
      */
+
     @Override
     public void connectionLost(Throwable cause) {
         System.out.println("Connection lost: " + cause.getMessage());
-        while(!middleware.isConnected()){
-        try {
-            System.out.println("Attempting to reconnect...");
-            middleware.reconnect();
-            this.subscribeToTopics();
-        } catch (Exception e) {
-            System.err.println("Reconnection failed. Retrying...");
-            cause.printStackTrace();
-        }
-    }
-    System.out.println("Sucessfully Reconnected to the Broker");
-        
+        int retryCount = 0;
+        int MAX_RETRIES = 3;
+        while (!middleware.isConnected()) {
+            
+            try {
+                if(retryCount < MAX_RETRIES){
+                    Thread.sleep(2000);
+                    System.out.println("Attempting to reconnect...");
+                    middleware.reconnect();
+                    middleware.setCallback(this); // Ensure callback is re-applied
+                } else {
+                    retryCount = 0;
+                    
+                    currentBrokerIndex = (currentBrokerIndex + 1) % BROKER_URLS.length;
+                    System.out.println("Switching to another broker: " + BROKER_URLS[currentBrokerIndex]);
+                    
+                    middleware.disconnect();
+                    middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
+
+                    System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
+                    middleware.connect();
+                    middleware.setCallback(this);
+                }
+                
+            } catch (Exception e) {
+                retryCount++;
+                System.out.println("Reconnection failed. Attempt " + retryCount + " of " + MAX_RETRIES);
+                e.printStackTrace();
+            }
+        }  
+        System.out.println("Successfully Reconnected to the Broker");
+        this.subscribeToTopics();
     }
 
 
@@ -162,15 +212,19 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload()); 
                    
-            System.out.println("Message recieved: " + stringMessage + "\nTopic: " + topic);
-            if (topic.equals("test/clinicAlert")) {
-                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLIENT);
-            } else if (topic.equals("dentist/clinicService/alert")) {
-                handleClinicAlert(stringMessage, PUBLISHED_TOPIC_DENTIST);
-            } else if (topic.equals("test/createClinic") ) {
-                handleCreateClinic(stringMessage);
-            }  else if (topic.equals("dentist/clinicService/addDentist")) {
-                handleAddingDentist(stringMessage);
+            System.out.println("Message recieved: " + stringMessage + " Topic: " + topic);
+            switch (topic) {
+                case "clinicService/clinic/getClinicAlert":
+                    handleClinicAlert(stringMessage, PUBLISHED_TOPIC_CLINICS);
+                    break;
+                case "clinicService/clinic/createClinic":
+                    handleCreateClinic(stringMessage);
+                    break;
+                case "clinicService/dentist/addDentist":
+                    handleAddingDentist(stringMessage);
+                    break;
+                default:
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,25 +250,13 @@ public class MQTT implements MqttCallback {
      */
     private void handleCreateClinic(String message) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             ClinicSchema clinicInfo = objectMapper.readValue(message, ClinicSchema.class);
             
-            if (clinicInfo.getAddress().isEmpty()) {
-                System.err.println("Clinic address was not given in the payload");
-            } else if (clinicInfo.getName().isEmpty()) {
-                System.err.println("Clinic name was not given in the payload");
-            } else if (clinicInfo.getOpenHours().isEmpty()) {
-                System.err.println("Clinic open hours was not given in the payload");
-            } else if (clinicInfo.getContactInfo().getEmail().isEmpty()) {
-                System.err.println("Clinic email was not given in the payload");
-            } else if (clinicInfo.getContactInfo().getNumber().isEmpty()){
-                System.err.println("Clinic number was not given in the payload");
-            } else if (clinicInfo.getCoordinate() == null) {
-                System.err.println("Clinic coordinates was not given in the payload");
+            if (checkClinicInfo(clinicInfo)) {
+                clinicService.createClinic(clinicInfo);
+            } else {
+                System.err.println("Some clinic information in the payload is missing");
             }
-
-
-            clinicService.createClinic(clinicInfo);
             
         } catch (Exception e) {
             System.err.println("Error creating clinic: " + e.getMessage());
@@ -222,6 +264,34 @@ public class MQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Checks if the recieved clinicInfo has values in the corresponding attributes.
+     * 
+     * @param clinicInfo the clinicInfo 
+     * @return returns true if the clinicInfo has all the neccessary information
+     */
+    public boolean checkClinicInfo(ClinicSchema clinicInfo) {
+        boolean clinicInfoExists = true;
+        if (clinicInfo.getAddress().isEmpty()) {
+            System.err.println("Clinic address was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getName().isEmpty()) {
+            System.err.println("Clinic name was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getOpenHours().isEmpty()) {
+            System.err.println("Clinic open hours was not given in the payload");
+        } else if (clinicInfo.getContactInfo().getEmail().isEmpty()) {
+            System.err.println("Clinic email was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getContactInfo().getNumber().isEmpty()){
+            System.err.println("Clinic number was not given in the payload");
+            clinicInfoExists = false;
+        } else if (clinicInfo.getCoordinate() == null) {
+            System.err.println("Clinic coordinates was not given in the payload");
+            clinicInfoExists = false;
+        }
+        return clinicInfoExists;
+    }
     /**
      * Finds the clinic with the id provided and adds the reference to the dentist to it
      * 
@@ -238,8 +308,10 @@ public class MQTT implements MqttCallback {
             
             if (clinicId.isEmpty()) {
                 System.out.println("No clinic Id was provided");
+                return;
             } else if (dentistId.isEmpty()) {
                 System.out.println("No dentist Id was provided");
+                return;
             }
 
             Optional<ClinicSchema> updatedClinic = clinicService.addDentist(clinicId, dentistId);

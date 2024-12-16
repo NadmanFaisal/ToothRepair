@@ -25,6 +25,10 @@ public class DentistSchema {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -48,17 +52,12 @@ public class DentistSchema {
     }
 
     public boolean checkPassword(String inputPassword){
-        if(inputPassword.equals(this.password)){
-            return true;
-        }
-        return false;
+        return inputPassword.equals(this.password);
     }
 
+    @Override
     public String toString(){
-        String dentistRepresentation = "";
-        dentistRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+ ", \n" + "clinic: "+ this.clinic +"}";
-        return dentistRepresentation;
-
+        return "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+ ", \n" + "clinic: "+ this.clinic +"}";
     }
 
 }

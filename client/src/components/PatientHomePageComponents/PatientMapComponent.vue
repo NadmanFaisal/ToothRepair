@@ -1,9 +1,12 @@
 <template>
-    <div class="mapContainer" ref="map"></div>
+    <div class="col-12 map-container">
+      <div class="col-12 map-content-container" ref="map">
+      </div>
+    </div>
 </template>
 
 <script>
-import dentistClinicIcon from '../assets/dentistClinicIcon.png'
+import dentistClinicIcon from '../../assets/dentistClinicIcon.png'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -100,12 +103,17 @@ export default {
 
 </script>
 <style>
-    .mapContainer {
-        width: 400px;
-        height: 250px;
+    .map-container {
+        width: 100%;
+        height: 50%;
         position: relative;
         overflow: hidden;
-        border-style: solid;
+        padding: 40px;
+    }
+
+    .map-content-container {
+      background-color: white;
+      height: 100%;
     }
 
     .leaflet-tooltip {

@@ -16,6 +16,11 @@ public class PatientSchema {
     public String getId() {
         return id;
     }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -39,17 +44,29 @@ public class PatientSchema {
     }
     
     public boolean checkPassword(String inputPassword){
-        if(inputPassword.equals(this.password)){
-            return true;
-        }
-        return false;
+        return inputPassword.equals(this.password);
     }
 
+    @Override
     public String toString(){
-        String patientRepresentation = "";
-        patientRepresentation = "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
-        return patientRepresentation;
+        return "{"+ "id: "+ this.id + ", \n" + "name: "+ this.name+ ", \n" + "email: "+ this.email+"}";
+    }
+    public boolean equals (PatientSchema otherPatient){
+        boolean isEqual = false;
+        if(otherPatient == this){
+            isEqual = true;
+        }else if (otherPatient == null){
+            isEqual = false;
+        }else if (otherPatient instanceof PatientSchema){
+            boolean sameName = this.getName().equals(otherPatient.getName());
+            boolean samePassword = this.getPassword().equals(otherPatient.getPassword());
+            boolean sameEmail = this.getEmail().equals(otherPatient.getEmail());
+            isEqual = sameEmail && sameName && samePassword;
+        }else{
+            return isEqual;
+        }
+
+        return isEqual;
 
     }
-
 }
