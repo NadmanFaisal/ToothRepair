@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +26,7 @@ import main.java.service.PatientService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
-    private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
+    private static final String CLIENT_ID = "AuthenticationServiceClient1";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
@@ -36,7 +35,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_USER_COUNT = "authenticationService/dentist&patient/userCount";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert", "authenticationService/patient/logout" ,"authenticationService/dentist/logout"};
+    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert", "authenticationService/patient/logout" ,"authenticationService/dentist/logout", "authenticationService/users/getActiveUsersAlert"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -229,14 +228,15 @@ public class MQTT implements MqttCallback {
                     System.out.println("USER HAS LOGGED OUT WITH THE ID :" + stringMessage);
                     PatientSchema optionalLoggedOutPatient = patientService.getPatientByID(stringMessage);
                     patientService.setIsLoggedIn(optionalLoggedOutPatient, false);
-                    this.publishActiveUserCount();
                     break;
                 case "authenticationService/dentist/logout":
                     System.out.println("USER HAS LOGGED OUT WITH THE ID :" + stringMessage);
                     DentistSchema optionalLoggedOutDentist = dentistService.getDentistByID(stringMessage);
                     dentistService.setIsLoggedIn(optionalLoggedOutDentist, false);
-                    this.publishActiveUserCount();
                     break;
+                case "authenticationService/users/getActiveUsersAlert":
+                    this.publishActiveUserCount();
+                    System.out.println("SENT ALL ACTIVE USERS");
                 default:
                     System.err.println("Unrecognized topic: " + topic);
                     break;
