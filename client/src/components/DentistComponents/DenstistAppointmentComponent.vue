@@ -14,9 +14,6 @@
             <div class="col-11 title-container">
               <h1 class="title-label">Morning</h1>
               <label class="time-label">9:00 AM to 12:00 PM</label>
-              <!--Buttons for testing purposes-->
-              <button @click="getAppointments">Get appointments</button>
-              <button @click="getClinicId">get clinic id printed</button>
             </div>
 
           </div>
@@ -210,7 +207,7 @@ export default {
     },
     selectAppointment(appointment) {
       if (appointment.status === 'booked') {
-        const confirmation = confirm('This has already been booked by patients. Do you want to delete their bookings and make it unavailable?')
+        const confirmation = confirm('This has already been booked by patients.')
         if (!confirmation) {
           return
         }

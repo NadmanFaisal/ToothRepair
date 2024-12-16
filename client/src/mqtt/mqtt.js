@@ -6,15 +6,15 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: 'test.mosquitto.org',
-    port: 8081,
-    protocol: 'wss'
-  },
-  {
     host: 'broker.hivemq.com',
     port: 8884,
     protocol: 'wss',
     path: '/mqtt'
+  },
+  {
+    host: 'test.mosquitto.org',
+    port: 8081,
+    protocol: 'wss'
   },
   {
     host: 'broker.emqx.io',

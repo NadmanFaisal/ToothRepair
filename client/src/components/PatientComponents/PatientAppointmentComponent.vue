@@ -14,7 +14,6 @@
           <div class="col-11 title-container">
             <h1 class="title-label">Morning</h1>
             <label class="time-label">9:00 AM to 12:00 PM</label>
-            <!--Buttons for testing purposes-->
           </div>
 
         </div>
