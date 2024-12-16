@@ -1,5 +1,7 @@
 package main.java.service;
 
+
+
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import main.java.db.DentistRepository;
 import main.java.db.DentistSchema;
+
 
 
 @Service
@@ -43,8 +46,28 @@ public class DentistService {
         
     }
 
+    public DentistSchema getDentistByID(String id){
+        Optional<DentistSchema> optionalDentist = dentistRepository.findById(id);
+        DentistSchema dentist;
+        if(optionalDentist.isPresent()){
+            dentist = optionalDentist.get();
+        }else{
+            System.out.println("Patient Cannot be found in the DB");
+            dentist = null;
+        }
+        return dentist;
+    }
 
+    public int getActiveDentists(){
+       return dentistRepository.countByIsLoggedInTrue();
 
+    }
+
+    public void setIsLoggedIn(DentistSchema dentist, boolean loggedInStatus){
+
+            dentist.setIsLoggedIn(loggedInStatus);
+            dentistRepository.save(dentist);
+    }
 
 
 }

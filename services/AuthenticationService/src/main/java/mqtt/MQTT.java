@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,13 +33,15 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
     private static final String PUBLISHED_DENTIST_TOPIC = "authenticationService/dentist/getDentistNames";
     private static final String PUBLISHED_USER_ID_TOPIC = "authenticationService/dentist&patient/userID";
+    private static final String PUBLISHED_USER_COUNT = "authenticationService/dentist&patient/userCount";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert"};
+    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert", "authenticationService/patient/logout" ,"authenticationService/dentist/logout"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
     private int currentBrokerIndex = 0;
+    private int userCount = 0;
 
     /**
      * MQTT class Constructor
@@ -183,7 +186,19 @@ public class MQTT implements MqttCallback {
      * @param message payload of the following MQTT topic
      * @throws Exception prints the Error Stack trace
      */
-    @Override
+    public void publishActiveUserCount(){
+        try {
+            this.userCount = patientService.getActivePatients() + dentistService.getActiveDentists();
+            String userCountString = String.valueOf(this.userCount);
+            this.middleware.publish(PUBLISHED_USER_COUNT, userCountString.getBytes(), 2, false);
+            System.out.println("THIS IS THE CURRENT USER COUNT OF THE SYSTEM: "+ userCountString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("FAILED TO SEND ACTIVE USER COUNT");
+        }
+    }
+    
+     @Override
     public void messageArrived(String topic, MqttMessage message) {
         
         try {
@@ -199,14 +214,28 @@ public class MQTT implements MqttCallback {
                     break;
                 case "authenticationService/patient/login":
                     this.loginPatient(stringMessage);
+                    this.publishActiveUserCount();
                     break;    
                 case "authenticationService/dentist/login":
                     this.loginDentist(stringMessage);
+                    this.publishActiveUserCount();
                     break;
                 case "authenticationService/dentist/getDentistNamesAlert":
                     List<String> dentistList = objectMapper.readValue(stringMessage, List.class);
                     System.out.println("List of dentist names: " + dentistList);
                     this.publishDentistNames(dentistList);
+                    break;
+                case "authenticationService/patient/logout" :
+                    System.out.println("USER HAS LOGGED OUT WITH THE ID :" + stringMessage);
+                    PatientSchema optionalLoggedOutPatient = patientService.getPatientByID(stringMessage);
+                    patientService.setIsLoggedIn(optionalLoggedOutPatient, false);
+                    this.publishActiveUserCount();
+                    break;
+                case "authenticationService/dentist/logout":
+                    System.out.println("USER HAS LOGGED OUT WITH THE ID :" + stringMessage);
+                    DentistSchema optionalLoggedOutDentist = dentistService.getDentistByID(stringMessage);
+                    dentistService.setIsLoggedIn(optionalLoggedOutDentist, false);
+                    this.publishActiveUserCount();
                     break;
                 default:
                     System.err.println("Unrecognized topic: " + topic);
@@ -238,6 +267,7 @@ public class MQTT implements MqttCallback {
                     
                 }else{
                     System.out.println(!patientService.checkDuplicatePatient(patient));
+                    patient.setIsLoggedIn(false);
                     patientService.createPatient(patient); 
                 }            
             } else {
@@ -290,7 +320,7 @@ public class MQTT implements MqttCallback {
                     System.out.println(errorMessage);
                     middleware.publish(PUBLISHED_STATUS_TOPIC, errorMessage.getBytes(), 2, false);
                 }else{
-
+                    dentist.setIsLoggedIn(false);
                     dentistService.createDentist(dentist);
                     String messageToClinicService = String.format("{ \"clinicId\": " + "\"%s\"" +","+"\"dentistId\": "+ "\"%s\"" +" }", dentist.getClinic(), dentist.getId());
                     System.out.println("Publishing message to clinic service: " + messageToClinicService);
@@ -394,7 +424,7 @@ public class MQTT implements MqttCallback {
             } else {
                 String successMessage = "User is sucessfully logged in!";
                 String id = checkPatient.getId();
-
+                patientService.setIsLoggedIn(checkPatient, true);
                 System.out.println(successMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
                 middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
@@ -431,7 +461,7 @@ public class MQTT implements MqttCallback {
             } else {
                 String successMessage = "User is sucessfully logged in!";
                 String id = checkDentist.getId();
-
+                dentistService.setIsLoggedIn(checkDentist, true);
                 System.out.println(successMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
                 middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
