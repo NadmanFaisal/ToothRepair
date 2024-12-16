@@ -48,3 +48,12 @@ for i in $(seq 1 $clients); do
   mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "clinicService/clinic/getClinicAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
 done
 
+# Stress-test schedule service (get appointments)
+for i in $(seq 1 $clients); do
+  payload="{\"Get Appointments $i\"}"
+  #payload="Get Appointments"
+  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "scheduleService/appointment/getAppointments" --client-prefix "mqtt-client-$i" --payload "$payload" &
+done
+
+wait
+echo "All benchmarks completed."

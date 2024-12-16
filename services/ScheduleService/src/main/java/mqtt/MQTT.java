@@ -5,6 +5,8 @@ import java.util.concurrent.Executors;
 
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -29,7 +31,7 @@ public class MQTT implements MqttCallback {
     private static final String[] SUBSCRIBED_TOPICS = {"scheduleService/appointment/getAppointments",
      "scheduleService/appointment/createAppointment", "scheduleService/appointment/bookAppointment", "scheduleService/appointment/changeAppointmentStatus"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private IMqttClient middleware; // MQTT client
+    private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
@@ -47,13 +49,14 @@ public class MQTT implements MqttCallback {
 
     @Autowired
     public MQTT(AppointmentService appointmentService){
-        this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
+        this.threadPool = Executors.newCachedThreadPool();
         this.appointmentService = appointmentService;
         if(STRESS_TEST_MODE){
             options.setUserName("Administrator");
             String passwordString = "Vaibhav12Taha";
             char[] passwordChars = passwordString.toCharArray();
             options.setPassword(passwordChars);
+            options.setMaxInflight(100);
         }
         try {
             initializeClient();
@@ -77,11 +80,13 @@ public class MQTT implements MqttCallback {
         for (int i = 0; i < BROKER_URLS.length; i++) {
             
             try {
-                middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
+                middleware = new MqttAsyncClient(BROKER_URLS[i], CLIENT_ID);
                 if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
-                    middleware.connect(options);
+                    IMqttToken token = middleware.connect(options);
+                    token.waitForCompletion();
                 } else {
-                    middleware.connect();
+                    IMqttToken token = middleware.connect();
+                    token.waitForCompletion();
                 }
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
                 middleware.setCallback(this);
@@ -139,7 +144,7 @@ public class MQTT implements MqttCallback {
     /**
      * Publishes the topic as a String in JSON notation.
      * 
-     * Publishing happening with QoS 1.
+     * Publishing happening with QoS 2.
      * 
      * It publishes with the conected client
      * 
@@ -149,10 +154,9 @@ public class MQTT implements MqttCallback {
     private void publishAppointmentList(){
         try {
             String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
-            String emptyMessage = "";
             //Publish the payload as bytes to the topic.
             
-            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 1, false);
+            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 2, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -191,7 +195,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Switching to another broker: " + BROKER_URLS[currentBrokerIndex]);
                     
                     middleware.disconnect();
-                    middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
+                    middleware = new MqttAsyncClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
 
                     System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
                     middleware.connect();
@@ -225,7 +229,7 @@ public class MQTT implements MqttCallback {
             System.out.println("Message recieved: " + stringMessage);
             switch (topic) {
                 case "scheduleService/appointment/getAppointments":
-                    if(stringMessage.equals("Get Appointments")){
+                    if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
                         this.publishAppointmentList();
                     }   break;
