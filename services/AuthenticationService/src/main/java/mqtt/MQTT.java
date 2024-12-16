@@ -26,16 +26,17 @@ import main.java.service.PatientService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
-    private static final String CLIENT_ID = "AuthenticationServiceClient1";      // Unique client ID
+    private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
     private static final String PUBLISHED_DENTIST_TOPIC = "authenticationService/dentist/getDentistNames";
     private static final String PUBLISHED_USER_ID_TOPIC = "authenticationService/dentist&patient/userID";
+    private static final String PUBLISHED_CLINIC_ID_TOPIC = "Client/AuthenticationService/ClinicId";
     private static final String PUBLISHED_USER_COUNT = "authenticationService/dentist&patient/userCount";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert", "authenticationService/patient/logout" ,"authenticationService/dentist/logout", "authenticationService/users/getActiveUsersAlert"};
+    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", "authenticationService/patient/login", "authenticationService/dentist/login", "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", "authenticationService/patient/logout" ,"authenticationService/dentist/logout", "authenticationService/users/getActiveUsersAlert"};
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -224,6 +225,9 @@ public class MQTT implements MqttCallback {
                     System.out.println("List of dentist names: " + dentistList);
                     this.publishDentistNames(dentistList);
                     break;
+                case "AuthenticationService/Dentist/GetClinicId":
+                    this.getClinicId(stringMessage);
+                    break;
                 case "authenticationService/patient/logout" :
                     System.out.println("USER HAS LOGGED OUT WITH THE ID :" + stringMessage);
                     PatientSchema optionalLoggedOutPatient = patientService.getPatientByID(stringMessage);
@@ -241,6 +245,18 @@ public class MQTT implements MqttCallback {
                     System.err.println("Unrecognized topic: " + topic);
                     break;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getClinicId(String stringPayload) {
+        try {
+            String dentistId = objectMapper.readTree(stringPayload).get("id").asText();
+            String clinicId = dentistService.getClinicIdByDentistId(dentistId);
+            String responseMessage = objectMapper.writeValueAsString(clinicId);
+            middleware.publish(PUBLISHED_CLINIC_ID_TOPIC, responseMessage.getBytes(), 2, false);
+            System.out.println("Published clinicId: " + clinicId + " to topic: " + PUBLISHED_CLINIC_ID_TOPIC);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
   data() {
@@ -140,12 +140,6 @@ export default {
               console.log(encodedUserInfo)
               document.cookie = `userInfo=${encodedUserInfo}; path=/; max-age=3600`
               console.log(document.cookie)
-
-              if (this.isDentist) {
-                this.$router.push('/dentistHomePage')
-              } else {
-                this.$router.push('/patientHomePage')
-              }
             }
             setTimeout(function () {
               alert(message)
@@ -153,11 +147,15 @@ export default {
             unsubscribeFromTopic(SUBCRIBE_AUTHENTICATION_ALERT)
           }
           if (topic === SUBSCRIBE_USER_ID) {
-            console.log("I AM IN THE CORRECT IF STATEMENT")
+            console.log('I AM IN THE CORRECT IF STATEMENT')
             localStorage.setItem('UserID', JSON.stringify(message))
-            console.log('This is the stored User ID:  '  + JSON.stringify(message))
+            console.log('This is the stored User ID:  ' + JSON.stringify(message))
+            if (this.isDentist) {
+              this.$router.push('/dentistHomePage')
+            } else {
+              this.$router.push('/patientHomePage')
+            }
             unsubscribeFromTopic(SUBSCRIBE_USER_ID)
-            
           }
         })
       } catch (err) {

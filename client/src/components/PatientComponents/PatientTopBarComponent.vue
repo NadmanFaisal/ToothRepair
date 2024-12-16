@@ -2,23 +2,21 @@
     <div class="col-12 top-bar-container">
 
         <div class="col-3 logo-container">
-            <img src="../assets/app-logo.png" class="logo">
+            <img src="../../assets/app-logo.png" class="logo">
             <label class="logo-label">TEETH REPAIR</label>
         </div>
 
         <div class="col-6 router-container">
-            <div v-for="item in navItems" :key="item.name">
+            <div v-for="item in navItems" :key="item.name" @click="navigateTo(item)">
                 <h1 class="router-label">
-                    <router-link :to="item.route" class="nav-link">
-                        {{ item.name }}
-                    </router-link>
+                    {{ item.name }}
                 </h1>
             </div>
         </div>
 
         <div class="col-3 settings-container">
-            <img src="../assets/notifications.png" class="notification-label">
-            <img src="../assets/profile-picture.png" class="profile-picture">
+            <img src="../../assets/notifications.png" class="notification-label">
+            <img src="../../assets/profile-picture.png" class="profile-picture">
             <label class="patient-name-label"> Name of Patient</label>
         </div>
 
@@ -26,14 +24,33 @@
 </template>
 
 <script>
+import { store } from '../../store'
+
 export default {
-  name: 'TopBarComponent',
+  name: 'PatientTopBarComponent',
+  props: {
+    selectedClinicId: {
+      type: String,
+      default: null
+    }
+  },
   data() {
     return {
       navItems: [
-        { name: 'My Bookings', route: '/patientHomePage' }
+        { name: 'My Home', route: '/patientHomePage' },
+        { name: 'Book Appointments', route: '/patientAppointmentPage' },
+        { name: 'My Bookings', route: '/patientMyBookingsPage' }
         // Add more navigation items here
       ]
+    }
+  },
+  methods: {
+    navigateTo(item) {
+      if (item.route === '/patientAppointmentPage' && !store.getSelectedClinicId()) {
+        alert('No clinic has been selected. Please select a clinic first')
+        return
+      }
+      this.$router.push(item.route)
     }
   }
 }

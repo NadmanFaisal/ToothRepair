@@ -1,21 +1,20 @@
 package test.java;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import main.java.db.AppointmentRepository;
@@ -113,14 +112,14 @@ public class ScheduleServiceTest {
 
     @Test
     @DisplayName("Change appointment status for an appointment in db")
-    void changeAppointmentStatusTest(){
+    void makeAppointmentAvailableTest(){
 
         when(appointmentRepository.findById(testAppointment.getId())).thenReturn(Optional.of(testAppointment));
 
         AppointmentSchema result = testAppointment;
         result.setStatus("available");
 
-        assertEquals(Optional.of(result), appointmentService.changeAppointmentStatus(testAppointment), "The result of this test object should match the available appointment object");
+        assertEquals(Optional.of(result), appointmentService.makeAppointmentAvailable(testAppointment), "The result of this test object should match the available appointment object");
 
         verify(appointmentRepository, times(1)).findById(testAppointment.getId());
     }

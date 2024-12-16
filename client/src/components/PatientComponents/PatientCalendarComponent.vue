@@ -33,6 +33,8 @@ export default {
   methods: {
     updateSelectedDate(date) {
       this.selectedDate = new Date(date).toISOString().split('T')[0]
+      this.$emit('patientSelectedDate', this.selectedDate)
+      console.log('Emitting selectedDate from child:', this.selectedDate)
     }
   }
 }
