@@ -29,7 +29,7 @@ public class MQTT implements MqttCallback {
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
      "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
      "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments"}; 
+    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

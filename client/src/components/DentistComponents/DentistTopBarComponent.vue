@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       navItems: [
-        { name: 'My Bookings', route: '/DentistBookingPage' }
+        { name: 'My Appointments', route: 'dentistHomePage' },
+        { name: 'My Bookings', route: '/dentistMyBookingsPage' }
         // Add more navigation items here
       ]
     }
