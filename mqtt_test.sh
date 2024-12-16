@@ -41,3 +41,10 @@ for i in $(seq 1 $clients); do
   mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "authenticationService/patient/login" --client-prefix "mqtt-client-$i" --payload "$payload" &
 done
 
+# Stress-test clinic service (get the map)
+for i in $(seq 1 $clients); do
+  payload="{\"Get Clinics $i\"}"
+  #payload="Get Clinics"
+  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "clinicService/clinic/getClinicAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
+done
+
