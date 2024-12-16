@@ -159,14 +159,8 @@ export function unsubscribeFromTopic(topic) {
  * @param {*} callback callback to keep checking for arrived messages.
  * @returns {message} returns the message recieved from the topic
  */
-let currentCallback = null
 export function messageArrived(callback) {
-  console.log("THIS IS THE NUMBER OF LISTENERS: " +   client.listenerCount())
-  if(currentCallback){
-    client.off('message', currentCallback)
-  }
-
-  currentCallback = (topic, message) => {
+  client.on('message', (topic, message) => {
     try {
       console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
@@ -175,8 +169,7 @@ export function messageArrived(callback) {
       callback(topic, message.toString())
     }
     return message
-  }
-  client.on('message', currentCallback)
+  })
 }
 
 /**

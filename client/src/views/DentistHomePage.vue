@@ -26,6 +26,7 @@
 import TopBarComponent from '../components/TopBar.vue'
 import DenstistAppointmentComponent from '../components/DentistHomePageComponents/DenstistAppointmentComponent.vue'
 import DentistCalendarComponent from '../components/DentistHomePageComponents/DentistCalendarComponent.vue'
+import { publishToTopic } from '@/mqtt/mqtt'
 
 export default {
   name: 'MyBookingsPage',
@@ -36,6 +37,10 @@ export default {
   },
   methods: {
     logout() {
+      const PUBLISH_LOGOUT_TOPIC = "logout"
+      const PUBLISH_LOGGED_OUT_USER_ID = "authenticationService/dentist/logout"
+      publishToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System")
+      publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       localStorage.clear()
       this.$router.push('/login')
