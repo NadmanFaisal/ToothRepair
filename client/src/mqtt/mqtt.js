@@ -6,15 +6,15 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: 'test.mosquitto.org',
-    port: 8081,
-    protocol: 'wss'
-  },
-  {
     host: 'broker.hivemq.com',
     port: 8884,
     protocol: 'wss',
     path: '/mqtt'
+  },
+  {
+    host: 'test.mosquitto.org',
+    port: 8081,
+    protocol: 'wss'
   },
   {
     host: 'broker.emqx.io',
@@ -59,17 +59,15 @@ client.on('close', () => {
   handleReconnection()
 })
 
-
 function handleReconnection() {
   let retryCount = 0
   console.log('Connection lost, attempting to reconnect...')
-  
+
   const reconnectInterval = setInterval(() => {
-    if(client && client.connected) {
+    if (client && client.connected) {
       clearInterval(reconnectInterval)
       console.log(`Successfully reconnected to broker: ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
       retryCount = 0
-      return
     } else if (retryCount < MAX_RETRIES) {
       console.log(`Reconnection attempt ${retryCount + 1} of ${MAX_RETRIES}`)
       retryCount++
@@ -84,7 +82,6 @@ function handleReconnection() {
         setTimeout(() => {
           console.log(`Reconnecting to broker; ${BROKER_URLS[currentBrokerIndex].protocol}://${BROKER_URLS[currentBrokerIndex].host}:${BROKER_URLS[currentBrokerIndex].port}`)
           client.reconnect()
-
         }, 1000)
       })
     } else {
@@ -104,8 +101,7 @@ function handleReconnection() {
         setTimeout(() => {
           console.log('Disconnected from current broker, reconnecting...')
           client = mqtt.connect(BROKER_URLS[currentBrokerIndex])
-
-        }, 1000) 
+        }, 1000)
       })
     }
   }, 2000)
@@ -159,14 +155,8 @@ export function unsubscribeFromTopic(topic) {
  * @param {*} callback callback to keep checking for arrived messages.
  * @returns {message} returns the message recieved from the topic
  */
-let currentCallback = null
 export function messageArrived(callback) {
-  console.log("THIS IS THE NUMBER OF LISTENERS: " +   client.listenerCount())
-  if(currentCallback){
-    client.off('message', currentCallback)
-  }
-
-  currentCallback = (topic, message) => {
+  client.on('message', (topic, message) => {
     try {
       console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
@@ -175,8 +165,7 @@ export function messageArrived(callback) {
       callback(topic, message.toString())
     }
     return message
-  }
-  client.on('message', currentCallback)
+  })
 }
 
 /**
@@ -191,4 +180,3 @@ export function publishToTopic(topic, message) {
     console.log('Published the message: ' + message + 'to topic: ' + topic)
   }
 }
-

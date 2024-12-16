@@ -55,7 +55,7 @@
 
 <script>
 import { subscribeToTopic, messageArrived, publishToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
-import MapComponent from '../components/PatientHomePageComponents/PatientMapComponent.vue'
+import MapComponent from '../components/PatientComponents/PatientMapComponent.vue'
 export default {
   name: 'MapView',
   props: {

@@ -14,8 +14,6 @@
           <div class="col-11 title-container">
             <h1 class="title-label">Morning</h1>
             <label class="time-label">9:00 AM to 12:00 PM</label>
-            <!--Buttons for testing purposes-->
-            <button @click="getAppointments">Get appointments</button>
           </div>
 
         </div>
@@ -25,7 +23,7 @@
           <!-- Dynamically sets the color of the slots according to the status -->
           <div
           class="col-2 appointment-slot-container"
-          v-for="appointment in appointments"
+          v-for="appointment in morningFilteredAppointments"
           :key="appointment.id"
           :class="{
             'available-slot': appointment.status === 'available',
@@ -39,7 +37,7 @@
               <img :src="getStatusImage(appointment.status)" class="status-mark-image">
             </div>
             <div class="col-8 appointment-information-container">
-              <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ appointment.startTime }}</label>
+              <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
             </div>
           </div>
 
@@ -67,6 +65,31 @@
 
         </div>
 
+        <div class="col-10 slot-section">
+
+          <!-- Dynamically sets the color of the slots according to the status -->
+          <div
+          class="col-2 appointment-slot-container"
+          v-for="appointment in eveningFilteredAppointments"
+          :key="appointment.id"
+          :class="{
+            'available-slot': appointment.status === 'available',
+            'booked-slot': appointment.status === 'booked',
+            'unavailable-slot': appointment.status === 'unavailable',
+            'selected-slot': appointment.id === selectedAppointmentId
+            } "
+            @click="selectAppointment(appointment)"
+            >
+            <div class="col- 4 status-mark-container">
+              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+            </div>
+            <div class="col-8 appointment-information-container">
+              <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
@@ -76,7 +99,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, client } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -84,34 +107,73 @@ export default {
   name: 'AppointmentComponent',
   data() {
     return {
-      appointments: [],
       selectedAppointmentId: null
     }
   },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments,
-      { immediate: true }
-    )
+  props: {
+    patientSelectedDate: {
+      type: String
+    },
+    triggerGetAppointments: {
+      type: Function,
+      required: true
+    },
+    appointments: {
+      type: Array,
+      default: () => []
+    }
+  },
+  mounted() {
+    console.log('Component mounted')
+    client.on('connect', () => {
+      console.log('MQTT Client connected')
+      console.log(this.appointments)
+    })
+  },
+  computed: {
+    // computed because the changes are cached only if selectedDate changes
+    morningFilteredAppointments() {
+      // Filters the appointments according to its time
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Morning start time threshold
+        const morningStartTime = 5 * 60
+        // Morning end time threshold
+        const morningEndTime = 12 * 60
+        return (
+          appointment.date === this.patientSelectedDate &&
+          startTimeInMinutes >= morningStartTime &&
+          startTimeInMinutes <= morningEndTime
+        )
+      })
+    },
+    eveningFilteredAppointments() {
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Evening start time threshold
+        const eveningStartTime = 12 * 60
+        // Evening end time threshold
+        const eveningEndTime = 20 * 60
+        return (
+          appointment.date === this.patientSelectedDate &&
+          startTimeInMinutes > eveningStartTime &&
+          startTimeInMinutes <= eveningEndTime
+        )
+      })
+    }
   },
   methods: {
-    async getAppointments() {
-      try {
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        publishToTopic('scheduleService/appointment/getAppointments', 'Get Appointments')
-        messageArrived((topic, message) => {
-          if (topic === 'client/scheduleService/appointmentInfo') {
-            console.log('Received Appointment list:', message)
-
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            this.appointments = parsedMessage
-          }
-        })
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
+    getTypeOfTime(time) {
+      const [hour, minute] = time.split(':').map(Number) // Split the time into hour and minute
+      const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
+      const adjustedHour = hour % 12 || 12 // Convert 0 hour to 12 for AM and handle 12-hour format
+      return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${period}` // Format the time with leading zeros
     },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
@@ -123,10 +185,10 @@ export default {
       }
       try {
         const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        publishToTopic('scheduleService/appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
-        this.getAppointments()
+        this.triggerGetAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

@@ -22,12 +22,12 @@ import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
 
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic",}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic", "ClinicService/Clinic/getClinicById"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -122,6 +122,24 @@ public class MQTT implements MqttCallback {
         
     }
 
+    /**
+     * Publishes the message to the topic as a String in JSON notation.
+     * 
+     * Publishing happening with QoS 1.
+     * 
+     * It publishes with the conected client
+     * 
+     * @param N/A no params needed
+     * @throws MqttException prints the Error Stack trace
+     */
+    private void publishClinicInfo(String topic, String message) {
+        try {
+            middleware.publish(topic, message.getBytes(), 1, false);
+            System.out.println("Published clinic info to topic: " + topic);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Publishes the topic as a String in JSON notation.
@@ -223,10 +241,39 @@ public class MQTT implements MqttCallback {
                 case "clinicService/dentist/addDentist":
                     handleAddingDentist(stringMessage);
                     break;
+                case "ClinicService/Clinic/getClinicById":
+                    handleGetClinic(stringMessage);
+                    break;
                 default:
                     break;
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handles the payload from the 'ClinicService/Clinic/getClinicById' topic
+     * 
+     * @param message payload of the 'ClinicService/Clinic/getClinicById' topic
+     */
+    private void handleGetClinic(String message) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String clinicId = message;
+    
+            System.out.println("Fetching clinic with ID: " + clinicId);
+    
+            Optional<ClinicSchema> clinic = clinicService.getClinic(clinicId);
+    
+            if (clinic.isPresent()) {
+                String clinicJson = objectMapper.writeValueAsString(clinic.get());
+                publishClinicInfo("Client/ClinicService/ClinicInfo", clinicJson);
+            } else {
+                System.err.println("Clinic not found with ID: " + clinicId);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in handleGetClinic: " + e.getMessage());
             e.printStackTrace();
         }
     }

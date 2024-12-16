@@ -1,5 +1,5 @@
 <template>
-    <div class="col-12 appointment-container">
+    <div class="col-12 content-container">
 
       <div class="col-12 appointment-content-container">
 
@@ -14,9 +14,6 @@
             <div class="col-11 title-container">
               <h1 class="title-label">Morning</h1>
               <label class="time-label">9:00 AM to 12:00 PM</label>
-              <!--Buttons for testing purposes-->
-              <button @click="getAppointments">Get appointments</button>
-              <button @click="createAppointment">create appointments</button>
             </div>
 
           </div>
@@ -25,7 +22,7 @@
 
             <!-- Dynamically sets the color of the slots according to the status -->
             <div class="col-2 appointment-slot-container"
-            v-for="appointment in appointments"
+            v-for="appointment in morningFilteredAppointments"
             :key="appointment.id"
             :class="{
               'available-slot': appointment.status === 'available',
@@ -37,7 +34,15 @@
                 <img :src="getStatusImage(appointment.status)" class="status-mark-image">
               </div>
               <div class="col-8 appointment-information-container">
-                <label class="appointment-information-label" :class="{ 'available-label': appointment.status === 'available', 'available-label': appointment.status === 'booked', 'unavailable-label': appointment.status === 'unavailable' }">{{ appointment.startTime }} PM</label>
+                <label class="appointment-information-label"
+                :class="{
+                  'available-label': appointment.status === 'available',
+                  'available-label': appointment.status === 'booked',
+                  'unavailable-label': appointment.status === 'unavailable'
+                  }"
+                  >
+                    {{ getTypeOfTime(appointment.startTime) }}
+                  </label>
               </div>
             </div>
 
@@ -65,6 +70,36 @@
 
           </div>
 
+          <div class="col-10 slot-section">
+
+            <!-- Dynamically sets the color of the slots according to the status -->
+            <div class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="appointment.id"
+            :class="{
+              'available-slot': appointment.status === 'available',
+              'unavailable-slot': appointment.status !== 'available',
+              'selected-slot': appointment.id === selectedAppointmentId
+              }
+              " @click="selectAppointment(appointment)">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label"
+                :class="{
+                  'available-label': appointment.status === 'available',
+                  'available-label': appointment.status === 'booked',
+                  'unavailable-label': appointment.status === 'unavailable'
+                  }"
+                  >
+                    {{ getTypeOfTime(appointment.startTime) }}
+                </label>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
@@ -74,7 +109,7 @@
 
 <script>
 
-import { subscribeToTopic, messageArrived, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -82,91 +117,97 @@ export default {
   name: 'DentistAppointmentComponent',
   data() {
     return {
-      appointments: [],
       selectedAppointmentId: null
     }
   },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments,
-      { immediate: true }
-    )
+  props: {
+    dentistSelectedDate: {
+      type: String,
+      required: true
+    },
+    appointments: {
+      type: Array,
+      default: () => []
+    },
+    triggerGetAppointments: {
+      type: Function,
+      required: true
+    }
+  },
+  watch: {
+    dentistSelectedDate: {
+      handler(newDate) {
+        console.log('New selected date in DentistAppointmentComponent:', newDate)
+      }
+    }
+  },
+  computed: {
+    // computed because the changes are cached only if selectedDate changes
+    // computed because the changes are cached only if selectedDate changes
+    morningFilteredAppointments() {
+      // Filters the appointments according to its time
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Morning start time threshold
+        const morningStartTime = 5 * 60
+        // Morning end time threshold
+        const morningEndTime = 12 * 60
+        return (
+          appointment.date === this.dentistSelectedDate &&
+          startTimeInMinutes >= morningStartTime &&
+          startTimeInMinutes <= morningEndTime
+        )
+      })
+    },
+    eveningFilteredAppointments() {
+      return this.appointments.filter(appointment => {
+        // Breaks the appointment hour and minutes
+        const [hour, minute] = appointment.startTime.split(':').map(Number)
+        // Converts the hours and the minutes to total minute
+        const startTimeInMinutes = hour * 60 + minute
+        // Evening start time threshold
+        const eveningStartTime = 12 * 60
+        // Evening end time threshold
+        const eveningEndTime = 20 * 60
+        return (
+          appointment.date === this.dentistSelectedDate &&
+          startTimeInMinutes > eveningStartTime &&
+          startTimeInMinutes <= eveningEndTime
+        )
+      })
+    }
   },
   methods: {
-    async createAppointment() {
-      try {
-        await this.getAppointments()
-
-        // This function is used to increament the time of the slots by 30 minutes
-        const incrementTime = (time) => {
-          const [hours, minutes] = time.split(':').map(Number)
-          const newMinutes = minutes + 30
-          const newHours = hours + Math.floor(newMinutes / 60)
-          const adjustedMinutes = newMinutes % 60
-          return `${String(newHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`
-        }
-
-        // Uses 9:00 as initial time and keeps incrementing it to check if a slot with same time exists.
-        let startTime = '09:00'
-        const duplicateTimes = this.appointments.map(app => app.startTime)
-
-        // Increments the time if duplicate time exists
-        while (duplicateTimes.includes(startTime)) {
-          startTime = incrementTime(startTime)
-        }
-
-        // Creates new appointment with next available time slot
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        const newAppointment = {
-          status: 'available',
-          date: '1111-11-11',
-          startTime,
-          endTime: incrementTime(startTime)
-        }
-        publishToTopic('scheduleService/appointment/createAppointment', JSON.stringify(newAppointment))
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
-    async getAppointments() {
-      try {
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        publishToTopic('scheduleService/appointment/getAppointments', 'Get Appointments')
-        messageArrived((topic, message) => {
-          if (topic === 'client/scheduleService/appointmentInfo') {
-            console.log('Received Appointment list:', message)
-
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            this.appointments = parsedMessage
-          }
-        })
-      } catch (error) {
-        console.error('This bombaclaat wont work' + error)
-      }
-    },
     async makeAvailable() {
+      const userId = localStorage.getItem('UserID')
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
         return
       }
       try {
-        const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        publishToTopic('scheduleService/appointment/changeAppointmentStatus', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
-        this.getAppointments()
+        this.triggerGetAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
+    },
+    getTypeOfTime(time) {
+      const [hour, minute] = time.split(':').map(Number) // Split the time into hour and minute
+      const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
+      const adjustedHour = hour % 12 || 12 // Convert 0 hour to 12 for AM and handle 12-hour format
+      return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${period}` // Format the time with leading zeros
     },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
     selectAppointment(appointment) {
       if (appointment.status === 'booked') {
-        const confirmation = confirm('This has already been booked by patients. Do you want to delete their bookings and make it unavailable?')
+        const confirmation = confirm('This has already been booked by patients.')
         if (!confirmation) {
           return
         }
@@ -180,7 +221,7 @@ export default {
 </script>
 
 <style scoped>
-.appointment-container {
+.content-container {
   display: flex;
   flex-direction: column;
   justify-items: center;
