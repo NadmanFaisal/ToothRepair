@@ -259,8 +259,8 @@ public class MQTT implements MqttCallback {
                     totalMsgSent++;
                     break;
                 case "authenticationService/totalMsgSentAlert":
+                    totalMsgSent++;    
                     System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);
-                    totalMsgSent++;
                     String msgSentString = String.valueOf(totalMsgSent);
                     middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
                     break;

@@ -25,16 +25,20 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
+    private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
+    private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
      "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
      "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert"}; 
+    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert", "scheduleService/totalMsgSentAlert", "scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     private int currentBrokerIndex = 0;
+    private int totalMsgReceived = 0;
+    private int totalMsgSent = 0;
 
 
     
@@ -143,6 +147,7 @@ public class MQTT implements MqttCallback {
             //Publish the payload as bytes to the topic.
             System.out.println(message);
             middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
+            totalMsgSent++;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -208,6 +213,7 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
+        totalMsgReceived++;
         try {
             String stringMessage = new String(message.getPayload());
             System.out.println("Message recieved: " + stringMessage);
@@ -290,7 +296,22 @@ public class MQTT implements MqttCallback {
                         int availableAppointments = appointmentService.getTotalnumberOfAvailableAppointments();
                         String appointmentString = String.valueOf(availableAppointments);
                         middleware.publish(PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC, appointmentString.getBytes(), 2, false);
+                        totalMsgSent++;
                         System.out.println("PUBLISHING TOTAL NUMBER OF AVAILABLE APPOINTMENTS TO FRONTEND");
+                    break;
+                }
+                case "scheduleService/totalMsgReceivedAlert" :{
+                    System.out.println("PUBLISHING TOTAL MESSAGES RECEIVED: " + this.totalMsgReceived);
+                    String msgReceivedString = String.valueOf(totalMsgReceived);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_RECEIVED, msgReceivedString.getBytes() , 2, false);
+                    totalMsgSent++;
+                    break;
+                }
+                case "scheduleService/totalMsgSentAlert":{
+                    totalMsgSent++;
+                    System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);
+                    String msgSentString = String.valueOf(totalMsgSent);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
                     break;
                 }
 
