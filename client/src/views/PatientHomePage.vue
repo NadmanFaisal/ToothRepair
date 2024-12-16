@@ -177,7 +177,7 @@ export default {
     },
     logout() {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
+      unsubscribeFromTopic('Client/ScheduleService/AppointmentInfo')
       localStorage.clear()
       this.$router.push('/login')
     }

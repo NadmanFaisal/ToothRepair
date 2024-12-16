@@ -185,8 +185,8 @@ export default {
       }
       try {
         const userId = localStorage.getItem('UserID')
-        await subscribeToTopic('client/scheduleService/appointmentInfo')
-        publishToTopic('scheduleService/appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
       } catch (error) {
