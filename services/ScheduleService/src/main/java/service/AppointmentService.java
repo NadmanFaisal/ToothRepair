@@ -111,5 +111,11 @@ public class AppointmentService {
     public List<AppointmentSchema> getAppointmentsByDentist(AppointmentSchema appointmentInfo) {
         return appointmentRepository.findByDentist(appointmentInfo.getDentist());
     }
+
+    public int getTotalnumberOfAvailableAppointments(){
+        return appointmentRepository.countByStatus("available");
+
+    }
+    
     
 }

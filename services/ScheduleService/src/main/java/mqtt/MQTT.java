@@ -24,12 +24,13 @@ public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
+    private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
      "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
      "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist"}; 
+    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -282,6 +283,14 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.patientCancel(appointmentInfo);
+                    break;
+                }
+                case "scheduleService/appointment/getAvailableAppointmentsAlert":{
+                        System.out.println("Getting a number of all the available appointments");
+                        int availableAppointments = appointmentService.getTotalnumberOfAvailableAppointments();
+                        String appointmentString = String.valueOf(availableAppointments);
+                        middleware.publish(PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC, appointmentString.getBytes(), 2, false);
+                        System.out.println("PUBLISHING TOTAL NUMBER OF AVAILABLE APPOINTMENTS TO FRONTEND");
                     break;
                 }
 
