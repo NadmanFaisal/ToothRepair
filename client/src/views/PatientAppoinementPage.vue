@@ -152,7 +152,8 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments
+      this.getAppointments,
+      this.getAllClinics
     )
   }
 }
