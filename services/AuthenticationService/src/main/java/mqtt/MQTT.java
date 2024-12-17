@@ -42,7 +42,7 @@ public class MQTT implements MqttCallback {
     private ObjectMapper objectMapper = new ObjectMapper();
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
-    private boolean STRESS_TEST_MODE = true;
+    private boolean STRESS_TEST_MODE = false;
 
     /**
      * MQTT class Constructor
