@@ -179,11 +179,35 @@ export default {
   .content-section {
     flex-direction: column;
     background: rgba(31, 194, 194, 0.24);
-    height: 300vh;
+    height: 150vh;
     overflow-y: auto;
   }
 
   .left-section {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 50%;
+  }
+
+  .right-section {
+    width: 100%;
+    height: 50%;
+  }
+
+}
+
+@media (max-width: 800px) {
+  .content-section {
+    flex-direction: column;
+    background: rgba(31, 194, 194, 0.24);
+    height: 200vh;
+    overflow-y: auto;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 50%;
   }

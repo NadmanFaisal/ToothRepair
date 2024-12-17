@@ -405,4 +405,286 @@ export default {
   font-weight: 600;
   line-height: normal;
 }
+
+@media (max-width: 1260px) {
+
+  .sunrise-image {
+    height: 55px;
+  }
+
+  .title-label {
+    color: #828282;
+    text-align: center;
+    font-family: Inter;
+    font-size: 25px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+  .time-label {
+    color: #A1A1A1;
+    text-align: center;
+    font-family: Inter;
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+  }
+
+  .available-slot {
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #009C1F;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+  }
+
+  .unavailable-slot {
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #DEDEDE;
+    background-color: #FFF;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    color:#DCDCDC;
+  }
+
+  .selected-slot {
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+    border: 3px solid #007BFF;
+    box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+  }
+
+  .booked-slot {
+    margin: 20px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #E70505;
+    background-color: #E70505;
+    box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
+    color:white;
+  }
+
+  .status-mark-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .status-mark-image {
+    margin-left: 5px;
+    height: 20px;
+  }
+
+  .appointment-information-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    margin-left: 5px;
+  }
+
+  .appointment-information-label {
+    text-align: center;
+    font-family: Inter;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+}
+
+@media (max-width: 750px) {
+
+  .sunrise-image {
+    height: 45px;
+  }
+
+  .title-label {
+    color: #828282;
+    text-align: center;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+  .time-label {
+    color: #A1A1A1;
+    text-align: center;
+    font-family: Inter;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+  }
+
+  .slot-section {
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .available-slot {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #009C1F;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+  }
+
+  .unavailable-slot {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #DEDEDE;
+    background-color: #FFF;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    color:#DCDCDC;
+  }
+
+  .selected-slot {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+    border: 3px solid #007BFF;
+    box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+  }
+
+  .booked-slot {
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #E70505;
+    background-color: #E70505;
+    box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
+    color:white;
+  }
+
+  .appointment-information-label {
+    text-align: center;
+    font-family: Inter;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+}
+
+@media (max-width: 660px) {
+
+  .sunrise-container {
+    display: none;
+  }
+
+  .title-label {
+    padding-left: 10px;
+  }
+
+  .time-label {
+    padding-left: 10px;
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  .available-slot {
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #009C1F;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+  }
+
+  .unavailable-slot {
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #DEDEDE;
+    background-color: #FFF;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    color:#DCDCDC;
+  }
+
+  .selected-slot {
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    background-color: #009C15;
+    box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+    color:white;
+    border: 3px solid #007BFF;
+    box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+  }
+
+  .booked-slot {
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #E70505;
+    background-color: #E70505;
+    box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
+    color:white;
+  }
+
+  .status-mark-image {
+    margin-left: 0px;
+    height: 12px;
+  }
+
+  .appointment-information-label {
+    text-align: center;
+    font-family: Inter;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+}
 </style>
