@@ -192,25 +192,25 @@ export default {
 
 @media (max-width: 470px) {
 
-.router-label {
-  margin-left: 5px;
-  font-size: 10px;
-}
+  .router-label {
+    margin-left: 5px;
+    font-size: 10px;
+  }
 
-.profile-picture {
-  display: none;
-}
+  .profile-picture {
+    display: none;
+  }
 
-.patient-name-label {
-  padding-left: 5px;
-  font-size: 8px;
-}
+  .patient-name-label {
+    padding-left: 5px;
+    font-size: 8px;
+  }
 
-.notification-label {
-  margin-left: 5px;
-  height: 20px;
-  width: 20px;
-}
+  .notification-label {
+    margin-left: 5px;
+    height: 20px;
+    width: 20px;
+  }
 
 }
 </style>
