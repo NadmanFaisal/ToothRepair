@@ -175,4 +175,24 @@ export default {
   background-size: contain;
 }
 
+@media (max-width: 1260px) {
+  .content-section {
+    flex-direction: column;
+    background: rgba(31, 194, 194, 0.24);
+    height: 300vh;
+    overflow-y: auto;
+  }
+
+  .left-section {
+    width: 100%;
+    height: 50%;
+  }
+
+  .right-section {
+    width: 100%;
+    height: 50%;
+  }
+
+}
+
 </style>
