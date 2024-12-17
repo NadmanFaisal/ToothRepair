@@ -16,8 +16,7 @@ public class AppointmentSchema {
     
     private String patient;
     
-    // @DBRef
-    // private String clinic;
+    private String clinic;
     
     private String dentist;
     
@@ -43,9 +42,9 @@ public class AppointmentSchema {
         return this.patient;
     }
 
-    // public ClinicSchema getClinic() {
-    //     return this.clinic;
-    // }
+    public String getClinic() {
+        return this.clinic;
+    }
 
     public String getDentist() {
         return this.dentist;
@@ -72,9 +71,9 @@ public class AppointmentSchema {
         this.patient = patient;
     }
 
-    // public void setClinic(ClinicSchema clinic) {
-    //     this.clinic = clinic;
-    // }
+    public void setClinic(String clinic) {
+        this.clinic = clinic;
+    }
 
     public void setDentist(String dentist) {
         this.dentist = dentist;
@@ -95,8 +94,10 @@ public class AppointmentSchema {
     // Stringyfies the appointment data
     @Override
     public String toString() {
-        return "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + 
+        String appointmentRepresentation = "{ id: " + this.id + ", status: " + this.status + ", date: " + this.date + 
         ", startTime: " + this.startTime + ", endTime: " + this.endTime + ", patient: " + this.patient +
-        ", dentist: " + this.dentist +  " }";
+        ", dentist: " + this.dentist +  ", clinic: " + this.clinic +  " }";
+
+        return appointmentRepresentation;
     }
 }

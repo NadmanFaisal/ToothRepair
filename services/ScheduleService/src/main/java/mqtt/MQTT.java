@@ -3,12 +3,10 @@ package main.java.mqtt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -24,12 +22,15 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
-    private static final String PUBLISHED_TOPIC = "client/scheduleService/appointmentInfo";
+    private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"scheduleService/appointment/getAppointments",
-     "scheduleService/appointment/createAppointment", "scheduleService/appointment/bookAppointment", "scheduleService/appointment/changeAppointmentStatus"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
+     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
+     "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
+     "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
+    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -151,17 +152,16 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws MqttException prints the Error Stack trace
      */
-    private void publishAppointmentList(){
+    private void publishAppointmentList(String topic, String message){
         try {
-            String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
             //Publish the payload as bytes to the topic.
-            
-            middleware.publish(PUBLISHED_TOPIC, appointmentListJson.getBytes(), 2, false);
+            System.out.println(message);
+            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     } 
-
+/* 
     public void createAppointment(AppointmentSchema appointmentInformation) {
         System.out.println("AppointmentInfo has been saved into the database: " + appointmentInformation);
         this.appointmentService.createAppointment(appointmentInformation);
@@ -222,43 +222,89 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        
         try {
-            String stringMessage = new String(message.getPayload()); 
-                   
+            String stringMessage = new String(message.getPayload());
             System.out.println("Message recieved: " + stringMessage);
+            System.out.println("Topic given: " + topic);
             switch (topic) {
-                case "scheduleService/appointment/getAppointments":
+                
+                case "scheduleService/appointment/getAppointments": {
                     if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
-                        this.publishAppointmentList();
-                    }   break;
-                case "scheduleService/appointment/createAppointment":
-                    {
-                        System.out.println("Entered createAppointment if statement");
-                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                        System.out.println(appointmentInfo.toString());
-                        appointmentService.createAppointment(appointmentInfo);
-                        break;
-                    }
-                case "scheduleService/appointment/bookAppointment":
-                    {
-                        System.out.println("Entered bookAppointment if statement");
-                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                        System.out.println(appointmentInfo.toString());
-                        appointmentService.bookAppointment(appointmentInfo);
-                        break;
-                    }
-                case "scheduleService/appointment/changeAppointmentStatus":
-                    {
-                        System.out.println("Entered changeAppointmentStatus if statement");
-                        AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                        System.out.println(appointmentInfo.toString());
-                        appointmentService.changeAppointmentStatus(appointmentInfo);
-                        break;
-                    }
-                default:
+                        String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                        this.publishAppointmentList(topic, appointmentListJson);
+                    }   
                     break;
+                }
+
+                case "ScheduleService/Appointment/getAppointmentsByClinic": {
+                    System.out.println("Will publish all appointments per clinic");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/getAppointmentsByPatient": {
+                    System.out.println("Will publish all appointments per patient");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/getAppointmentsByDentist": {
+                    System.out.println("Will publish all appointments per dentist");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
+                    this.publishAppointmentList(topic, appointmentListJson);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/createAppointment": {
+                    System.out.println("Entered createAppointment if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    this.appointmentService.createAppointment(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/bookAppointment": {
+                    System.out.println("Entered bookAppointment if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.bookAppointment(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/makeAppointmentAvailable": {
+                    System.out.println("Entered makeAppointmentAvailable if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/dentistCancelAppointments": {
+                    System.out.println("Entered dentist cancel if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.dentistCancel(appointmentInfo);
+                    break;
+                }
+
+                case "ScheduleService/Appointment/patientCancelAppointments": {
+                    System.out.println("Entered patient cancel if statement");
+                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    System.out.println(appointmentInfo.toString());
+                    appointmentService.patientCancel(appointmentInfo);
+                    break;
+                }
+
+                default:{
+                    System.out.println("The topic is invalid");
+                    break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

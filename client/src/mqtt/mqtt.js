@@ -6,9 +6,10 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: '193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud',
+    host: 'broker.hivemq.com',
     port: 8884,
-    protocol: 'wss'
+    protocol: 'wss',
+    path: '/mqtt'
   },
   {
     host: 'test.mosquitto.org',
@@ -16,19 +17,27 @@ const BROKER_URLS = [
     protocol: 'wss'
   },
   {
-    host: 'broker.hivemq.com',
-    port: 8884,
-    protocol: 'wss'
-  },
-  {
     host: 'broker.emqx.io',
     port: 8084,
-    protocol: 'wss'
+    protocol: 'wss',
+    path: '/mqtt'
+
   }
 ]
 
 export let client = mqtt.connect({
-  servers: BROKER_URLS
+  host: BROKER_URLS[currentBrokerIndex].host,
+  port: BROKER_URLS[currentBrokerIndex].port,
+  protocol: BROKER_URLS[currentBrokerIndex].protocol,
+  path: BROKER_URLS[currentBrokerIndex].path || '',
+  reconnectPeriod: 2000,
+  connectTimeout: 4000,
+  will: {
+    topic: 'status',
+    payload: 'offline',
+    qos: 1,
+    retains: true
+  }
 })
 
 client.on('connect', () => {

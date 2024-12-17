@@ -49,7 +49,7 @@
             <div class="col-6 middle-right-section">
 
               <div class="col-12 phone-section">
-                <label class="phone-label">Phone <label class="optional-label">(optional)</label></label>
+                <label class="phone-label">Phone <span class="optional-label">(optional)</span></label>
                 <input class="form-control phone-input" v-model="phone" placeholder="073*******">
               </div>
 
@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, unsubscribeFromTopic, publishToTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'SignUpPage',
@@ -114,6 +114,7 @@ export default {
       phone: null,
       confirmPassword: '',
       clinics: [],
+      selectedClinic: null,
       selectedClinicId: null,
       selectedClinicName: null,
       message: '',
@@ -126,6 +127,7 @@ export default {
       this.$router.push('/login')
     },
     selectAClinic(clinic) {
+      this.selectedClinic = clinic
       this.selectedClinicId = clinic.id
       this.selectedClinicName = clinic.name
     },
@@ -152,45 +154,89 @@ export default {
               clinic: this.selectedClinicId
             }
 
-          publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
-
-          setTimeout(() => {
-            this.$router.push('/login')
-          }, 2000)
-        }else{
-          alert('Error: Input field left empty, please provide values for all input fields')
-        }
-      }else{
-        if(username && password && emailVerification.test(email)){
-          const newPatient = {
-                name: username,
-                email,
-                password
-          }
-            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
-            
+            publishToTopic(PUBLISH_DENTIST_TOPIC, JSON.stringify(newDentist))
+            this.createAppointments(7, this.selectedClinicId)
             setTimeout(() => {
-            this.$router.push('/login')
-          }, 2000)
-        }else{
-          alert('Error: Input field left empty, please provide values for all input fields')
-        }
-      }
-          messageArrived((topic, message) => {
-            if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
-              console.log(message)
-              alert(message)
+              this.$router.push('/login')
+            }, 1000)
+          } else {
+            alert('Error: Input field left empty, please provide values for all input fields')
+          }
+        } else {
+          if (this.username && this.password && emailVerification.test(this.email)) {
+            const newPatient = {
+              name: this.username,
+              email: this.email,
+              password: this.password
             }
-            unsubscribeFromTopic('authentication/status')
-          })
+            publishToTopic(PUBLISH_PATIENT_TOPIC, JSON.stringify(newPatient))
+            setTimeout(() => {
+              this.$router.push('/login')
+            }, 1000)
+          } else {
+            alert('Error: Input field left empty, please provide values for all input fields')
+          }
+        }
+        messageArrived((topic, message) => {
+          if (topic === SUBCRIBE_AUTHENTICATION_TOPIC) {
+            console.log(message)
+            alert(message)
+          }
+          unsubscribeFromTopic('authentication/status')
+        })
       } catch (error) {
         this.message = 'Sign Up Failed: ' + (error.response?.data?.error || error.message)
       }
     },
+    async createAppointments(noOfDays, clinicId) {
+      if (this.selectedClinic.dentists && this.selectedClinic.dentists.length > 0) {
+        return
+      }
+      try {
+        // Increments the time of the appointments by 30 mins
+        const incrementTime = (time) => {
+          const [hours, minutes] = time.split(':').map(Number)
+          const newMinutes = minutes + 30
+          const newHours = hours + Math.floor(newMinutes / 60)
+          const adjustedMinutes = newMinutes % 60
+          return `${String(newHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`
+        }
 
+        // Loops through noOfDays to create appointments specifically for each day
+        for (let dayOffset = 0; dayOffset < noOfDays; dayOffset++) {
+          const appointmentDate = new Date()
+          appointmentDate.setDate(appointmentDate.getDate() + dayOffset)
+          const formattedDate = appointmentDate.toISOString().split('T')[0]
+
+          // The time for the first appointment
+          let startTime = '09:00'
+
+          // Creates 5 appointments each day
+          for (let i = 0; i < 5; i++) {
+            const endTime = incrementTime(startTime)
+
+            const newAppointment = {
+              status: 'unavailable',
+              date: formattedDate,
+              startTime,
+              endTime,
+              clinic: clinicId
+            }
+
+            await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+            publishToTopic('ScheduleService/Appointment/createAppointment', JSON.stringify(newAppointment))
+
+            // Increments the start time for the next appointment to be created
+            startTime = incrementTime(startTime)
+          }
+        }
+      } catch (error) {
+        console.error('Error creating appointments for 5 days:', error)
+      }
+    },
     async getAllClinics() {
-      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinicList'
-      const PUBLISHED_CLINIC_TOPIC = 'dentist/clinicService/alert'
+      const SUBCRIBED_CLINIC_TOPIC = 'clinicService/clinics/getClinicList'
+      const PUBLISHED_CLINIC_TOPIC = 'clinicService/clinic/getClinicAlert'
       const publishMessage = 'Get Clinics'
       await subscribeToTopic(SUBCRIBED_CLINIC_TOPIC)
       publishToTopic(PUBLISHED_CLINIC_TOPIC, publishMessage)

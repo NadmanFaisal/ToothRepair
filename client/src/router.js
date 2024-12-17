@@ -1,17 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import PatientHomePage from './views/PatientHomePage.vue'
+import PatientAppointmentPage from './views/PatientAppoinementPage.vue'
 import DentistHomePage from './views/DentistHomePage.vue'
 import LogInPage from './views/LogInPage.vue'
 import SignUpPage from './views/SignUpPage.vue'
 import MapView from './views/MapView.vue'
+import PatientHomePage from './views/PatientHomePage.vue'
+import PatientMyBookingsPage from './views/PatientMyBookingsPage.vue'
+import DentistMyBookingsPage from './views/DentistMyBookingsPage.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/patientHomePage', name: 'patientHome', component: PatientHomePage, meta: { requiresRole: 'patient' } },
+  { path: '/patientAppointmentPage', name: 'patientAppointmentPage', component: PatientAppointmentPage, meta: { requiresRole: 'patient' } },
   { path: '/dentistHomePage', name: 'dentistHome', component: DentistHomePage, meta: { requiresRole: 'dentist' } },
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
   { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
-  { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } }
+  { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } },
+  { path: '/patientHomePage', name: 'PatientSelectionScreen', component: PatientHomePage, meta: { requiredRole: 'patient' } },
+  { path: '/patientMyBookingsPage', name: 'PatientMyBookingsPage', component: PatientMyBookingsPage, meta: { requiredRole: 'patient' } },
+  { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiredRole: 'dentist' } }
 ]
 
 const router = createRouter({
