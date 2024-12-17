@@ -12,7 +12,7 @@
             <p>Total Messages sent: {{ msgSentSchedule }} Total Messages received: {{ msgRecievedSchedule }}</p>
         </div>
         <div>Notification
-            <p>Total Messages sent: {{  }} Total Messages received: {{  }}</p>
+            <p>Total Messages sent: {{ msgSentNotification }} Total Messages received: {{ msgRecievedNotification }}</p>
         </div>
     
     </div>
@@ -32,6 +32,8 @@ export default {
             msgRecievedClinic: 0,
             msgSentSchedule: 0,
             msgRecievedSchedule: 0,
+            msgSentNotification: 0,
+            msgRecievedNotification: 0
 
         }
     },
@@ -143,11 +145,11 @@ export default {
             messageArrived((topic, message) => {
                 if (topic === 'notificationService/totalMsgSent') {
                     console.log('This is the count of all messages sent to authentication: ', message)
-                    this.msgSentAuth = message;
+                    this.msgSentNotification = message;
                     unsubscribeFromTopic('notificationService/totalMsgSent')
                 }else if(topic === 'notificationService/totalMsgReceived'){
                     console.log('This is the count of all messages received by authentication : ', message)
-                    this.msgRecievedAuth = message;
+                    this.msgRecievedNotification = message;
                     unsubscribeFromTopic('notificationService/totalMsgReceived')
                 }
             })

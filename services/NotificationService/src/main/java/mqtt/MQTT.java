@@ -24,8 +24,9 @@ import main.java.service.LogService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com",  "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
-    private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
+    private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "notificationService/totalMsgReceived";
+    private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
     private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", 
     "authenticationService/appointment/getAppointmentInfo", "authenticationService/appointment&patient/getCancelledAppointmentInfo", 
     "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo"};
@@ -37,7 +38,8 @@ public class MQTT implements MqttCallback {
     private int currentBrokerIndex = 0;
     private ObjectMapper objectMapper = new ObjectMapper();
     private String [] patientDetails = new String[2];
-
+    private int totalMsgReceived = 0;
+    private int totalMsgSent = 0;
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
@@ -185,6 +187,8 @@ public class MQTT implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) {
         LocalDateTime currentTime = LocalDateTime.now();
+        totalMsgReceived++;
+
         try {
             String stringMessage = new String(message.getPayload());
 
@@ -259,6 +263,18 @@ public class MQTT implements MqttCallback {
                     String emailBody4 = String.format("Hi, %s!\nAn appointment time slot with with Dr.%s at: %s on the date: %s on TeethRepair is now available to book!", patientName4, dentistName4, startTime4, appointmentDate4);
                     System.out.println("This is the emailBody: " + emailBody4);
                     this.emailService.sendSimpleMessage(patientEmail4, "A new Appointment with Dr." + dentistName4 +" is now Available!", emailBody4);
+                    break;
+                case "notificationService/totalMsgReceivedAlert": 
+                    System.out.println("PUBLISHING TOTAL MESSAGES RECEIVED: " + this.totalMsgReceived);
+                    String msgReceivedString = String.valueOf(totalMsgReceived);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_RECEIVED, msgReceivedString.getBytes() , 2, false);
+                    totalMsgSent++;
+                    break;
+                case "notificationService/totalMsgSentAlert": 
+                    totalMsgSent++;    
+                    System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);
+                    String msgSentString = String.valueOf(totalMsgSent);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
                     break;
                 default:
                     break;
