@@ -38,6 +38,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOTAL_MSG_SENT = "authenticationService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "authenticationService/totalMsgReceived";
     private static final String PUBLISHED_EMAIL_INFO = "authenticationService/appointment/getAppointmentInfo";
+    private static final String PUBLISHED_PATIENT_CANCELLED_APPOINTMENT = "authenticationService/appointment&patient/getCancelledAppointmentInfo";
+    private static final String PUBLISHED_DENTIST_CANCELLED_APPOINTMENT = "authenticationService/appointment&dentist/getCancelledAppointmentInfo";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", 
@@ -287,9 +289,45 @@ public class MQTT implements MqttCallback {
                     middleware.publish(PUBLISHED_EMAIL_INFO, updatedAppointmentInfo.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo);
                     break;
-                case "scheduleService/dentist&patient/sendCancellingIdToAuth":
+                case "authenticationService/appointment&patient/getCancelledAppointmentInfo":
                     System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
+                    Map<String, Object> appointmentInfo2 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    String dentistId2 = (String) appointmentInfo2.get("dentist");
+                    String patientId2 = (String) appointmentInfo2.get("patient");
 
+                    String patientName2 = patientService.getNameByID(patientId2);
+                    String patientEmail2 = patientService.getEmailById(patientId2);
+                    String dentistName2 = dentistService.getNameByID(dentistId2);
+                    String dentistEmail2 = dentistService.getEmailById(dentistId2);
+                    
+                    appointmentInfo2.put("patientName", patientName2);
+                    appointmentInfo2.put("patientEmail", patientEmail2);
+                    appointmentInfo2.put("dentistName", dentistName2);
+                    appointmentInfo2.put("dentistEmail", dentistEmail2);
+                    
+                    String updatedAppointmentInfo2 = objectMapper.writeValueAsString(appointmentInfo2);
+                    middleware.publish(PUBLISHED_PATIENT_CANCELLED_APPOINTMENT, updatedAppointmentInfo2.getBytes(), 2, false);
+                    System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo2);
+                    break;
+                case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
+                    System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
+                    Map<String, Object> appointmentInfo3 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    String dentistId3 = (String) appointmentInfo3.get("dentist");
+                    String patientId3 = (String) appointmentInfo3.get("patient");
+
+                    String patientName3 = patientService.getNameByID(patientId3);
+                    String patientEmail3 = patientService.getEmailById(patientId3);
+                    String dentistName3 = dentistService.getNameByID(dentistId3);
+                    String dentistEmail3 = dentistService.getEmailById(dentistId3);
+                    
+                    appointmentInfo3.put("patientName", patientName3);
+                    appointmentInfo3.put("patientEmail", patientEmail3);
+                    appointmentInfo3.put("dentistName", dentistName3);
+                    appointmentInfo3.put("dentistEmail", dentistEmail3);
+                    
+                    String updatedAppointmentInfo3 = objectMapper.writeValueAsString(appointmentInfo3);
+                    middleware.publish(PUBLISHED_DENTIST_CANCELLED_APPOINTMENT, updatedAppointmentInfo3.getBytes(), 2, false);
+                    System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo3);
                     break;
                 default:
                     System.err.println("Unrecognized topic: " + topic);

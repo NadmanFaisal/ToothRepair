@@ -214,6 +214,34 @@ public class MQTT implements MqttCallback {
                     this.emailService.sendSimpleMessage(patientEmail, "Successfull Booking of Dentist Appointment!", emailBody);
 
                     break;
+                case "authenticationService/appointment&patient/getCancelledAppointmentInfo":
+                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
+                    Map<String, Object> appointmentInfo2 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    
+                    String dentistName2 = (String) appointmentInfo2.get("dentistName");
+                    String patientName2 = (String) appointmentInfo2.get("patientName");
+                    String patientEmail2 = (String) appointmentInfo2.get("patientEmail");
+                    String appointmentDate2 = (String) appointmentInfo2.get("date");
+                    String startTime2 = (String) appointmentInfo2.get("startTime");
+
+                    String emailBody2 = String.format("Hi, %s!\nYour booking with Patient: %s at: %s on the date: %s on TeethRepair has been cancelled", dentistName2, patientName2, startTime2, appointmentDate2);
+                    System.out.println("This is the emailBody: " + emailBody2);
+                    this.emailService.sendSimpleMessage(patientEmail2, "Successfull Booking of Dentist Appointment!", emailBody2);
+                    break;
+                case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
+                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
+                    Map<String, Object> appointmentInfo3 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    
+                    String dentistName3 = (String) appointmentInfo3.get("dentistName");
+                    String patientName3 = (String) appointmentInfo3.get("patientName");
+                    String patientEmail3 = (String) appointmentInfo3.get("patientEmail");
+                    String appointmentDate3 = (String) appointmentInfo3.get("date");
+                    String startTime3 = (String) appointmentInfo3.get("startTime");
+
+                    String emailBody3 = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been cancelled", patientName3, dentistName3, startTime3, appointmentDate3);
+                    System.out.println("This is the emailBody: " + emailBody3);
+                    this.emailService.sendSimpleMessage(patientEmail3, "Successfull Booking of Dentist Appointment!", emailBody3);
+                    break;
                 default:
                     break;
             }
