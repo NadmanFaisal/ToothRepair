@@ -1,5 +1,7 @@
 <template>
     <div class="col-12 screen-container">
+        <BButton @click="logout"> Log Out button</BButton>
+
         <DentistTopBar />
 
         <div class="col-12 content-section">
@@ -190,6 +192,12 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
+      localStorage.clear()
+      this.$router.push('/login')
+    },
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')
     },
@@ -363,6 +371,7 @@ export default {
   border-radius: 10px;
   background: #FFF;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
+  margin-bottom: 10px;
   }
 
   .logo-container {

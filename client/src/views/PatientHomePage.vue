@@ -1,6 +1,7 @@
 <template>
 
     <div class="screen-container">
+      <BButton @click="logout"> Log Out button</BButton>
 
       <PatientTopBar />
 
