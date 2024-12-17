@@ -45,6 +45,7 @@ export default {
             this.getTotalMessagesAuth()
             this.getTotalMessagesClinic()
             this.getTotalMessagesSchedule()
+            this.getTotalMessagesNotification()
         })
     },
     created(){
@@ -55,6 +56,7 @@ export default {
         this.getTotalMessagesAuth,
         this.getTotalMessagesClinic,
         this.getTotalMessagesSchedule,
+        this.getTotalMessagesNotification,
       { immediate: true }
     )
     },
@@ -144,11 +146,11 @@ export default {
             publishToTopic('notificationService/totalMsgReceivedAlert', 'Get messages received')
             messageArrived((topic, message) => {
                 if (topic === 'notificationService/totalMsgSent') {
-                    console.log('This is the count of all messages sent to authentication: ', message)
+                    console.log('This is the count of all messages sent to notification: ', message)
                     this.msgSentNotification = message;
                     unsubscribeFromTopic('notificationService/totalMsgSent')
                 }else if(topic === 'notificationService/totalMsgReceived'){
-                    console.log('This is the count of all messages received by authentication : ', message)
+                    console.log('This is the count of all messages received by notification : ', message)
                     this.msgRecievedNotification = message;
                     unsubscribeFromTopic('notificationService/totalMsgReceived')
                 }

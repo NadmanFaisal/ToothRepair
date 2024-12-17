@@ -29,7 +29,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
     private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", 
     "authenticationService/appointment/getAppointmentInfo", "authenticationService/appointment&patient/getCancelledAppointmentInfo", 
-    "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo"};
+    "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
+    "notificationService/totalMsgReceivedAlert", "notificationService/totalMsgSentAlert" };
     private final LogService logService;
     private final EmailService emailService;
     private LogSchema log;
