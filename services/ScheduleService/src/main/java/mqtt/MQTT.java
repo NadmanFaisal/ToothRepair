@@ -28,7 +28,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
     private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendBookingIdToAuth";
-    private static final String PUBLISHED_ENTITY_IDS_CANCEL = "scheduleService/dentist&patient/sendCancellingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_PATIENT_CANCEL = "scheduleService/patient/sendCancellingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_DENTIST_CANCEL = "scheduleService/dentist/sendCancellingIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
@@ -282,7 +283,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered dentist cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    middleware.publish(PUBLISHED_ENTITY_IDS_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
                     break;
                 }
@@ -292,7 +293,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.patientCancel(appointmentInfo);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{

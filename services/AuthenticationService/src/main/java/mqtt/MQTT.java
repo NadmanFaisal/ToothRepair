@@ -47,7 +47,7 @@ public class MQTT implements MqttCallback {
     "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", 
     "authenticationService/patient/logout" ,"authenticationService/dentist/logout", 
     "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert",
-    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/dentist&patient/sendCancellingIdToAuth" };
+    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth" };
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -289,7 +289,7 @@ public class MQTT implements MqttCallback {
                     middleware.publish(PUBLISHED_EMAIL_INFO, updatedAppointmentInfo.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo);
                     break;
-                case "authenticationService/appointment&patient/getCancelledAppointmentInfo":
+                case "scheduleService/patient/sendCancellingIdToAuth":
                     System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
                     Map<String, Object> appointmentInfo2 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
                     String dentistId2 = (String) appointmentInfo2.get("dentist");
@@ -309,7 +309,7 @@ public class MQTT implements MqttCallback {
                     middleware.publish(PUBLISHED_PATIENT_CANCELLED_APPOINTMENT, updatedAppointmentInfo2.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo2);
                     break;
-                case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
+                case "scheduleService/patient/sendCancellingIdToAuth":
                     System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
                     Map<String, Object> appointmentInfo3 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
                     String dentistId3 = (String) appointmentInfo3.get("dentist");
