@@ -46,9 +46,9 @@
 
                       <div class="col-3 status-container">
 
-                        <div v-if="today < appointment.date" class="col-12 button-container">
+                        <div v-if="today <= appointment.date" class="col-12 button-container">
                           <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
-                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
+                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                         </div>
 
                         <div v-else class="col-12 completed-container">
@@ -180,12 +180,13 @@ export default {
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
-    async cancelAppointment(appointmentId) {
+    async cancelAppointment(appointment) {
       try {
-        console.log('Attempting to cancel appointment' + appointmentId)
+        console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointmentId + '", "dentist": ' + this.userId + '}')
+        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
         this.getAppointments()
+        alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
