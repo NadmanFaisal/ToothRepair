@@ -1,6 +1,7 @@
 <template>
 
     <div class="screen-container">
+      <BButton @click="logout"> Log Out button</BButton>
 
       <PatientTopBar />
 
@@ -370,5 +371,44 @@ export default {
   font-style: normal;
   font-weight: 600;
   line-height: normal;
+}
+
+@media (max-width: 1000px) {
+  .description-title-label {
+    font-size: 54px;
+  }
+
+  .description-content-label {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 842px) {
+  .description-title-label {
+    font-size: 45px;
+  }
+
+  .dental-cosmetic-label-header, .dental-treatment-label-header {
+    font-size: 20px;
+  }
+
+  .hospital-image, .teeth-image {
+    height: 20%;
+    width: 50%;
+  }
+
+  .dental-treatment-label-paragraph, .dental-cosmetic-label-paragraph {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 780px) {
+  .left-section {
+    display: none;
+  }
+
+  .right-section {
+    width: 100%;
+  }
 }
 </style>

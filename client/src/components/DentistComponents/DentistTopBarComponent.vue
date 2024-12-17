@@ -116,4 +116,85 @@ export default {
     font-weight: 700;
     line-height: normal;
 }
+
+@media (max-width: 1260px) {
+
+.top-bar-container {
+  width: 100%;
+}
+
+.notification-label {
+  margin-left: 15px;
+  height: 35px;
+  width: 35px;
+}
+
+}
+
+@media (max-width: 700px) {
+
+.logo-container {
+  padding-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.logo {
+  height: 35px;
+  width: 30px;
+}
+
+.logo-label {
+  margin-left: 5px;
+  font-size: 15px;
+}
+
+.router-label {
+  margin-left: 5px;
+  font-size: 15px;
+}
+
+.profile-picture {
+  margin-left: 5px;
+  height: 40px;
+  width: 40px;
+}
+
+.patient-name-label {
+  padding-left: 5px;
+  font-size: 10px;
+}
+
+.notification-label {
+  margin-left: 5px;
+  height: 25px;
+  width: 25px;
+}
+
+}
+
+@media (max-width: 470px) {
+
+.router-label {
+  margin-left: 5px;
+  font-size: 10px;
+}
+
+.profile-picture {
+  display: none;
+}
+
+.patient-name-label {
+  padding-left: 5px;
+  font-size: 8px;
+}
+
+.notification-label {
+  margin-left: 5px;
+  height: 20px;
+  width: 20px;
+}
+
+}
 </style>
