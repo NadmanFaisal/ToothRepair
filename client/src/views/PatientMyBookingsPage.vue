@@ -46,7 +46,7 @@
 
                     <div class="col-3 status-container">
 
-                      <div v-if="today < appointment.date" class="col-12 button-container">
+                      <div v-if="today > appointment.date" class="col-12 button-container">
                         <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
                         <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
                       </div>
