@@ -11,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
@@ -52,7 +53,9 @@ public class MQTT implements MqttCallback {
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
+    private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
+    private boolean STRESS_TEST_MODE = false;
     private int userCount = 0;
     private int totalMsgReceived = 0;
     private int totalMsgSent = 0;
@@ -67,15 +70,24 @@ public class MQTT implements MqttCallback {
 
     @Autowired
     public MQTT(PatientService patientService, DentistService dentistService){
-        this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
+        this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread pool
         this.patientService = patientService;
         this.dentistService = dentistService;
+        
+        if(STRESS_TEST_MODE){
+        options.setUserName("Administrator");
+        String passwordString = "Vaibhav12Taha";
+        char[] passwordChars = passwordString.toCharArray();
+        options.setPassword(passwordChars);
+        }
         try {
             initializeClient();
         } catch (MqttException e) {
             throw new RuntimeException("Failed to initialize MQTT client", e);
         }
+        
     }
+
     
 
 
@@ -95,13 +107,18 @@ public class MQTT implements MqttCallback {
             
             try {
                 middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
-                middleware.connect();
+                if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                    middleware.connect(options);
+                } else {
+                    middleware.connect();
+                }
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
                 middleware.setCallback(this);
                 this.subscribeToTopics();
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
+
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
                 if (middleware != null && middleware.isConnected()) {
@@ -177,7 +194,11 @@ public class MQTT implements MqttCallback {
                     middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
 
                     System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
-                    middleware.connect();
+                    if(BROKER_URLS[currentBrokerIndex].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                        middleware.connect(options);
+                    } else {
+                        middleware.connect();
+                    }
                     middleware.setCallback(this);
                 }
                 

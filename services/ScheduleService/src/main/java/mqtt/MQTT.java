@@ -3,10 +3,11 @@ package main.java.mqtt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
@@ -38,9 +39,11 @@ public class MQTT implements MqttCallback {
      "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
     "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert", "scheduleService/totalMsgSentAlert", "scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private IMqttClient middleware; // MQTT client
+    private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
+    private boolean STRESS_TEST_MODE = false;
     private int totalMsgReceived = 0;
     private int totalMsgSent = 0;
 
@@ -56,8 +59,15 @@ public class MQTT implements MqttCallback {
 
     @Autowired
     public MQTT(AppointmentService appointmentService){
-        this.threadPool = Executors.newFixedThreadPool(SUBSCRIBED_TOPICS.length);
+        this.threadPool = Executors.newCachedThreadPool();
         this.appointmentService = appointmentService;
+        if(STRESS_TEST_MODE){
+            options.setUserName("Administrator");
+            String passwordString = "Vaibhav12Taha";
+            char[] passwordChars = passwordString.toCharArray();
+            options.setPassword(passwordChars);
+            options.setMaxInflight(100);
+        }
         try {
             initializeClient();
         } catch (MqttException e) {
@@ -80,16 +90,21 @@ public class MQTT implements MqttCallback {
         for (int i = 0; i < BROKER_URLS.length; i++) {
             
             try {
-                middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
-                middleware.connect();
+                middleware = new MqttAsyncClient(BROKER_URLS[i], CLIENT_ID);
+                if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                    IMqttToken token = middleware.connect(options);
+                    token.waitForCompletion();
+                } else {
+                    IMqttToken token = middleware.connect();
+                    token.waitForCompletion();
+                }
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
-                
                 middleware.setCallback(this);
                 this.subscribeToTopics();
-                
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
+
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
                 if (middleware != null && middleware.isConnected()) {
@@ -139,7 +154,7 @@ public class MQTT implements MqttCallback {
     /**
      * Publishes the topic as a String in JSON notation.
      * 
-     * Publishing happening with QoS 1.
+     * Publishing happening with QoS 2.
      * 
      * It publishes with the conected client
      * 
@@ -190,7 +205,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Switching to another broker: " + BROKER_URLS[currentBrokerIndex]);
                     
                     middleware.disconnect();
-                    middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
+                    middleware = new MqttAsyncClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
 
                     System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
                     middleware.connect();
@@ -223,8 +238,9 @@ public class MQTT implements MqttCallback {
             System.out.println("Message recieved: " + stringMessage);
             System.out.println("Topic given: " + topic);
             switch (topic) {
-                case "ScheduleService/Appointment/getAppointments": {
-                    if(stringMessage.equals("Get Appointments")){
+                
+                case "scheduleService/appointment/getAppointments": {
+                    if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
                         String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
                         this.publishAppointmentList(topic, appointmentListJson);

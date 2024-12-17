@@ -46,13 +46,29 @@ export default {
   flex-direction: column;
   justify-items: center;
   align-items: center;
-  height: 50%;
   width: 100%;
+  height: 50%;
   padding: 40px;
 }
 
 .calender-content-container {
   background-color: white;
   height: 100%;
+}
+
+@media (max-width: 1260px) {
+  .calender-contaiener {
+    height: 100%;
+    width: 50%;
+  }
+
+}
+
+@media (max-width: 800px) {
+  .calender-contaiener {
+    height: 50%;
+    width: 100%;
+  }
+
 }
 </style>

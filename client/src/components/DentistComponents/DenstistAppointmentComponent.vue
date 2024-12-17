@@ -319,7 +319,6 @@ export default {
   border: 1px solid #DEDEDE;
   background-color: #FFF;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  color:#6B6B6B;
 }
 
 .available-slot {
@@ -407,5 +406,136 @@ export default {
   font-style: normal;
   font-weight: 600;
   line-height: normal;
+}
+
+@media (max-width: 1260px) {
+
+.sunrise-image {
+  height: 55px;
+}
+
+.title-label {
+  font-size: 25px;
+}
+
+.time-label {
+  font-size: 17px;
+}
+
+.available-slot {
+  margin: 20px;
+  height: 50px;
+}
+
+.unavailable-slot {
+  margin: 20px;
+  height: 50px;
+}
+
+.selected-slot {
+  margin: 20px;
+  height: 50px;
+}
+
+.status-mark-image {
+  margin-left: 5px;
+  height: 20px;
+}
+
+.appointment-information-container {
+  margin-left: 5px;
+}
+
+.appointment-information-label {
+  font-size: 18px;
+}
+
+}
+
+@media (max-width: 750px) {
+
+.sunrise-image {
+  height: 45px;
+}
+
+.title-label {
+  font-size: 20px;
+}
+
+.time-label {
+  font-size: 15px;
+}
+
+.slot-section {
+  width: 100%;
+}
+
+}
+
+@media (max-width: 700px) {
+
+.available-slot {
+  margin: 10px;
+  height: 50px;
+}
+
+.unavailable-slot {
+  margin: 10px;
+  height: 50px;
+}
+
+.selected-slot {
+  margin: 10px;
+  height: 50px;
+}
+
+.appointment-information-label {
+  font-size: 13px;
+}
+
+}
+
+@media (max-width: 660px) {
+
+.sunrise-container {
+  display: none;
+}
+
+.title-label {
+  padding-left: 10px;
+}
+
+.time-label {
+  padding-left: 10px;
+}
+
+}
+
+@media (max-width: 500px) {
+
+.available-slot {
+  margin: 5px;
+  height: 50px;
+}
+
+.unavailable-slot {
+  margin: 5px;
+  height: 50px;
+}
+
+.selected-slot {
+  margin: 5px;
+  height: 50px;
+}
+
+.appointment-information-label {
+  font-size: 10px;
+}
+
+.status-mark-image {
+  margin-left: 0px;
+  height: 12px;
+}
+
 }
 </style>

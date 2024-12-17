@@ -5,10 +5,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ import main.java.service.ClinicService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://test.mosquitto.org","tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" , "tcp://broker.hivemq.com","tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "clinicService/totalMsgSent";
@@ -30,9 +31,11 @@ public class MQTT implements MqttCallback {
     private final ClinicService clinicService; // CRUD Operations for the clinic database
     private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic", "ClinicService/Clinic/getClinicById", "clinicService/totalMsgSentAlert", "clinicService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
-    private IMqttClient middleware; // MQTT client
+    private MqttAsyncClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
+    private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
+    private boolean STRESS_TEST_MODE = false;
     private int totalMsgReceived = 0;
     private int totalMsgSent = 0;
 
@@ -49,6 +52,13 @@ public class MQTT implements MqttCallback {
     public MQTT(ClinicService clinicService){
         this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
         this.clinicService = clinicService;
+        if(STRESS_TEST_MODE){
+            options.setUserName("Administrator");
+            String passwordString = "Vaibhav12Taha";
+            char[] passwordChars = passwordString.toCharArray();
+            options.setPassword(passwordChars);
+            options.setMaxInflight(100);
+        }
         try {
             initializeClient();
         } catch (MqttException e) {
@@ -71,16 +81,21 @@ public class MQTT implements MqttCallback {
         for (int i = 0; i < BROKER_URLS.length; i++) {
             
             try {
-                middleware = new MqttClient(BROKER_URLS[i], CLIENT_ID);
-                middleware.connect();
+                middleware = new MqttAsyncClient(BROKER_URLS[i], CLIENT_ID);
+                if(STRESS_TEST_MODE && BROKER_URLS[i].equals("ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud")){
+                    IMqttToken token = middleware.connect(options);
+                    token.waitForCompletion();
+                } else {
+                    IMqttToken token = middleware.connect();
+                    token.waitForCompletion();
+                }
                 System.out.println("Connecting to this broker: " + BROKER_URLS[i]);
-                
                 middleware.setCallback(this);
                 this.subscribeToTopics();
-                
                 System.out.println("Connected to broker: " + BROKER_URLS[i]);
                 this.currentBrokerIndex = i;
                 return; // Exit the loop once connected
+
             } catch (MqttException e) {
                 System.err.println("Failed to connect to broker: " + BROKER_URLS[i] + ". Trying next...");
                 if (middleware != null && middleware.isConnected()) {
@@ -94,7 +109,7 @@ public class MQTT implements MqttCallback {
      /**
      * Subscribes to the topic by assigning a thread to subscribe to that topic.
      * 
-     * Subscription happening with QoS 0.
+     * Subscription happening with QoS 1.
      * 
      * It subscribes while the client is connected within a 1 second interval
      * 
@@ -148,7 +163,7 @@ public class MQTT implements MqttCallback {
     /**
      * Publishes the topic as a String in JSON notation.
      * 
-     * Publishing happening with QoS 1.
+     * Publishing happening with QoS 2.
      * 
      * It publishes with the conected client
      * 
@@ -196,7 +211,7 @@ public class MQTT implements MqttCallback {
                     Thread.sleep(2000);
                     System.out.println("Attempting to reconnect...");
                     middleware.reconnect();
-                    middleware.setCallback(this); // Ensure callback is re-applied
+                    middleware.setCallback(this);
                 } else {
                     retryCount = 0;
                     
@@ -204,7 +219,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Switching to another broker: " + BROKER_URLS[currentBrokerIndex]);
                     
                     middleware.disconnect();
-                    middleware = new MqttClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
+                    middleware = new MqttAsyncClient(BROKER_URLS[currentBrokerIndex], CLIENT_ID);
 
                     System.out.println("Trying to connect to broker: " + BROKER_URLS[currentBrokerIndex]);
                     middleware.connect();
@@ -301,7 +316,7 @@ public class MQTT implements MqttCallback {
      * @param message payload of the 'test/clinicAlert' topic
      */
     private void handleClinicAlert(String message, String topic) {
-        if(message.equals("Get Clinics")){
+        if(message.contains("Get Clinics")){
             this.publishClinicList(topic);
         }
     }
