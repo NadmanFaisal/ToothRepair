@@ -184,19 +184,24 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload());
 
-            if(topic.equals(SUBSCRIBED_TOPICS[0])){
-                String userID = stringMessage;
-                this.log.setUserId(userID);
-                System.out.println(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
-                this.log.setUserLog(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
-                this.emailService.sendSimpleMessage("Vaibhavpuram05@gmail.com", "Please work", "Test message");
-
-            }else if(topic.equals(SUBSCRIBED_TOPICS[1])){
+            switch (stringMessage) {
+                case "authenticationService/dentist&patient/userID":
+                    String userID = stringMessage;
+                    this.log.setUserId(userID);
+                    System.out.println(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
+                    this.log.setUserLog(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
+                    this.emailService.sendSimpleMessage("Vaibhavpuram05@gmail.com", "Please work", "Test message");
+                    break;
+                case "logout":    
                 System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
-                this.log.setUserLog(currentTime+" "+this.log.getUserId()+" "+stringMessage);
-                logService.createLog(log); 
-                this.log = new LogSchema();
+                    this.log.setUserLog(currentTime+" "+this.log.getUserId()+" "+stringMessage);
+                    logService.createLog(log); 
+                    this.log = new LogSchema();
+                    break;
+                default:
+                    break;
             }
+    
 
 
 

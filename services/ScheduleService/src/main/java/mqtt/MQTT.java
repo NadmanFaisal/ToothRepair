@@ -1,5 +1,8 @@
 package main.java.mqtt;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,6 +30,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
+    private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
@@ -265,9 +269,9 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
+                    this.publishEntityIds(appointmentInfo.getId(), appointmentInfo.getPatient());
                     break;
                 }
-
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
                     System.out.println("Entered makeAppointmentAvailable if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
@@ -324,6 +328,28 @@ public class MQTT implements MqttCallback {
             e.printStackTrace();
         }
     }
+
+    public void publishEntityIds (String appointmentId, String patientId){
+        String patient = patientId;
+        String dentist = appointmentService.getDentist(appointmentId);
+        ArrayList <Map<String, String>> payLoadList = new ArrayList<>();
+        Map<String, String> payLoadPart = new HashMap<>();
+        payLoadPart.put("patientId", patient);
+        payLoadPart.put("dentistId", dentist);
+        payLoadList.add(payLoadPart);
+        String publishIdMessage = "";
+        try {
+            publishIdMessage = objectMapper.writeValueAsString(payLoadList);
+            System.out.println("This is the final payload: " + publishIdMessage);
+            middleware.publish(PUBLISHED_ENTITY_IDS, publishIdMessage.getBytes(), 2, false);
+            System.out.println("PUBLISHED DENTIST AND PATIENT IDS");
+            totalMsgSent++;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+
 
     /**
      * Delivery Method which shows that the delivery has been completed 

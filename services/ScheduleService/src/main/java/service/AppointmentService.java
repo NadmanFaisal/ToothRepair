@@ -116,6 +116,19 @@ public class AppointmentService {
         return appointmentRepository.countByStatus("available");
 
     }
+
+    public String getDentist(String appointmentId){
+        String dentist = "";
+         Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
+         if(optionalAppointment.isPresent()){
+             AppointmentSchema appointment = optionalAppointment.get();
+             System.out.println("THIS IS THE APPOINTMENT WE GET WITH THE ID " + appointment);
+             dentist = appointment.getDentist();
+             System.out.println("THIS IS THE DENTIST ID: "+ dentist);
+         }
+         System.out.println("RETURNING DENTIST TO THE MQTT.JAVA FILE");
+         return dentist;
+    }
     
     
 }
