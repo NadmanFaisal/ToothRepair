@@ -40,6 +40,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_EMAIL_INFO = "authenticationService/appointment/getAppointmentInfo";
     private static final String PUBLISHED_PATIENT_CANCELLED_APPOINTMENT = "authenticationService/appointment&patient/getCancelledAppointmentInfo";
     private static final String PUBLISHED_DENTIST_CANCELLED_APPOINTMENT = "authenticationService/appointment&dentist/getCancelledAppointmentInfo";
+    private static final String PUBLISHED_DENTIST_APPOINTMENT_AVAILABLE = "authenticationService/appointment&dentist/getAvailableAppointmentInfo";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", 
@@ -47,7 +48,7 @@ public class MQTT implements MqttCallback {
     "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", 
     "authenticationService/patient/logout" ,"authenticationService/dentist/logout", 
     "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert",
-    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth" };
+    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth", "scheduleService/dentist/sendAvailableIdToAuth" };
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -309,7 +310,7 @@ public class MQTT implements MqttCallback {
                     middleware.publish(PUBLISHED_PATIENT_CANCELLED_APPOINTMENT, updatedAppointmentInfo2.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo2);
                     break;
-                case "scheduleService/patient/sendCancellingIdToAuth":
+                case "scheduleService/dentist/sendCancellingIdToAuth":
                     System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
                     Map<String, Object> appointmentInfo3 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
                     String dentistId3 = (String) appointmentInfo3.get("dentist");
@@ -328,6 +329,21 @@ public class MQTT implements MqttCallback {
                     String updatedAppointmentInfo3 = objectMapper.writeValueAsString(appointmentInfo3);
                     middleware.publish(PUBLISHED_DENTIST_CANCELLED_APPOINTMENT, updatedAppointmentInfo3.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo3);
+                    break;
+                case "scheduleService/dentist/sendAvailableIdToAuth":
+                    System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
+                    Map<String, Object> appointmentInfo4 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    String dentistId4 = (String) appointmentInfo4.get("dentist");
+
+                    String dentistName4 = dentistService.getNameByID(dentistId4);
+                    String dentistEmail4 = dentistService.getEmailById(dentistId4);
+                    
+                    appointmentInfo4.put("dentistName", dentistName4);
+                    appointmentInfo4.put("dentistEmail", dentistEmail4);
+                    
+                    String updatedAppointmentInfo4 = objectMapper.writeValueAsString(appointmentInfo4);
+                    middleware.publish(PUBLISHED_DENTIST_APPOINTMENT_AVAILABLE, updatedAppointmentInfo4.getBytes(), 2, false);
+                    System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo4);
                     break;
                 default:
                     System.err.println("Unrecognized topic: " + topic);

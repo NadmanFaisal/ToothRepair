@@ -26,7 +26,9 @@ public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com",  "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
-    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", "authenticationService/appointment/getAppointmentInfo"};
+    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", 
+    "authenticationService/appointment/getAppointmentInfo", "authenticationService/appointment&patient/getCancelledAppointmentInfo", 
+    "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo"};
     private final LogService logService;
     private final EmailService emailService;
     private LogSchema log;
@@ -34,6 +36,7 @@ public class MQTT implements MqttCallback {
     private IMqttClient middleware; // MQTT client
     private int currentBrokerIndex = 0;
     private ObjectMapper objectMapper = new ObjectMapper();
+    private String [] patientDetails = new String[2];
 
     /**
      * MQTT class Constructor
@@ -208,7 +211,8 @@ public class MQTT implements MqttCallback {
                     String patientEmail = (String) appointmentInfo.get("patientEmail");
                     String appointmentDate = (String) appointmentInfo.get("date");
                     String startTime = (String) appointmentInfo.get("startTime");
-
+                    this.patientDetails[0] = patientName;
+                    this.patientDetails[1] = patientEmail;
                     String emailBody = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been registered!", patientName, dentistName, startTime, appointmentDate);
                     System.out.println("This is the emailBody: " + emailBody);
                     this.emailService.sendSimpleMessage(patientEmail, "Successfull Booking of Dentist Appointment!", emailBody);
@@ -220,13 +224,13 @@ public class MQTT implements MqttCallback {
                     
                     String dentistName2 = (String) appointmentInfo2.get("dentistName");
                     String patientName2 = (String) appointmentInfo2.get("patientName");
-                    String patientEmail2 = (String) appointmentInfo2.get("patientEmail");
+                    String dentistEmail2 = (String) appointmentInfo2.get("dentistEmail");
                     String appointmentDate2 = (String) appointmentInfo2.get("date");
                     String startTime2 = (String) appointmentInfo2.get("startTime");
 
                     String emailBody2 = String.format("Hi, %s!\nYour booking with Patient: %s at: %s on the date: %s on TeethRepair has been cancelled", dentistName2, patientName2, startTime2, appointmentDate2);
                     System.out.println("This is the emailBody: " + emailBody2);
-                    this.emailService.sendSimpleMessage(patientEmail2, "Successfull Booking of Dentist Appointment!", emailBody2);
+                    this.emailService.sendSimpleMessage(dentistEmail2 , "Your appointment has been cancelled", emailBody2);
                     break;
                 case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
                     System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
@@ -240,19 +244,32 @@ public class MQTT implements MqttCallback {
 
                     String emailBody3 = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been cancelled", patientName3, dentistName3, startTime3, appointmentDate3);
                     System.out.println("This is the emailBody: " + emailBody3);
-                    this.emailService.sendSimpleMessage(patientEmail3, "Successfull Booking of Dentist Appointment!", emailBody3);
+                    this.emailService.sendSimpleMessage(patientEmail3, "Your appointment has been cancelled", emailBody3);
+                    break;
+                case "authenticationService/appointment&dentist/getAvailableAppointmentInfo":
+                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
+                    Map<String, Object> appointmentInfo4 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    
+                    String dentistName4 = (String) appointmentInfo4.get("dentistName");
+                    String appointmentDate4 = (String) appointmentInfo4.get("date");
+                    String startTime4 = (String) appointmentInfo4.get("startTime");
+                    String patientName4 = this.patientDetails[0];
+                    String patientEmail4 = this.patientDetails[1];
+
+                    String emailBody4 = String.format("Hi, %s!\nAn appointment time slot with with Dr.%s at: %s on the date: %s on TeethRepair is now available to book!", patientName4, dentistName4, startTime4, appointmentDate4);
+                    System.out.println("This is the emailBody: " + emailBody4);
+                    this.emailService.sendSimpleMessage(patientEmail4, "A new Appointment with Dr." + dentistName4 +" is now Available!", emailBody4);
                     break;
                 default:
                     break;
             }
     
 
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Delivery Method which shows that the delivery has been completed 

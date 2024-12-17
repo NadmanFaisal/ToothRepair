@@ -30,6 +30,7 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendBookingIdToAuth";
     private static final String PUBLISHED_ENTITY_IDS_PATIENT_CANCEL = "scheduleService/patient/sendCancellingIdToAuth";
     private static final String PUBLISHED_ENTITY_IDS_DENTIST_CANCEL = "scheduleService/dentist/sendCancellingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_DENTIST = "scheduleService/dentist/sendAvailableIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
@@ -276,6 +277,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
 
@@ -292,8 +294,8 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered patient cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.patientCancel(appointmentInfo);
                     middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    appointmentService.patientCancel(appointmentInfo);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{
