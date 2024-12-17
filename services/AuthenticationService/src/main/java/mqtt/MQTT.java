@@ -16,6 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.java.db.DentistSchema;
@@ -36,13 +37,15 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_USER_COUNT = "authenticationService/dentist&patient/userCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "authenticationService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "authenticationService/totalMsgReceived";
+    private static final String PUBLISHED_EMAIL_INFO = "authenticationService/appointment/getAppointmentInfo";
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", 
     "authenticationService/patient/login", "authenticationService/dentist/login", 
     "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", 
     "authenticationService/patient/logout" ,"authenticationService/dentist/logout", 
-    "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert" };
+    "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert",
+    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/dentist&patient/sendCancellingIdToAuth" };
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -263,6 +266,30 @@ public class MQTT implements MqttCallback {
                     System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);
                     String msgSentString = String.valueOf(totalMsgSent);
                     middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
+                    break;
+                case "scheduleService/dentist&patient/sendBookingIdToAuth":
+                    System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    String dentistId = (String) appointmentInfo.get("dentist");
+                    String patientId = (String) appointmentInfo.get("patient");
+
+                    String patientName = patientService.getNameByID(patientId);
+                    String patientEmail = patientService.getEmailById(patientId);
+                    String dentistName = dentistService.getNameByID(dentistId);
+                    String dentistEmail = dentistService.getEmailById(dentistId);
+                    
+                    appointmentInfo.put("patientName", patientName);
+                    appointmentInfo.put("patientEmail", patientEmail);
+                    appointmentInfo.put("dentistName", dentistName);
+                    appointmentInfo.put("dentistEmail", dentistEmail);
+                    
+                    String updatedAppointmentInfo = objectMapper.writeValueAsString(appointmentInfo);
+                    middleware.publish(PUBLISHED_EMAIL_INFO, updatedAppointmentInfo.getBytes(), 2, false);
+                    System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo);
+                    break;
+                case "scheduleService/dentist&patient/sendCancellingIdToAuth":
+                    System.out.println("MSG RECIEVED FROM SCHEDULESERVICE IN TOPIC: " + topic + "WITH MESSAGE: " + message);
+
                     break;
                 default:
                     System.err.println("Unrecognized topic: " + topic);

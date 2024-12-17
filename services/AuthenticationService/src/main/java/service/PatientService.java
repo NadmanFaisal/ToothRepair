@@ -1,7 +1,5 @@
 package main.java.service;
 
-import static org.mockito.ArgumentMatchers.booleanThat;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +34,15 @@ public class PatientService{
 
     public PatientSchema getPatient(PatientSchema patient){
         return patientRepository.findByEmail(patient.getEmail());
+    }
+    public String getNameByID(String patientID){
+        Optional<PatientSchema> patient =  patientRepository.findById(patientID);
+        return patient.get().getName(); 
+    }
+
+    public String getEmailById(String patientID){
+        Optional<PatientSchema> patient =  patientRepository.findById(patientID);
+        return patient.get().getEmail(); 
     }
 
     public PatientSchema getPatientByID(String id){

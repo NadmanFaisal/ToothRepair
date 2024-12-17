@@ -46,6 +46,11 @@ public class DentistService {
         
     }
 
+    public String getEmailById(String dentistId) {
+        Optional<DentistSchema> dentist = dentistRepository.findById(dentistId);
+        return dentist.get().getEmail();
+    }
+
     public String getClinicIdByDentistId(String dentistId) {
         Optional<DentistSchema> dentist = dentistRepository.findById(dentistId);
         if (dentist.isPresent()) {

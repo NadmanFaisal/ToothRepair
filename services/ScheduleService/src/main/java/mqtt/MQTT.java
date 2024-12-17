@@ -1,8 +1,5 @@
 package main.java.mqtt;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -333,9 +330,15 @@ public class MQTT implements MqttCallback {
     }
 
     public String publishEntityIds(String appointmentId){
+        String updatedAppointmentInfo = "";
         AppointmentSchema appointment = appointmentService.getApppoinment(appointmentId);
         System.out.println("THIS IS THE APPOINTMENT IS BEING SENT TO THE AUTHENTICATION: " + appointment.toString());
-        return appointment.toString();
+        try {
+            updatedAppointmentInfo = objectMapper.writeValueAsString(appointment);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return updatedAppointmentInfo;
     }
 
     

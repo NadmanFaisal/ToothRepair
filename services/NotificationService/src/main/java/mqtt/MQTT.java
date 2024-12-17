@@ -1,7 +1,7 @@
 package main.java.mqtt;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,9 +13,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.time.LocalDateTime;
 
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import main.java.db.LogSchema;
 import main.java.email.EmailService;
@@ -23,17 +23,18 @@ import main.java.service.LogService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://test.mosquitto.org", "tcp://broker.hivemq.com", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com",  "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String BROKER_URL = "tcp://test.mosquitto.org";  // Replace with your broker address
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
-    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout"};
+    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", "authenticationService/appointment/getAppointmentInfo"};
     private final LogService logService;
     private final EmailService emailService;
     private LogSchema log;
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private int currentBrokerIndex = 0;
-    
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     /**
      * MQTT class Constructor
      * Initializes the MQTT client, connects to the broker and subscribes to the topics.
@@ -184,7 +185,7 @@ public class MQTT implements MqttCallback {
         try {
             String stringMessage = new String(message.getPayload());
 
-            switch (stringMessage) {
+            switch (topic) {
                 case "authenticationService/dentist&patient/userID":
                     String userID = stringMessage;
                     this.log.setUserId(userID);
@@ -193,10 +194,25 @@ public class MQTT implements MqttCallback {
                     this.emailService.sendSimpleMessage("Vaibhavpuram05@gmail.com", "Please work", "Test message");
                     break;
                 case "logout":    
-                System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
+                    System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
                     this.log.setUserLog(currentTime+" "+this.log.getUserId()+" "+stringMessage);
                     logService.createLog(log); 
                     this.log = new LogSchema();
+                    break;
+                case "authenticationService/appointment/getAppointmentInfo":
+                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
+                    
+                    String dentistName = (String) appointmentInfo.get("dentistName");
+                    String patientName = (String) appointmentInfo.get("patientName");
+                    String patientEmail = (String) appointmentInfo.get("patientEmail");
+                    String appointmentDate = (String) appointmentInfo.get("date");
+                    String startTime = (String) appointmentInfo.get("startTime");
+
+                    String emailBody = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been registered!", patientName, dentistName, startTime, appointmentDate);
+                    System.out.println("This is the emailBody: " + emailBody);
+                    this.emailService.sendSimpleMessage(patientEmail, "Successfull Booking of Dentist Appointment!", emailBody);
+
                     break;
                 default:
                     break;
