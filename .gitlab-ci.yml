@@ -17,7 +17,7 @@ frontend-build:
     paths:
       - client/dist
 
-benchmark-mqtt:
+stress-test-mqtt:
   stage: test
   image: ubuntu:latest
   tags:
@@ -29,8 +29,8 @@ benchmark-mqtt:
     - export PATH=$PATH:/usr/local/go/bin
     - go version
     - go install github.com/krylovsk/mqtt-benchmark@main # Install stress-test tool
+    - export PATH=$PATH:$(go env GOPATH)/bin
   script:
-    - export PATH=$PATH:/root/bin
     - chmod +x mqtt_test.sh
     - ./mqtt_test.sh
 
