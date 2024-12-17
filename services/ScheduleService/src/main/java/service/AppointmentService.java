@@ -100,6 +100,16 @@ public class AppointmentService {
         }
     }
 
+    public AppointmentSchema getApppoinment(String appointmentId){
+        AppointmentSchema appointment = null;
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
+        if(optionalAppointment.isPresent()){
+            appointment = optionalAppointment.get();
+        }
+        System.out.println("THIS IS WHAT IS RETURNED FROM GET APPOINTMENT: " + appointment.toString());
+        return appointment;
+    }
+
     public List<AppointmentSchema> getAppointmentsByClinic(AppointmentSchema appointmentInfo) {
         return appointmentRepository.findByClinic(appointmentInfo.getClinic());
     }
@@ -117,18 +127,6 @@ public class AppointmentService {
 
     }
 
-    public String getDentist(String appointmentId){
-        String dentist = "";
-         Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
-         if(optionalAppointment.isPresent()){
-             AppointmentSchema appointment = optionalAppointment.get();
-             System.out.println("THIS IS THE APPOINTMENT WE GET WITH THE ID " + appointment);
-             dentist = appointment.getDentist();
-             System.out.println("THIS IS THE DENTIST ID: "+ dentist);
-         }
-         System.out.println("RETURNING DENTIST TO THE MQTT.JAVA FILE");
-         return dentist;
-    }
     
     
 }

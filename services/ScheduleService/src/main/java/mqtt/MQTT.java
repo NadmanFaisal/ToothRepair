@@ -30,7 +30,8 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
-    private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendBookingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_CANCEL = "scheduleService/dentist&patient/sendCancellingIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
@@ -269,7 +270,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
-                    this.publishEntityIds(appointmentInfo.getId(), appointmentInfo.getPatient());
+                    middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
@@ -284,6 +285,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered dentist cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
+                    middleware.publish(PUBLISHED_ENTITY_IDS_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
                     break;
                 }
@@ -293,6 +295,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.patientCancel(appointmentInfo);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{
@@ -329,26 +332,13 @@ public class MQTT implements MqttCallback {
         }
     }
 
-    public void publishEntityIds (String appointmentId, String patientId){
-        String patient = patientId;
-        String dentist = appointmentService.getDentist(appointmentId);
-        ArrayList <Map<String, String>> payLoadList = new ArrayList<>();
-        Map<String, String> payLoadPart = new HashMap<>();
-        payLoadPart.put("patientId", patient);
-        payLoadPart.put("dentistId", dentist);
-        payLoadList.add(payLoadPart);
-        String publishIdMessage = "";
-        try {
-            publishIdMessage = objectMapper.writeValueAsString(payLoadList);
-            System.out.println("This is the final payload: " + publishIdMessage);
-            middleware.publish(PUBLISHED_ENTITY_IDS, publishIdMessage.getBytes(), 2, false);
-            System.out.println("PUBLISHED DENTIST AND PATIENT IDS");
-            totalMsgSent++;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
+    public String publishEntityIds(String appointmentId){
+        AppointmentSchema appointment = appointmentService.getApppoinment(appointmentId);
+        System.out.println("THIS IS THE APPOINTMENT IS BEING SENT TO THE AUTHENTICATION: " + appointment.toString());
+        return appointment.toString();
     }
+
+    
 
 
     /**
