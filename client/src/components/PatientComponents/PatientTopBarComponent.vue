@@ -58,78 +58,159 @@ export default {
 
 <style scoped>
 .top-bar-container {
-    display: flex;
-    flex-direction: row;
-    background-color: white;
-    height:7%;
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+  height:7%;
 }
 
 .logo-container {
-    padding-left: 20px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .logo {
-    height: 45px;
-    width: 30px;
+  height: 45px;
+  width: 30px;
 }
 
 .logo-label {
-    margin-left: 15px;
-    color: #1FC2C2;
-    text-align: center;
-    font-family: Inter;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 900;
-    line-height: normal;
+  margin-left: 15px;
+  color: #1FC2C2;
+  text-align: center;
+  font-family: Inter;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: normal;
 }
 
 .router-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .router-label {
-    margin-left: 20px;
-    color: #040404;
-    text-align: center;
-    font-family: Inter;
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+  margin-left: 20px;
+  color: #040404;
+  text-align: center;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
 }
 
 .settings-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .notification-label {
-    margin-left: 150px;
-    height: 35px;
-    width: 35px;
+  margin-left: 150px;
+  height: 35px;
+  width: 35px;
 }
 
 .profile-picture {
-    margin-left: 10px;;
-    height: 50px;
-    width: 50px;
+  margin-left: 10px;;
+  height: 50px;
+  width: 50px;
 }
 
 .patient-name-label {
+  padding-left: 10px;
+  color: #000;
+  text-align: center;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+@media (max-width: 1260px) {
+
+  .top-bar-container {
+    width: 100%;
+  }
+
+  .notification-label {
+    margin-left: 15px;
+    height: 35px;
+    width: 35px;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .logo-container {
     padding-left: 10px;
-    color: #000;
-    text-align: center;
-    font-family: Inter;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .logo {
+    height: 35px;
+    width: 30px;
+  }
+
+  .logo-label {
+    margin-left: 5px;
+    font-size: 15px;
+  }
+
+  .router-label {
+    margin-left: 5px;
+    font-size: 15px;
+  }
+
+  .profile-picture {
+    margin-left: 5px;
+    height: 40px;
+    width: 40px;
+  }
+
+  .patient-name-label {
+    padding-left: 5px;
+    font-size: 10px;
+  }
+
+  .notification-label {
+    margin-left: 5px;
+    height: 25px;
+    width: 25px;
+  }
+
+}
+
+@media (max-width: 470px) {
+
+.router-label {
+  margin-left: 5px;
+  font-size: 10px;
+}
+
+.profile-picture {
+  display: none;
+}
+
+.patient-name-label {
+  padding-left: 5px;
+  font-size: 8px;
+}
+
+.notification-label {
+  margin-left: 5px;
+  height: 20px;
+  width: 20px;
+}
+
 }
 </style>
