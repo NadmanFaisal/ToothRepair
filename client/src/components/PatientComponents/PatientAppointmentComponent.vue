@@ -107,7 +107,8 @@ export default {
   name: 'AppointmentComponent',
   data() {
     return {
-      selectedAppointmentId: null
+      selectedAppointmentId: null,
+      selectedAppointmentStartTime: null
     }
   },
   props: {
@@ -189,6 +190,7 @@ export default {
         publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
+        alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime+ ' on ' + this.patientSelectedDate)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -202,7 +204,7 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-
+      this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)
     }

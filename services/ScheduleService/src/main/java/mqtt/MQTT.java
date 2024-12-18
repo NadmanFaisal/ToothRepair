@@ -25,18 +25,27 @@ public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
+    private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
+    private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
+    private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
+    private static final String PUBLISHED_ENTITY_IDS = "scheduleService/dentist&patient/sendBookingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_PATIENT_CANCEL = "scheduleService/patient/sendCancellingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_DENTIST_CANCEL = "scheduleService/dentist/sendCancellingIdToAuth";
+    private static final String PUBLISHED_ENTITY_IDS_DENTIST = "scheduleService/dentist/sendAvailableIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
     private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
      "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
      "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
      "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist"}; 
+    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert", "scheduleService/totalMsgSentAlert", "scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
     private boolean STRESS_TEST_MODE = false;
+    private int totalMsgReceived = 0;
+    private int totalMsgSent = 0;
 
 
     
@@ -157,6 +166,7 @@ public class MQTT implements MqttCallback {
             //Publish the payload as bytes to the topic.
             System.out.println(message);
             middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
+            totalMsgSent++;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -222,6 +232,7 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
+        totalMsgReceived++;
         try {
             String stringMessage = new String(message.getPayload());
             System.out.println("Message recieved: " + stringMessage);
@@ -274,14 +285,15 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
+                    middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
-
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
                     System.out.println("Entered makeAppointmentAvailable if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
 
@@ -289,6 +301,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered dentist cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
                     break;
                 }
@@ -297,7 +310,31 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered patient cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
+                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.patientCancel(appointmentInfo);
+                    break;
+                }
+                case "scheduleService/appointment/getAvailableAppointmentsAlert":{
+                        System.out.println("Getting a number of all the available appointments");
+                        int availableAppointments = appointmentService.getTotalnumberOfAvailableAppointments();
+                        String appointmentString = String.valueOf(availableAppointments);
+                        middleware.publish(PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC, appointmentString.getBytes(), 2, false);
+                        totalMsgSent++;
+                        System.out.println("PUBLISHING TOTAL NUMBER OF AVAILABLE APPOINTMENTS TO FRONTEND");
+                    break;
+                }
+                case "scheduleService/totalMsgReceivedAlert" :{
+                    System.out.println("PUBLISHING TOTAL MESSAGES RECEIVED: " + this.totalMsgReceived);
+                    String msgReceivedString = String.valueOf(totalMsgReceived);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_RECEIVED, msgReceivedString.getBytes() , 2, false);
+                    totalMsgSent++;
+                    break;
+                }
+                case "scheduleService/totalMsgSentAlert":{
+                    totalMsgSent++;
+                    System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);
+                    String msgSentString = String.valueOf(totalMsgSent);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
                     break;
                 }
 
@@ -310,6 +347,21 @@ public class MQTT implements MqttCallback {
             e.printStackTrace();
         }
     }
+
+    public String publishEntityIds(String appointmentId){
+        String updatedAppointmentInfo = "";
+        AppointmentSchema appointment = appointmentService.getApppoinment(appointmentId);
+        System.out.println("THIS IS THE APPOINTMENT IS BEING SENT TO THE AUTHENTICATION: " + appointment.toString());
+        try {
+            updatedAppointmentInfo = objectMapper.writeValueAsString(appointment);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return updatedAppointmentInfo;
+    }
+
+    
+
 
     /**
      * Delivery Method which shows that the delivery has been completed 

@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Document(collection = "dentists")
 public class DentistSchema { 
     @Id
@@ -13,7 +15,18 @@ public class DentistSchema {
     private String email;
     private String password;
     private String clinic;
+    @JsonProperty("isLoggedIn")
+    private boolean isLoggedIn;
 
+
+    public boolean getIsLoggedIn(){
+        return this.isLoggedIn;
+    }
+
+    public void setIsLoggedIn(boolean newLoggedInStatus){
+        this.isLoggedIn = newLoggedInStatus;
+    }
+    
     public String getClinic() {
         return clinic;
     }

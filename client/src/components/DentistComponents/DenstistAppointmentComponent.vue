@@ -117,7 +117,8 @@ export default {
   name: 'DentistAppointmentComponent',
   data() {
     return {
-      selectedAppointmentId: null
+      selectedAppointmentId: null,
+      selectAppointmentStartTime: null
     }
   },
   props: {
@@ -192,6 +193,7 @@ export default {
         publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
+        alert("Successfully made a " + this.selectAppointmentStartTime + " AM appointment slot available on " + this.dentistSelectedDate)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -212,6 +214,7 @@ export default {
           return
         }
       }
+      this.selectAppointmentStartTime = this.selectAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)
     }

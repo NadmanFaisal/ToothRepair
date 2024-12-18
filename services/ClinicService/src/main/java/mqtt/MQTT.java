@@ -26,14 +26,18 @@ public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" , "tcp://broker.hivemq.com","tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
+    private static final String PUBLISHED_TOTAL_MSG_SENT = "clinicService/totalMsgSent";
+    private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "clinicService/totalMsgReceived";
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic", "ClinicService/Clinic/getClinicById"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic", "ClinicService/Clinic/getClinicById", "clinicService/totalMsgSentAlert", "clinicService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
     private boolean STRESS_TEST_MODE = false;
+    private int totalMsgReceived = 0;
+    private int totalMsgSent = 0;
 
 
    
@@ -149,6 +153,7 @@ public class MQTT implements MqttCallback {
     private void publishClinicInfo(String topic, String message) {
         try {
             middleware.publish(topic, message.getBytes(), 1, false);
+            totalMsgSent++;
             System.out.println("Published clinic info to topic: " + topic);
         } catch (MqttException e) {
             e.printStackTrace();
@@ -170,6 +175,7 @@ public class MQTT implements MqttCallback {
             String clinicListJson = objectMapper.writeValueAsString(this.clinicService.getAllClinics());
             
             middleware.publish(topic, clinicListJson.getBytes(), 2, false);
+            totalMsgSent++;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -240,7 +246,7 @@ public class MQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        
+        totalMsgReceived++;
         try {
             String stringMessage = new String(message.getPayload()); 
                    
@@ -257,6 +263,18 @@ public class MQTT implements MqttCallback {
                     break;
                 case "ClinicService/Clinic/getClinicById":
                     handleGetClinic(stringMessage);
+                    break;
+                case "clinicService/totalMsgReceivedAlert" :
+                    System.out.println("PUBLISHING TOTAL MESSAGES RECEIVED: " + this.totalMsgReceived);
+                    String msgReceivedString = String.valueOf(totalMsgReceived);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_RECEIVED, msgReceivedString.getBytes() , 2, false);
+                    totalMsgSent++;
+                    break;
+                case "clinicService/totalMsgSentAlert" :
+                    totalMsgSent++;
+                    System.out.println("PUBLISHING TOTAL MESSAGES SENT: " + this.totalMsgSent);                  
+                    String msgSentString = String.valueOf(totalMsgSent);
+                    middleware.publish(PUBLISHED_TOTAL_MSG_SENT, msgSentString.getBytes(), 2, false);
                     break;
                 default:
                     break;

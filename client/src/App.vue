@@ -10,6 +10,8 @@
       <router-link to = "/dentistHomePage"> Dentist Home</router-link>
       <br>
       <router-link to = "/mapView">Map View Page</router-link>
+      <br>
+      <router-link to = "/systemStats">System Stats</router-link>
 
       <!--<router-link to = "/signup2"> NewSignUp</router-link>-->
 

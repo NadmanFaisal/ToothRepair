@@ -1,8 +1,7 @@
 package main.java.service;
 
-import static org.mockito.ArgumentMatchers.booleanThat;
-
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,38 @@ public class PatientService{
     public PatientSchema getPatient(PatientSchema patient){
         return patientRepository.findByEmail(patient.getEmail());
     }
+    public String getNameByID(String patientID){
+        Optional<PatientSchema> patient =  patientRepository.findById(patientID);
+        return patient.get().getName(); 
+    }
 
-    
+    public String getEmailById(String patientID){
+        Optional<PatientSchema> patient =  patientRepository.findById(patientID);
+        return patient.get().getEmail(); 
+    }
+
+    public PatientSchema getPatientByID(String id){
+        Optional<PatientSchema> optionalPatient = patientRepository.findById(id);
+        PatientSchema patient;
+        if(optionalPatient.isPresent()){
+            patient = optionalPatient.get();
+        }else{
+            System.out.println("Patient Cannot be found in the DB");
+            patient = null;
+        }
+        return patient;
+    }
+
+    public int getActivePatients(){
+        return patientRepository.countByIsLoggedInTrue();
+    }
+
+    public void setIsLoggedIn(PatientSchema patient, boolean loggedInStatus){
+        
+            patient.setIsLoggedIn(loggedInStatus);
+            patientRepository.save(patient);
+
+    }
+        
 }
 
