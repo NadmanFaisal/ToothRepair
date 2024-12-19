@@ -9,6 +9,7 @@
 import dentistClinicIcon from '../../assets/dentistClinicIcon.png'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import { store } from '../../store'
 
 export default {
   name: 'MapComponent',
@@ -28,6 +29,7 @@ export default {
     navigateToClinic(clinic) {
       console.log('Will work')
       console.log(clinic.name)
+      store.setSelectedClinic(clinic)
       this.$router.push({
         path: '/patientAppointmentPage',
         query: {

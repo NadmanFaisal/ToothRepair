@@ -67,10 +67,12 @@ export default {
   methods: {
     async getAppointments() {
       try {
+        // Since moving back to this screen resets the query, the clinicID is taken from store.
+        const clinicId = this.$route.query.clinicId || store.getSelectedClinicId()
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${clinicId}"}`)
         console.log('Subscribed successfully')
 
         console.log('Setting up message listener...')
