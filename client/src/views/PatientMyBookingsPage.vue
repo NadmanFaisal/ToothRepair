@@ -182,6 +182,11 @@ export default {
       console.log('reshceduling: ', appointmentId)
     },
     async cancelAppointment(appointmentId) {
+      const confirmation = confirm('Are you sure you want to cancel the appointment?')
+      if (!confirmation) {
+        return
+      }
+
       try {
         console.log('Attempting to cancel appointment' + appointmentId)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
