@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <div class="col-3 settings-container">
+        <div class="col-3 settings-container" @click="navigateToSettingsPage">
             <img src="../../assets/notifications.png" class="notification-label">
             <img src="../../assets/profile-picture.png" class="profile-picture">
             <label class="patient-name-label"> Name of Patient</label>
@@ -51,6 +51,9 @@ export default {
         return
       }
       this.$router.push(item.route)
+    },
+    navigateToSettingsPage() {
+      this.$router.push('/patientSettingsPage')
     }
   }
 }
