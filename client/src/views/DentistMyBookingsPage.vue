@@ -1,6 +1,5 @@
 <template>
     <div class="col-12 screen-container">
-        <BButton @click="logout"> Log Out button</BButton>
 
         <DentistTopBar />
 
@@ -188,16 +187,10 @@ export default {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
         this.getAppointments()
-        alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
+        alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
-    },
-    logout() {
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
     },
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')
