@@ -91,7 +91,7 @@ export default {
     }
   },
   mounted() {
-    this.map = L.map(this.$refs.map).setView([57.708870, 11.974560], 10)
+    this.map = L.map(this.$refs.map).setView([57.708870, 11.974560], 4)
 
     const streetView = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -118,23 +118,42 @@ export default {
 }
 
 </script>
+
 <style>
-    .map-container {
-        width: 100%;
-        height: 50%;
-        position: relative;
-        overflow: hidden;
-        padding: 40px;
-    }
+.map-container {
+  display: flex;
+  max-width: 100%;
+  height: 50%;
+  position: relative;
+  overflow: hidden;
+  padding: 40px;
+}
 
-    .map-content-container {
-      background-color: white;
-      height: 100%;
-    }
+.map-content-container {
+  background-color: white;
+  height: 100%;
+}
 
-    .leaflet-tooltip {
-      font-weight: bold;
-      background-size: small;
-    }
+.leaflet-tooltip {
+  font-weight: bold;
+  background-size: small;
+}
 
+@media (max-width: 1260px) {
+  .map-container {
+    height: 100%;
+    max-width: 50%;
+    padding: 40px;
+  }
+
+}
+
+@media (max-width: 800px) {
+  .map-container {
+    height: 50%;
+    max-width: 100%;
+    padding: 40px;
+  }
+
+}
 </style>

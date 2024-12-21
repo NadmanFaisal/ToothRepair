@@ -110,6 +110,10 @@ export default {
       }
     },
     logout() {
+      const PUBLISH_LOGOUT_TOPIC = "logout"
+      const PUBLISH_LOGGED_OUT_USER_ID = "authenticationService/dentist/logout"
+      publishToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System")
+      publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       unsubscribeFromTopic('client/scheduleService/appointmentInfo')
       localStorage.clear()
@@ -136,5 +140,49 @@ export default {
   height: 93%;
   background-image: linear-gradient(0deg, rgba(31, 194, 194, 0.24) 0%, rgba(31, 194, 194, 0.24) 100%), url('@/assets/patient-home-bg-image.jpeg');
   background-size: contain;
+}
+
+@media (max-width: 1260px) {
+  .content-section {
+    flex-direction: column;
+    background: rgba(31, 194, 194, 0.24);
+    height: 150vh;
+    overflow-y: auto;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 50%;
+  }
+
+  .right-section {
+    width: 100%;
+    height: 50%;
+  }
+
+}
+
+@media (max-width: 800px) {
+  .content-section {
+    flex-direction: column;
+    background: rgba(31, 194, 194, 0.24);
+    height: 200vh;
+    overflow-y: auto;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 50%;
+  }
+
+  .right-section {
+    width: 100%;
+    height: 50%;
+  }
+
 }
 </style>

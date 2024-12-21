@@ -11,4 +11,6 @@ List<AppointmentSchema> findByPatient(String patient);
 
 List<AppointmentSchema> findByDentist(String dentist);
 
+int countByStatus(String status);
+
 }

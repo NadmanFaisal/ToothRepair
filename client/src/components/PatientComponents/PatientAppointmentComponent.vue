@@ -107,7 +107,8 @@ export default {
   name: 'AppointmentComponent',
   data() {
     return {
-      selectedAppointmentId: null
+      selectedAppointmentId: null,
+      selectedAppointmentStartTime: null
     }
   },
   props: {
@@ -189,6 +190,7 @@ export default {
         publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
+        alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime+ ' on ' + this.patientSelectedDate)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -202,7 +204,7 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-
+      this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)
     }
@@ -404,5 +406,151 @@ export default {
   font-style: normal;
   font-weight: 600;
   line-height: normal;
+}
+
+@media (max-width: 1260px) {
+
+  .sunrise-image {
+    height: 55px;
+  }
+
+  .title-label {
+    font-size: 25px;
+  }
+
+  .time-label {
+    font-size: 17px;
+  }
+
+  .available-slot {
+    margin: 20px;
+    height: 50px;
+  }
+
+  .unavailable-slot {
+    margin: 20px;
+    height: 50px;
+  }
+
+  .selected-slot {
+    margin: 20px;
+    height: 50px;
+  }
+
+  .booked-slot {
+    margin: 20px;
+    height: 50px;
+  }
+
+  .status-mark-image {
+    margin-left: 5px;
+    height: 20px;
+  }
+
+  .appointment-information-container {
+    margin-left: 5px;
+  }
+
+  .appointment-information-label {
+    font-size: 18px;
+  }
+
+}
+
+@media (max-width: 750px) {
+
+  .sunrise-image {
+    height: 45px;
+  }
+
+  .title-label {
+    font-size: 20px;
+  }
+
+  .time-label {
+    font-size: 15px;
+  }
+
+  .slot-section {
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 700px) {
+
+  .available-slot {
+    margin: 10px;
+    height: 50px;
+  }
+
+  .unavailable-slot {
+    margin: 10px;
+    height: 50px;
+  }
+
+  .selected-slot {
+    margin: 10px;
+    height: 50px;
+  }
+
+  .booked-slot {
+    margin: 10px;
+    height: 50px;
+  }
+
+  .appointment-information-label {
+    font-size: 13px;
+  }
+
+}
+
+@media (max-width: 660px) {
+
+  .sunrise-container {
+    display: none;
+  }
+
+  .title-label {
+    padding-left: 10px;
+  }
+
+  .time-label {
+    padding-left: 10px;
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  .available-slot {
+    margin: 5px;
+    height: 50px;
+  }
+
+  .unavailable-slot {
+    margin: 5px;
+    height: 50px;
+  }
+
+  .selected-slot {
+    margin: 5px;
+    height: 50px;
+  }
+
+  .booked-slot {
+    margin: 5px;
+    height: 50px;
+  }
+
+  .status-mark-image {
+    margin-left: 0px;
+    height: 12px;
+  }
+
+  .appointment-information-label {
+    font-size: 10px;
+  }
+
 }
 </style>

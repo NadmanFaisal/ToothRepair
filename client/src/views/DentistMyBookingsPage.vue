@@ -1,5 +1,7 @@
 <template>
     <div class="col-12 screen-container">
+        <BButton @click="logout"> Log Out button</BButton>
+
         <DentistTopBar />
 
         <div class="col-12 content-section">
@@ -41,14 +43,14 @@
                       </div>
 
                       <div class="col-4 clinic-details-container">
-                        <label class="clinic-name-label">{{ appointment.clinic }}</label>
+                        <!-- <label class="clinic-name-label">{{ appointment.clinic }}</label> -->
                       </div>
 
                       <div class="col-3 status-container">
 
-                        <div v-if="today < appointment.date" class="col-12 button-container">
+                        <div v-if="today <= appointment.date" class="col-12 button-container">
                           <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
-                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
+                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                         </div>
 
                         <div v-else class="col-12 completed-container">
@@ -180,15 +182,22 @@ export default {
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
-    async cancelAppointment(appointmentId) {
+    async cancelAppointment(appointment) {
       try {
-        console.log('Attempting to cancel appointment' + appointmentId)
+        console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointmentId + '", "dentist": ' + this.userId + '}')
+        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
         this.getAppointments()
+        alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
+    },
+    logout() {
+      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
+      localStorage.clear()
+      this.$router.push('/login')
     },
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')
@@ -363,6 +372,7 @@ export default {
   border-radius: 10px;
   background: #FFF;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.25);
+  margin-bottom: 10px;
   }
 
   .logo-container {
@@ -478,4 +488,146 @@ export default {
   font-weight: 600;
   line-height: normal;
   }
-  </style>
+
+  @media (max-width: 1450px) {
+  .book-appointment-button {
+    font-size: 15px;
+  }
+
+  .appointment-image {
+    height: 40px;
+    width: 40px;
+  }
+
+  .appointment-day-label {
+    font-size: 55px;
+  }
+
+  .appointment-month-day-label, .appointment-start-time-span {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 1220px) {
+  .appointment-image {
+    height: 30px;
+    width: 30px;
+  }
+
+  .appointment-day-label {
+    font-size: 45px;
+  }
+
+  .completed-label {
+    font-size: 22px;
+  }
+
+}
+
+@media (max-width: 1154px) {
+  .book-appointment-button {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .title-label {
+    font-size: 40px;
+  }
+
+  .book-appointment-label {
+    font-size: 25px;
+  }
+
+  .completed-label {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 850px) {
+  .content-section {
+    height: 200vh;
+  }
+
+  .main-content-section {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .title-container {
+    height: 10%;
+  }
+
+  .appointment-container {
+    height: 40%;
+    width: 98%;
+  }
+
+  .completed-label {
+    font-size: 20px;
+  }
+
+  .maps-container {
+    height: 40%;
+    width: 98%;
+  }
+}
+
+@media (max-width: 680px) {
+  .book-appointment-button {
+    width: 70%;
+    font-size: 8px;
+  }
+
+  .appointment-image {
+    height: 25px;
+    width: 25px;
+  }
+
+  .appointment-day-label {
+    font-size: 30;
+  }
+
+  .appointment-month-day-label, .appointment-start-time-span {
+    font-size: 12px;
+  }
+
+  .completed-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 560px) {
+  .logo-container {
+    display: none;
+  }
+}
+
+@media (max-width: 510px) {
+  .title-label {
+    font-size: 30px;
+  }
+
+  .book-appointment-label {
+    font-size: 20px;
+  }
+
+  .cancel-button {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  .title-label {
+    font-size: 25px;
+  }
+
+  .completed-label {
+    font-size: 12px;
+  }
+
+  .book-appointment-label {
+    font-size: 15px;
+  }
+}
+</style>
