@@ -7,9 +7,13 @@
 
           <div class="col-3 left-section">
 
-            <CalendarComponent @patientSelectedDate="updateSelectedDate" :appointments="appointments"/>
+            <div class="col-12 calendar-container">
+              <CalendarComponent @patientSelectedDate="updateSelectedDate" :appointments="appointments"/>
+            </div>
 
-            <MapComponent :clinics="clinics"></MapComponent>
+            <div class="map-component-container">
+              <MapComponent :clinics="clinics"></MapComponent>
+            </div>
 
           </div>
 
@@ -25,7 +29,6 @@
 
 <script>
 import { subscribeToTopic, client, messageArrived, unsubscribeFromTopic, publishToTopic } from '../mqtt/mqtt.js'
-import { store } from '../store'
 
 import TopBarComponent from '../components/PatientComponents/PatientTopBarComponent.vue'
 import CalendarComponent from '../components/PatientComponents/PatientCalendarComponent.vue'
@@ -67,8 +70,8 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        // Since moving back to this screen resets the query, the clinicID is taken from store.
-        const clinicId = this.$route.query.clinicId || store.getSelectedClinicId()
+        // Since moving back to this screen resets the query, the clinicID is taken from localStorage.
+        const clinicId = this.$route.query.clinicId || localStorage.getItem('ClinicID')
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
@@ -170,6 +173,16 @@ export default {
   background-size: contain;
 }
 
+.calendar-container {
+  height: 50%;
+  padding: 40px;
+}
+
+.map-component-container {
+  height: 50%;
+  padding: 40px;
+}
+
 @media (max-width: 1260px) {
   .content-section {
     flex-direction: column;
@@ -183,6 +196,16 @@ export default {
     flex-direction: row;
     width: 100%;
     height: 50%;
+  }
+
+  .calendar-container {
+    height: 100%;
+    width: 50%;
+  }
+
+  .map-component-container {
+    height: 100%;
+    width: 50%;
   }
 
   .right-section {
@@ -203,6 +226,21 @@ export default {
   .left-section {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    height: 50%;
+  }
+
+  .calendar-container {
+    height: 50%;
+    width: 100%;
+  }
+
+  .map-component-container {
+    height: 50%;
+    width: 100%;
+  }
+
+  .right-section {
     width: 100%;
     height: 50%;
   }

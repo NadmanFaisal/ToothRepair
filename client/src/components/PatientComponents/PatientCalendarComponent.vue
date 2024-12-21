@@ -82,8 +82,7 @@ export default {
   justify-items: center;
   align-items: center;
   width: 100%;
-  height: 50%;
-  padding: 40px;
+  height: 100%;
 }
 
 .calender-content-container {
@@ -111,7 +110,7 @@ export default {
 
 @media (max-width: 800px) {
   .calender-contaiener {
-    height: 50%;
+    height: 100%;
     width: 100%;
   }
 

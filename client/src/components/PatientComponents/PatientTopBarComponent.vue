@@ -24,7 +24,6 @@
 </template>
 
 <script>
-import { store } from '../../store'
 
 export default {
   name: 'PatientTopBarComponent',
@@ -46,8 +45,16 @@ export default {
   },
   methods: {
     navigateTo(item) {
-      if (item.route === '/patientAppointmentPage' && !store.getSelectedClinicId()) {
+      if (item.route === '/patientAppointmentPage' && !localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic first')
+        return
+      } else if ((item.route === '/patientAppointmentPage' && localStorage.getItem('ClinicID'))) {
+        this.$router.push({
+          path: '/patientAppointmentPage',
+          query: {
+            clinicId: localStorage.getItem('ClinicID')
+          }
+        })
         return
       }
       this.$router.push(item.route)

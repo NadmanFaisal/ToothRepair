@@ -92,7 +92,6 @@
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
 import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
-import { store } from '../store'
 
 export default {
   name: 'PatientHomePage',
@@ -112,13 +111,13 @@ export default {
   },
   methods: {
     selectAClinic(clinic) {
-      store.setSelectedClinic(clinic)
-      this.selectedClinicName = store.getSelectedClinicName()
-      this.selectedClinicId = store.getSelectedClinicId()
+      this.selectedClinicName = clinic.name
+      this.selectedClinicId = clinic.id
+      localStorage.setItem('ClinicID', this.selectedClinicId)
       console.log(this.selectedClinicId)
     },
     gotToAppointmentPage() {
-      if (!store.getSelectedClinicId()) {
+      if (!localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic')
         return
       }
