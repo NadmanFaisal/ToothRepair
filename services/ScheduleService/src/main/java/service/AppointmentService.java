@@ -110,8 +110,8 @@ public class AppointmentService {
         return appointment;
     }
 
-    public List<AppointmentSchema> getAppointmentsByClinic(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByClinic(appointmentInfo.getClinic());
+    public List<AppointmentSchema> getAppointmentsByClinic(String clinicId) {
+        return appointmentRepository.findByClinic(clinicId);
     }
 
     public List<AppointmentSchema> getAppointmentsByPatient(AppointmentSchema appointmentInfo) {

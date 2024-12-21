@@ -45,7 +45,8 @@ export default {
     return {
       clinics: [],
       patientSelectedDate: new Date().toISOString().split('T')[0],
-      appointments: []
+      appointments: [],
+      userId: localStorage.getItem('UserID')
     }
   },
   mounted() {
@@ -71,14 +72,23 @@ export default {
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${this.$route.query.clinicId}"}`)
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.$route.query.clinicId}"}`)
         console.log('Subscribed successfully')
 
         console.log('Setting up message listener...')
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            this.appointments = [...JSON.parse(message)]
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              console.log('Recieved another users request')
+            }
           }
         })
         console.log(`This should be working: ${this.appointments}`)

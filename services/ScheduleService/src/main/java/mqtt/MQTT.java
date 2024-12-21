@@ -1,5 +1,7 @@
 package main.java.mqtt;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,6 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -250,9 +253,13 @@ public class MQTT implements MqttCallback {
 
                 case "ScheduleService/Appointment/getAppointmentsByClinic": {
                     System.out.println("Will publish all appointments per clinic");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String clinic = (String)appointmentInfo.get("clinic");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByClinic(clinic);
+                    appointmentInfo.remove("clinic");
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(topic, payload);
                     break;
                 }
 
