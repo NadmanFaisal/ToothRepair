@@ -7,7 +7,7 @@
 
           <div class="col-3 left-section">
 
-            <CalendarComponent @patientSelectedDate="updateSelectedDate"/>
+            <CalendarComponent @patientSelectedDate="updateSelectedDate" :appointments="appointments"/>
 
             <MapComponent :clinics="clinics"></MapComponent>
 
