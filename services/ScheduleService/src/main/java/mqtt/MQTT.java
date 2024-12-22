@@ -43,7 +43,7 @@ public class MQTT implements MqttCallback {
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     private MqttConnectOptions options = new MqttConnectOptions();
     private int currentBrokerIndex = 0;
-    private boolean STRESS_TEST_MODE = true;
+    private boolean STRESS_TEST_MODE = false;
     private int totalMsgReceived = 0;
     private int totalMsgSent = 0;
 

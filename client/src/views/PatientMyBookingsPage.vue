@@ -97,11 +97,8 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      () => {
-        this.getAppointmentsByPatient,
-        this.getAllClinics
-      },
-      { immediate: true }
+      this.getAppointmentsByPatient,
+      this.getAllClinics
     )
   },
   mounted() {
@@ -123,7 +120,8 @@ export default {
   },
   unmounted() {
     client.removeAllListeners('message')
-    console.log("This page is Unmounted")
+    client.removeAllListeners('connect')
+    console.log('This page is Unmounted')
     // this.cleanupSubscriptions()
   },
   methods: {
@@ -254,7 +252,7 @@ export default {
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
-    
+
     async cancelAppointment(appointmentId) {
       const confirmation = confirm('Are you sure you want to cancel the appointment?')
       if (!confirmation) {

@@ -22,7 +22,7 @@ const BROKER_URLS = [
     port: 8884,
     protocol: 'wss',
     path: '/mqtt'
-  },
+  }
 ]
 
 export let client = mqtt.connect({
@@ -114,7 +114,6 @@ function handleReconnection() {
  * @returns {resolve, reject} resolves the Promise or rejects it
  */
 export function subscribeToTopic(topic) {
-  
   return new Promise((resolve, reject) => {
     // Subscribe to a topic
     if (client.connected) {

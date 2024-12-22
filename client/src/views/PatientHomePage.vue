@@ -123,8 +123,9 @@ export default {
     connectAndRun()
   },
   unmounted() {
-  client.removeAllListeners('message')
-  console.log("This page is Unmounted")
+    client.removeAllListeners('message')
+    client.removeAllListeners('connect')
+    console.log('This page is Unmounted')
   },
   methods: {
     selectAClinic(clinic) {
