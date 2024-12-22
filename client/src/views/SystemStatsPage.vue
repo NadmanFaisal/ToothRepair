@@ -48,6 +48,10 @@ export default {
       this.getTotalMessagesNotification()
     })
   },
+  unmounted() {
+  client.removeAllListeners('message')
+  console.log("This page is Unmounted")
+  },
   created() {
     this.$watch(
       () => this.$route,
