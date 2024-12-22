@@ -35,7 +35,7 @@ wait
 for i in $(seq 1 $clients); do
   payload="{\"Get Appointments $i\"}"
   #payload="Get Appointments"
-  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "scheduleService/appointment/getAppointments" --client-prefix "mqtt-client-$i" --payload "$payload" &
+  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "scheduleService/appointment/getAvailableAppointmentsAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
 done
 
 wait
