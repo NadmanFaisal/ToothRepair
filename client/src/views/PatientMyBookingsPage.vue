@@ -117,6 +117,17 @@ export default {
           throw new Error('User ID not found in localStorage')
         }
 
+        console.log('Subscribing to topic...')
+        const topic = 'Client/ScheduleService/AppointmentInfo'
+        if (!this.subscribedTopics.includes(topic)) {
+          await subscribeToTopic(topic)
+          this.subscribedTopics.push(topic)
+          console.log('Subscribed successfully')
+        }
+
+        console.log('Publishing request for appointments...')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
+
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
@@ -132,16 +143,6 @@ export default {
             }
           }
         })
-
-        console.log('Subscribing to topic...')
-        const topic = 'Client/ScheduleService/AppointmentInfo'
-        if (!this.subscribedTopics.includes(topic)) {
-          await subscribeToTopic(topic)
-          this.subscribedTopics.push(topic)
-          console.log('Subscribed successfully')
-        }
-        console.log('Publishing request for appointments...')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }

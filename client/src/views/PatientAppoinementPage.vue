@@ -82,7 +82,7 @@ export default {
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'client/scheduleService/getAppointmentStatus') {
-            this.getAppointmentStatus = JSON.parse(message)
+            this.getAppointmentStatus = message
           }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             console.log('recieved: ' + message)
@@ -104,6 +104,7 @@ export default {
         })
         console.log(`This should be working: ${this.appointments}`)
         this.getAppointmentStatus = null
+        console.log('Should be null:' + this.getAppointmentStatus)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }

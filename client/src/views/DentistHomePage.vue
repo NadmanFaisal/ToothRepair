@@ -34,7 +34,8 @@ export default {
     return {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
-      appointments: []
+      appointments: [],
+      userId: localStorage.getItem('UserID')
     }
   },
   components: {
@@ -68,31 +69,38 @@ export default {
     async getAppointments() {
       try {
         await this.getClinicId()
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.clinicId}"}`)
         console.log('Entered')
         messageArrived((topic, message) => {
           console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
             console.log('What happens when parsing' + parsedMessage)
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = parsedMessage.appointments
+            console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
+            if (this.getAppointmentStatus) {
+              this.appointments = [...parsedMessage.appointments]
             } else {
-              console.log('Recieved another users request')
+              if (JSON.parse(this.userId) === parsedMessage.userID) {
+                this.appointments = [...parsedMessage.appointments]
+              } else {
+                console.log('Recieved another users request')
+              }
             }
           }
         })
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
     },
     async getClinicId() {
       try {
-        const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/AuthenticationService/ClinicId')
         const clinicIdPromise = new Promise((resolve, reject) => {
           messageArrived((topic, message) => {
@@ -108,8 +116,8 @@ export default {
           })
         })
         console.log('localstorage: ' + localStorage.getItem('UserID'))
-        console.log('userid:' + userId)
-        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + userId + '}')
+        console.log('userid:' + this.userId)
+        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.userId + '}')
 
         await clinicIdPromise
       } catch (error) {
