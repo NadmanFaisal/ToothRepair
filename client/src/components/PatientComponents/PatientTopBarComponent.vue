@@ -17,7 +17,7 @@
         <div class="col-3 settings-container" @click="navigateToSettingsPage">
             <img src="../../assets/notifications.png" class="notification-label">
             <img src="../../assets/profile-picture.png" class="profile-picture">
-            <label class="patient-name-label"> Name of Patient</label>
+            <label class="patient-name-label"> {{ patientUsername || localstorageUsername }}</label>
         </div>
 
     </div>
@@ -31,6 +31,10 @@ export default {
     selectedClinicId: {
       type: String,
       default: null
+    },
+    patientUsername: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -38,9 +42,11 @@ export default {
       navItems: [
         { name: 'My Home', route: '/patientHomePage' },
         { name: 'Book Appointments', route: '/patientAppointmentPage' },
-        { name: 'My Bookings', route: '/patientMyBookingsPage' }
+        { name: 'My Bookings', route: '/patientMyBookingsPage' },
+        { name: 'System Stats', route: '/systemStats' }
         // Add more navigation items here
-      ]
+      ],
+      localstorageUsername: localStorage.getItem('Username')
     }
   },
   methods: {

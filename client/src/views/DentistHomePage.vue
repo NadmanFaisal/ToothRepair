@@ -1,7 +1,7 @@
 <template>
     <div class="screen-container">
 
-        <DentistTopBarComponent />
+        <DentistTopBarComponent :dentistUsername="dentistUsername" />
 
         <div class="col-12 content-section">
 
@@ -25,7 +25,7 @@
 import DentistTopBarComponent from '../components/DentistComponents/DentistTopBarComponent.vue'
 import DenstistAppointmentComponent from '../components/DentistComponents/DenstistAppointmentComponent.vue'
 import DentistCalendarComponent from '../components/DentistComponents/DentistCalendarComponent.vue'
-import { subscribeToTopic, messageArrived, publishToTopic, client } from '../mqtt/mqtt.js'
+import { subscribeToTopic, messageArrived, publishToTopic, client, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 
 export default {
   name: 'MyBookingsPage',
@@ -33,7 +33,8 @@ export default {
     return {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
-      appointments: []
+      appointments: [],
+      dentistUsername: 'Loading...'
     }
   },
   components: {
@@ -51,6 +52,7 @@ export default {
       console.log('MQTT connected, fetching data...')
       try {
         await this.getAppointments()
+        await this.getDentistName()
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
@@ -60,7 +62,11 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments
+      () => {
+        this.getAppointments()
+        this.getDentistName()
+      },
+      { immediate: true }
     )
   },
   methods: {
@@ -80,6 +86,24 @@ export default {
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
+      }
+    },
+    async getDentistName() {
+      try {
+        await subscribeToTopic('authenticationService/dentist/dentistName')
+        publishToTopic('authenticationService/dentist/getDentistName', JSON.parse(localStorage.getItem('UserID')))
+
+        messageArrived((topic, message) => {
+          if (topic === 'authenticationService/dentist/dentistName') {
+            console.log('Recieved dentist name: ', message)
+            this.dentistUsername = message
+            localStorage.setItem('Username', message)
+
+            unsubscribeFromTopic('authenticationService/dentist/dentistName')
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve dentist name: ', error)
       }
     },
     async getClinicId() {

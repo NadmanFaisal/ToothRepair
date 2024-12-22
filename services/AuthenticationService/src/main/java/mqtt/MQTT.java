@@ -42,6 +42,9 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_PATIENT_CANCELLED_APPOINTMENT = "authenticationService/appointment&patient/getCancelledAppointmentInfo";
     private static final String PUBLISHED_DENTIST_CANCELLED_APPOINTMENT = "authenticationService/appointment&dentist/getCancelledAppointmentInfo";
     private static final String PUBLISHED_DENTIST_APPOINTMENT_AVAILABLE = "authenticationService/appointment&dentist/getAvailableAppointmentInfo";
+    private static final String PUBLISHED_PATIENT_NAME = "authenticationService/patient/patientName";
+    private static final String PUBLISHED_DENTIST_NAME = "authenticationService/dentist/dentistName";
+
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
     private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", 
@@ -49,7 +52,7 @@ public class MQTT implements MqttCallback {
     "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", 
     "authenticationService/patient/logout" ,"authenticationService/dentist/logout", 
     "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert",
-    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth", "scheduleService/dentist/sendAvailableIdToAuth" };
+    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth", "scheduleService/dentist/sendAvailableIdToAuth", "authenticationService/patient/getPatientName", "authenticationService/dentist/getDentistName" };
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -366,6 +369,12 @@ public class MQTT implements MqttCallback {
                     middleware.publish(PUBLISHED_DENTIST_APPOINTMENT_AVAILABLE, updatedAppointmentInfo4.getBytes(), 2, false);
                     System.out.println("PUBLISHED UPDATED APPOINTMENT INFO TO NOTIFICATIONSERVICE: " + updatedAppointmentInfo4);
                     break;
+                case "authenticationService/patient/getPatientName":
+                    this.publishPatientName(stringMessage);
+                    break;
+                case "authenticationService/dentist/getDentistName":
+                    this.publishDentistName(stringMessage);
+                    break;
                 default:
                     System.err.println("Unrecognized topic: " + topic);
                     break;
@@ -374,6 +383,47 @@ public class MQTT implements MqttCallback {
             e.printStackTrace();
         }
     }
+
+    private void publishDentistName(String dentistId) {
+        try {
+            System.out.println(dentistId);
+            String dentistName = dentistService.getNameByID(dentistId);
+            if (dentistName != null) {
+                middleware.publish(PUBLISHED_DENTIST_NAME, dentistName.getBytes(), 2, false);
+                totalMsgSent++;
+                System.out.println("Published dentist name: " + dentistName + " for ID: " + dentistId);
+            } else {
+                String errorMessage = "Dentist not found for ID: " + dentistId;
+                middleware.publish(PUBLISHED_DENTIST_NAME, errorMessage.getBytes(), 2, false);
+                totalMsgSent++;
+                System.err.println(errorMessage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to publish dentist name for ID: " + dentistId);
+        }
+    }
+
+    private void publishPatientName(String patientId) {
+        try {
+            System.out.println(patientId);
+            String patientName = patientService.getNameByID(patientId);
+            if (patientName != null) {
+                middleware.publish(PUBLISHED_PATIENT_NAME, patientName.getBytes(), 2, false);
+                totalMsgSent++;
+                System.out.println("Published patient name: " + patientName + " for ID: " + patientId);
+            } else {
+                String errorMessage = "Patient not found for ID: " + patientId;
+                middleware.publish(PUBLISHED_PATIENT_NAME, errorMessage.getBytes(), 2, false);
+                totalMsgSent++;
+                System.err.println(errorMessage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to publish patient name for ID: " + patientId);
+        }
+    }
+    
 
     public void getClinicId(String stringPayload) {
         try {

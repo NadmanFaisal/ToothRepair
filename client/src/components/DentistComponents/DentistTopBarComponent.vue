@@ -19,7 +19,7 @@
         <div class="col-3 settings-container" @click="navigateToSettingsPage">
             <img src="../../assets/notifications.png" class="notification-label">
             <img src="../../assets/profile-picture.png" class="profile-picture">
-            <label class="patient-name-label"> Name of Patient</label>
+            <label class="patient-name-label"> {{ dentistUsername || localstorageUsername }}</label>
         </div>
 
     </div>
@@ -32,14 +32,22 @@ export default {
     return {
       navItems: [
         { name: 'My Appointments', route: 'dentistHomePage' },
-        { name: 'My Bookings', route: '/dentistMyBookingsPage' }
+        { name: 'My Bookings', route: '/dentistMyBookingsPage' },
+        { name: 'System Stats', route: '/systemStats' }
         // Add more navigation items here
-      ]
+      ],
+      localstorageUsername: localStorage.getItem('Username')
+    }
+  },
+  props: {
+    dentistUsername: {
+      type: String,
+      default: null
     }
   },
   methods: {
     navigateToSettingsPage() {
-      this.$router.push('/patientSettingsPage')
+      this.$router.push('/dentistSettingsPage')
     }
   }
 }

@@ -9,6 +9,7 @@ import PatientMyBookingsPage from './views/PatientMyBookingsPage.vue'
 import DentistMyBookingsPage from './views/DentistMyBookingsPage.vue'
 import SystemStatsPage from './views/SystemStatsPage.vue'
 import PatientSettingsPage from './views/PatientSettingsPage.vue'
+import DentistSettingsPage from './views/DentistSettingsPage.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -21,7 +22,8 @@ const routes = [
   { path: '/patientHomePage', name: 'PatientSelectionScreen', component: PatientHomePage, meta: { requiredRole: 'patient' } },
   { path: '/patientMyBookingsPage', name: 'PatientMyBookingsPage', component: PatientMyBookingsPage, meta: { requiredRole: 'patient' } },
   { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiredRole: 'dentist' } },
-  { path: '/patientSettingsPage', name: 'PatientSettingsPage', component: PatientSettingsPage, meta: { requiredRole: 'patient' } }
+  { path: '/patientSettingsPage', name: 'PatientSettingsPage', component: PatientSettingsPage, meta: { requiredRole: 'patient' } },
+  { path: '/dentistSettingsPage', name: 'DentistSettingsPage', component: DentistSettingsPage, meta: { requiredRole: 'dentist' } }
 ]
 
 const router = createRouter({

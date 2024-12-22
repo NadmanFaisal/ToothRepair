@@ -2,7 +2,7 @@
 
     <div class="screen-container">
 
-      <PatientTopBar />
+      <PatientTopBar :patientUsername="patientUsername"/>
 
       <div class="col-9 content-section">
         <div class="col-7 left-section">
@@ -101,13 +101,26 @@ export default {
   data() {
     return {
       clinics: [],
-      selectedClinicName: null
+      selectedClinicName: null,
+      patientUsername: 'Loading...'
     }
   },
   mounted() {
-    client.on('connect', () => {
-      this.getAllClinics()
-    })
+    const connectAndRun = async () => {
+      if (!client.connected) {
+        console.log('Waiting for MQTT connection...')
+        setTimeout(connectAndRun, 500)
+        return
+      }
+      console.log('MQTT connected, fetching data...')
+      try {
+        await this.getAllClinics()
+        await this.getPatientName()
+      } catch (error) {
+        console.error('Error during data fetch:', error)
+      }
+    }
+    connectAndRun()
   },
   methods: {
     selectAClinic(clinic) {
@@ -127,6 +140,24 @@ export default {
           clinicId: this.selectedClinicId
         }
       })
+    },
+    async getPatientName() {
+      try {
+        await subscribeToTopic('authenticationService/patient/patientName')
+        publishToTopic('authenticationService/patient/getPatientName', JSON.parse(localStorage.getItem('UserID')))
+
+        messageArrived((topic, message) => {
+          if (topic === 'authenticationService/patient/patientName') {
+            console.log('Recieved patient name: ', message)
+            this.patientUsername = message
+            localStorage.setItem('Username', message)
+
+            unsubscribeFromTopic('authenticationService/patient/patientName')
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve patient name: ', error)
+      }
     },
     async getAllClinics() {
       try {
@@ -178,7 +209,10 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAllClinics,
+      () => {
+        this.getAllClinics()
+        this.getPatientName()
+      },
       { immediate: true }
     )
   }
