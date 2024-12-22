@@ -70,6 +70,7 @@ export default {
     async getAppointments() {
       try {
         await this.getClinicId()
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.clinicId}"}`)
         console.log('Entered')
@@ -86,7 +87,13 @@ export default {
             console.log('localstorage = ' + this.userId)
             console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
             if (this.getAppointmentStatus) {
-              this.appointments = [...parsedMessage.appointments]
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointments()
+              } else {
+                this.appointments = [...parsedMessage.appointments]
+                this.getAppointmentStatus = null
+              }
             } else {
               if (JSON.parse(this.userId) === parsedMessage.userID) {
                 this.appointments = [...parsedMessage.appointments]
@@ -126,9 +133,9 @@ export default {
       }
     },
     logout() {
-      const PUBLISH_LOGOUT_TOPIC = "logout"
-      const PUBLISH_LOGGED_OUT_USER_ID = "authenticationService/dentist/logout"
-      publishToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System")
+      const PUBLISH_LOGOUT_TOPIC = 'logout'
+      const PUBLISH_LOGGED_OUT_USER_ID = 'authenticationService/dentist/logout'
+      publishToTopic(PUBLISH_LOGOUT_TOPIC, 'User has logged out of the Teeth Repair System')
       publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       unsubscribeFromTopic('client/scheduleService/appointmentInfo')

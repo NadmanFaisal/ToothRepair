@@ -193,7 +193,7 @@ export default {
         console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
-        this.getAppointments()
+        await this.getAppointments()
         alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
