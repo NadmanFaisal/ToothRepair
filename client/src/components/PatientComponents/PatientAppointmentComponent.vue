@@ -189,7 +189,7 @@ export default {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
         this.selectedAppointmentId = null
-        this.triggerGetAppointments()
+        this.$emit('bookedAppointment', 'booking')
         alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime + ' on ' + this.patientSelectedDate)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)

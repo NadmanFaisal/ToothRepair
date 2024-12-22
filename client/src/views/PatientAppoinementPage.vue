@@ -46,7 +46,13 @@ export default {
       clinics: [],
       patientSelectedDate: new Date().toISOString().split('T')[0],
       appointments: [],
-      userId: localStorage.getItem('UserID')
+      userId: localStorage.getItem('UserID'),
+      getAppointmentStatus: this.bookedAppointment
+    }
+  },
+  props: {
+    bookedAppointment: {
+      type: String
     }
   },
   mounted() {
@@ -58,6 +64,7 @@ export default {
       }
       console.log('MQTT connected, fetching data...')
       try {
+        this.getAppointmentStatus = null
         await this.getAllClinics()
         await this.getAppointments()
       } catch (error) {
@@ -84,14 +91,19 @@ export default {
             console.log('What happens when parsing' + parsedMessage)
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.userID) {
+            if (this.getAppointmentStatus === this.bookedAppointment) {
               this.appointments = [...parsedMessage.appointments]
             } else {
-              console.log('Recieved another users request')
+              if (JSON.parse(this.userId) === parsedMessage.userID) {
+                this.appointments = [...parsedMessage.appointments]
+              } else {
+                console.log('Recieved another users request')
+              }
             }
           }
         })
         console.log(`This should be working: ${this.appointments}`)
+        this.getAppointmentStatus = null
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
