@@ -5,36 +5,43 @@ password="1234567890"
 clients=10  # Set the amount of clients you wan to run concurrently (left at 10 because this is very demanding to the local broker, only run 1000s for manual testing)
 
 # Stress-test authentication service (to signup clients)
-for i in $(seq 1 $clients); do
-  email="toothrepair356+$i@gmail.com"
-  payload="{\"name\":\"Taha\",\"email\":\"$email\",\"password\":\"1234567890\"}"
-  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "authenticationService/patient/signup" --client-prefix "mqtt-client-$i" --payload "$payload" &
-done
+#for i in $(seq 1 $clients); do
+#  email="toothrepair356+$i@gmail.com"
+#  payload="{\"name\":\"Taha\",\"email\":\"$email\",\"password\":\"1234567890\"}"
+#  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "authenticationService/patient/signup" --client-prefix "mqtt-client-$i" --payload "$payload" &
+#done
 
-wait
+#wait
 
 # Stress-test authentication service (to login clients)
-for i in $(seq 1 $clients); do
-  email="toothrepair356+$i@gmail.com"
-  payload="{\"name\":\"Vaibhav Puram\",\"email\":\"$email\",\"password\":\"1234567890\"}"
-  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "authenticationService/patient/login" --client-prefix "mqtt-client-$i" --payload "$payload" &
-done
+#for i in $(seq 1 $clients); do
+#  email="toothrepair356+$i@gmail.com"
+#  payload="{\"name\":\"Vaibhav Puram\",\"email\":\"$email\",\"password\":\"1234567890\"}"
+#  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "authenticationService/patient/login" --client-prefix "mqtt-client-$i" --payload "$payload" &
+#done
 
-wait
+#wait
 
 # Stress-test clinic service (get the map)
-for i in $(seq 1 $clients); do
-  payload="{\"Get Clinics $i\"}"
-  #payload="Get Clinics"
-  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "clinicService/clinic/getClinicAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
-done
+#for i in $(seq 1 $clients); do
+#  payload="{\"Get Clinics $i\"}"
+#  #payload="Get Clinics"
+#  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "clinicService/clinic/getClinicAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
+#done
 
-wait
+#wait
 
 # Stress-test schedule service (get appointments)
+#for i in $(seq 1 $clients); do
+#  payload="{\"Get Appointments $i\"}"
+#  #payload="Get Appointments"
+#  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "ScheduleService/Appointment/getAppointments" --client-prefix "mqtt-client-$i" --payload "$payload" &
+#done
+
+# Stress-test schedule service (get available appointments)
 for i in $(seq 1 $clients); do
-  payload="{\"Get Appointments $i\"}"
-  #payload="Get Appointments"
+  payload="{\"Get Available Appointments $i\"}"
+  #payload="Get Available Appointments"
   mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "scheduleService/appointment/getAvailableAppointmentsAlert" --client-prefix "mqtt-client-$i" --payload "$payload" &
 done
 
