@@ -85,7 +85,8 @@ export default {
       userId: localStorage.getItem('UserID'),
       appointments: [],
       clinics: [],
-      subscribedTopics: []
+      subscribedTopics: [],
+      getAppointmentStatus: null
     }
   },
   components: {
@@ -124,12 +125,15 @@ export default {
           this.subscribedTopics.push(topic)
           console.log('Subscribed successfully')
         }
-
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         console.log('Publishing request for appointments...')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
 
         messageArrived((topic, message) => {
           console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
@@ -139,6 +143,10 @@ export default {
             if (JSON.parse(this.userId) === parsedMessage.patient) {
               this.appointments = parsedMessage.appointments
             } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointments()
+              }
               console.log('Recieved another users request')
             }
           }

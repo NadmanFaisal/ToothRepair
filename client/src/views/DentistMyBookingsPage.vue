@@ -50,7 +50,7 @@
 
                         <div v-if="today <= appointment.date" class="col-12 button-container">
                           <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
-                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
+                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
                         </div>
 
                         <div v-else class="col-12 completed-container">
@@ -124,6 +124,7 @@ export default {
           this.subscribedTopics.push(topic)
           console.log('Subscribed successfully')
         }
+        subscribeToTopic('client/scheduleService/getAppointmentStatus')
         console.log('Publishing request for appointments...')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
 
@@ -188,13 +189,12 @@ export default {
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
-    async cancelAppointment(appointment) {
+    async cancelAppointment(appointmentId) {
       try {
-        console.log('Attempting to cancel appointment' + appointment.id)
+        console.log('Attempting to cancel appointment' + appointmentId)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
-        await this.getAppointments()
-        alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
+        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointmentId + '", "dentist": ' + this.userId + '}')
+        this.getAppointments()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
