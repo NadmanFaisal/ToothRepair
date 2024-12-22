@@ -303,6 +303,7 @@ public class MQTT implements MqttCallback {
                     this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "booking");
                     break;
                 }
+                
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
                     System.out.println("Entered makeAppointmentAvailable if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);

@@ -92,7 +92,13 @@ export default {
             console.log('localstorage = ' + this.userId)
             console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
             if (this.getAppointmentStatus) {
-              this.appointments = [...parsedMessage.appointments]
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointments()
+              } else {
+                this.appointments = [...parsedMessage.appointments]
+                this.getAppointmentStatus = null
+              }
             } else {
               if (JSON.parse(this.userId) === parsedMessage.userID) {
                 this.appointments = [...parsedMessage.appointments]
