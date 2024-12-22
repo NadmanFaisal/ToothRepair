@@ -47,12 +47,7 @@ export default {
       patientSelectedDate: new Date().toISOString().split('T')[0],
       appointments: [],
       userId: localStorage.getItem('UserID'),
-      getAppointmentStatus: this.bookedAppointment
-    }
-  },
-  props: {
-    bookedAppointment: {
-      type: String
+      getAppointmentStatus: null
     }
   },
   mounted() {
@@ -78,6 +73,7 @@ export default {
       try {
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.$route.query.clinicId}"}`)
         console.log('Subscribed successfully')
@@ -85,13 +81,17 @@ export default {
         console.log('Setting up message listener...')
         messageArrived((topic, message) => {
           console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = JSON.parse(message)
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
             console.log('What happens when parsing' + parsedMessage)
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
-            if (this.getAppointmentStatus === this.bookedAppointment) {
+            console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
+            if (this.getAppointmentStatus) {
               this.appointments = [...parsedMessage.appointments]
             } else {
               if (JSON.parse(this.userId) === parsedMessage.userID) {

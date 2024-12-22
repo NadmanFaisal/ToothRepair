@@ -25,9 +25,10 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com"/*, "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"*/};
     private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
+    private static final String PUBLISHED_TOPIC_STATUS = "client/scheduleService/getAppointmentStatus";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
@@ -168,7 +169,7 @@ public class MQTT implements MqttCallback {
         try {
             //Publish the payload as bytes to the topic.
             System.out.println(message);
-            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
+            middleware.publish(topic, message.getBytes(), 2, false);
             totalMsgSent++;
         } catch (Exception e) {
             e.printStackTrace();
@@ -246,7 +247,7 @@ public class MQTT implements MqttCallback {
                     if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
                         String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
-                        this.publishAppointmentList(topic, appointmentListJson);
+                        this.publishAppointmentList(PUBLISHED_TOPIC, appointmentListJson);
                     }   
                     break;
                 }
@@ -259,7 +260,7 @@ public class MQTT implements MqttCallback {
                     appointmentInfo.remove("clinic");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(topic, payload);
+                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
                     break;
                 }
 
@@ -271,7 +272,7 @@ public class MQTT implements MqttCallback {
                     appointmentInfo.remove("patient");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(topic, payload);
+                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
                     break;
                 }
 
@@ -283,7 +284,7 @@ public class MQTT implements MqttCallback {
                     appointmentInfo.remove("dentist");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(topic, payload);
+                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
                     break;
                 }
 
@@ -301,6 +302,7 @@ public class MQTT implements MqttCallback {
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
                     middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "booking");
                     break;
                 }
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
@@ -309,6 +311,7 @@ public class MQTT implements MqttCallback {
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "available");
                     break;
                 }
 
@@ -318,6 +321,7 @@ public class MQTT implements MqttCallback {
                     System.out.println(appointmentInfo.toString());
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
+                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "cancelling");
                     break;
                 }
 
@@ -327,6 +331,7 @@ public class MQTT implements MqttCallback {
                     System.out.println(appointmentInfo.toString());
                     middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.patientCancel(appointmentInfo);
+                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "cancelling");
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{

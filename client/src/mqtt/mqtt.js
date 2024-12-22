@@ -10,7 +10,7 @@ const BROKER_URLS = [
     port: 8884,
     protocol: 'wss',
     path: '/mqtt'
-  },
+  }/*,
   {
     host: 'test.mosquitto.org',
     port: 8081,
@@ -22,7 +22,7 @@ const BROKER_URLS = [
     protocol: 'wss',
     path: '/mqtt'
 
-  }
+  }*/
 ]
 
 export let client = mqtt.connect({

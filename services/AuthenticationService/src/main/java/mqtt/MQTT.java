@@ -27,7 +27,7 @@ import main.java.service.PatientService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com"/*, "tcp://test.mosquitto.org", "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.emqx.io"*/};
     private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";

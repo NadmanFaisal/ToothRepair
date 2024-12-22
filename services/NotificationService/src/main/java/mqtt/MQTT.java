@@ -23,7 +23,7 @@ import main.java.service.LogService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com",  "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com"/*, "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"*/};
     private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "notificationService/totalMsgReceived";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
