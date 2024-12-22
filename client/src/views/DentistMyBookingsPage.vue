@@ -117,22 +117,6 @@ export default {
           throw new Error('User ID not found in localStorage')
         }
 
-        messageArrived((topic, message) => {
-          console.log(topic)
-          if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            console.log('recieved: ' + message)
-            const parsedMessage = JSON.parse(message)
-            console.log('What happens when parsing' + parsedMessage)
-            console.log('userid = ' + parsedMessage.userID)
-            console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = parsedMessage.appointments
-            } else {
-              console.log('Recieved another users request')
-            }
-          }
-        })
-
         console.log('Subscribing to topic...')
         const topic = 'Client/ScheduleService/AppointmentInfo'
         if (!this.subscribedTopics.includes(topic)) {
@@ -142,6 +126,22 @@ export default {
         }
         console.log('Publishing request for appointments...')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
+
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.dentist)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.dentist) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              console.log('Recieved another users request')
+            }
+          }
+        })
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }

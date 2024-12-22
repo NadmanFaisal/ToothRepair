@@ -269,7 +269,6 @@ public class MQTT implements MqttCallback {
                     Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
                     String patient = (String)appointmentInfo.get("patient");
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patient);
-                    appointmentInfo.remove("patient");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
                     this.publishAppointmentList(PUBLISHED_TOPIC, payload);
@@ -281,7 +280,6 @@ public class MQTT implements MqttCallback {
                     Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
                     String dentist = (String)appointmentInfo.get("dentist");
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentist);
-                    appointmentInfo.remove("dentist");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
                     this.publishAppointmentList(PUBLISHED_TOPIC, payload);

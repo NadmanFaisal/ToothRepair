@@ -35,7 +35,8 @@ export default {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
       appointments: [],
-      userId: localStorage.getItem('UserID')
+      userId: localStorage.getItem('UserID'),
+      getAppointmentStatus: null
     }
   },
   components: {

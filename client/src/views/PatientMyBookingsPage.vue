@@ -134,10 +134,10 @@ export default {
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
             console.log('What happens when parsing' + parsedMessage)
-            console.log('userid = ' + parsedMessage.userID)
+            console.log('userid = ' + parsedMessage.patient)
             console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = [...parsedMessage.appointments]
+            if (JSON.parse(this.userId) === parsedMessage.patient) {
+              this.appointments = parsedMessage.appointments
             } else {
               console.log('Recieved another users request')
             }
