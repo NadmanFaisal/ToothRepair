@@ -6,10 +6,11 @@ const MAX_RETRIES = 3
 
 const BROKER_URLS = [
   {
-    host: 'broker.hivemq.com',
-    port: 8884,
+    host: 'broker.emqx.io',
+    port: 8084,
     protocol: 'wss',
     path: '/mqtt'
+
   },
   {
     host: 'test.mosquitto.org',
@@ -17,12 +18,11 @@ const BROKER_URLS = [
     protocol: 'wss'
   },
   {
-    host: 'broker.emqx.io',
-    port: 8084,
+    host: 'broker.hivemq.com',
+    port: 8884,
     protocol: 'wss',
     path: '/mqtt'
-
-  }
+  },
 ]
 
 export let client = mqtt.connect({
@@ -114,6 +114,7 @@ function handleReconnection() {
  * @returns {resolve, reject} resolves the Promise or rejects it
  */
 export function subscribeToTopic(topic) {
+  
   return new Promise((resolve, reject) => {
     // Subscribe to a topic
     if (client.connected) {

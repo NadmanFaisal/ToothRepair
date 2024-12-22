@@ -22,8 +22,8 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud" ,"tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
-    private static final String CLIENT_ID = "ScheduleClient5";      // Unique client ID
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.emqx.io"}; // , "tcp://broker.hivemq.com", "tcp://test.mosquitto.org"};
+    private static final String CLIENT_ID = "ScheduleClient3";      // Unique client ID
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
@@ -164,6 +164,7 @@ public class MQTT implements MqttCallback {
     private void publishAppointmentList(String topic, String message){
         try {
             //Publish the payload as bytes to the topic.
+            System.out.println("PUBLSIHING APPOINTMENTS TO THIS TOPIC: " + topic);
             System.out.println(message);
             middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
             totalMsgSent++;
