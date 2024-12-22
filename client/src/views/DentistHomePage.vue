@@ -70,11 +70,18 @@ export default {
         await this.getClinicId()
         console.log('Entered')
         messageArrived((topic, message) => {
+          console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
-            this.appointments = [...parsedMessage]
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              console.log('Recieved another users request')
+            }
           }
         })
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')

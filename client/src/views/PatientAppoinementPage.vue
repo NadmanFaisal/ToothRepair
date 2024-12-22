@@ -59,7 +59,7 @@ export default {
       console.log('MQTT connected, fetching data...')
       try {
         await this.getAllClinics()
-        await this.getAppointments()
+        await this.getAppointments(false)
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
@@ -67,7 +67,7 @@ export default {
     connectAndRun()
   },
   methods: {
-    async getAppointments() {
+    async getAppointments(reactive) {
       try {
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
@@ -84,10 +84,14 @@ export default {
             console.log('What happens when parsing' + parsedMessage)
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = parsedMessage.appointments
+            if (reactive) {
+              this.appointments = [...parsedMessage.appointments]
             } else {
-              console.log('Recieved another users request')
+              if (JSON.parse(this.userId) === parsedMessage.userID) {
+                this.appointments = [...parsedMessage.appointments]
+              } else {
+                console.log('Recieved another users request')
+              }
             }
           }
         })

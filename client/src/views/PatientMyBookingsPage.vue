@@ -109,7 +109,7 @@ export default {
     this.cleanupSubscriptions()
   },
   methods: {
-    async getAppointments() {
+    async getAppointments(reactive) {
       try {
         console.log('Setting up message listener...')
 
@@ -118,12 +118,22 @@ export default {
         }
 
         messageArrived((topic, message) => {
+          console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            console.log('Received appointments for specific patient:', parsedMessage)
-
-            // Updates the appointments list state for reactivity
-            this.appointments = [...parsedMessage]
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (reactive) {
+              this.appointments = [...parsedMessage.appointments]
+            } else {
+              if (JSON.parse(this.userId) === parsedMessage.userID) {
+                this.appointments = [...parsedMessage.appointments]
+              } else {
+                console.log('Recieved another users request')
+              }
+            }
           }
         })
 
@@ -187,7 +197,7 @@ export default {
         console.log('Attempting to cancel appointment' + appointmentId)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointmentId + '", "patient": ' + this.userId + '}')
-        this.getAppointments()
+        this.getAppointments(true)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

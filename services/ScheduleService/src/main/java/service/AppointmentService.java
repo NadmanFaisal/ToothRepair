@@ -114,12 +114,12 @@ public class AppointmentService {
         return appointmentRepository.findByClinic(clinicId);
     }
 
-    public List<AppointmentSchema> getAppointmentsByPatient(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByPatient(appointmentInfo.getPatient());
+    public List<AppointmentSchema> getAppointmentsByPatient(String patientId) {
+        return appointmentRepository.findByPatient(patientId);
     }
 
-    public List<AppointmentSchema> getAppointmentsByDentist(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByDentist(appointmentInfo.getDentist());
+    public List<AppointmentSchema> getAppointmentsByDentist(String dentistId) {
+        return appointmentRepository.findByDentist(dentistId);
     }
 
     public int getTotalnumberOfAvailableAppointments(){

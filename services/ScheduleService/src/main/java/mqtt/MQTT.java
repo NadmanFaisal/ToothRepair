@@ -264,18 +264,26 @@ public class MQTT implements MqttCallback {
                 }
 
                 case "ScheduleService/Appointment/getAppointmentsByPatient": {
-                    System.out.println("Will publish all appointments per patient");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    System.out.println("Will publish all appointments by patient");
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String patient = (String)appointmentInfo.get("patient");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patient);
+                    appointmentInfo.remove("patient");
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(topic, payload);
                     break;
                 }
 
                 case "ScheduleService/Appointment/getAppointmentsByDentist": {
-                    System.out.println("Will publish all appointments per dentist");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    System.out.println("Will publish all appointments by dentist");
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String dentist = (String)appointmentInfo.get("dentist");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentist);
+                    appointmentInfo.remove("dentist");
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(topic, payload);
                     break;
                 }
 
