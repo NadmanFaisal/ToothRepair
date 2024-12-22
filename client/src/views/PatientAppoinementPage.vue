@@ -67,6 +67,10 @@ export default {
     }
     connectAndRun()
   },
+  unmounted() {
+  client.removeAllListeners('message')
+  console.log("This page is Unmounted")
+  },
   methods: {
     async getAppointments() {
       try {

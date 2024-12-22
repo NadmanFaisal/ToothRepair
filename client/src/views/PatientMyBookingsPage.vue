@@ -98,8 +98,8 @@ export default {
     this.$watch(
       () => this.$route,
       () => {
-        this.getAppointmentsByPatient()
-        this.getAllClinics()
+        this.getAppointmentsByPatient,
+        this.getAllClinics
       },
       { immediate: true }
     )
@@ -122,7 +122,9 @@ export default {
     connectAndRun()
   },
   unmounted() {
-    this.cleanupSubscriptions()
+    client.removeAllListeners('message')
+    console.log("This page is Unmounted")
+    // this.cleanupSubscriptions()
   },
   methods: {
     async getAppointmentsByPatient() {
@@ -235,6 +237,7 @@ export default {
         }, 500)
       })
     },
+    /*
     async cleanupSubscriptions() {
       try {
         for (const topic of this.subscribedTopics) {
@@ -247,9 +250,11 @@ export default {
         console.error('Error unsubscribing from topics:', error)
       }
     },
+    */
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
+    
     async cancelAppointment(appointmentId) {
       const confirmation = confirm('Are you sure you want to cancel the appointment?')
       if (!confirmation) {

@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { publishToTopic, unsubscribeFromTopic } from '../mqtt/mqtt.js'
+import { publishToTopic, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
 import PatientTopBarComponent from '../components/PatientComponents/PatientTopBarComponent.vue'
 
 export default {
@@ -31,6 +31,7 @@ export default {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       unsubscribeFromTopic('Client/ScheduleService/AppointmentInfo')
       localStorage.clear()
+      client.removeAllListeners();
       this.$router.push('/login')
     }
   }
