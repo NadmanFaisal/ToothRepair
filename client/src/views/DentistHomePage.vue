@@ -63,21 +63,13 @@ export default {
     client.removeAllListeners('message')
     console.log('This page is Unmounted')
   },
-  created() {
-    this.$watch(
-      () => this.$route,
-      () => {
-        this.getAppointments()
-        this.getDentistName()
-      },
-      { immediate: true }
-    )
-  },
   methods: {
     async getAppointments() {
       try {
         await this.getClinicId()
         console.log('Entered')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             // Check if the receiving message is already a JSON string, if not, parse it
@@ -86,8 +78,6 @@ export default {
             this.appointments = [...parsedMessage]
           }
         })
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

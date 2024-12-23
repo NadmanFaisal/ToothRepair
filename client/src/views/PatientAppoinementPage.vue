@@ -135,7 +135,6 @@ export default {
                     }
                   })
                 })
-                console.log('Here are all the clinics', this.clinics)
               })
               unsubscribeFromTopic('authenticationService/dentist/getDentistNames')
             }

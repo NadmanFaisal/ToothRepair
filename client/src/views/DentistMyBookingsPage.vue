@@ -94,7 +94,9 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments,
+      ()=>{
+      this.getAppointments()
+      },
       { immediate: true }
     )
   },
@@ -115,7 +117,16 @@ export default {
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
-
+        console.log('Subscribing to topic...')
+        const topic = 'Client/ScheduleService/AppointmentInfo'
+        if (!this.subscribedTopics.includes(topic)) {
+          await subscribeToTopic(topic)
+          this.subscribedTopics.push(topic)
+          console.log('Subscribed successfully')
+        }
+        console.log('Publishing request for appointments...')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
+        
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
@@ -126,15 +137,6 @@ export default {
           }
         })
 
-        console.log('Subscribing to topic...')
-        const topic = 'Client/ScheduleService/AppointmentInfo'
-        if (!this.subscribedTopics.includes(topic)) {
-          await subscribeToTopic(topic)
-          this.subscribedTopics.push(topic)
-          console.log('Subscribed successfully')
-        }
-        console.log('Publishing request for appointments...')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
