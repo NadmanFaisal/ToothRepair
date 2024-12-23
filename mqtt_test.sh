@@ -31,6 +31,14 @@ clients=10  # Set the amount of clients you wan to run concurrently (left at 10 
 
 #wait
 
+# Stress-test clinic service (get clinic by clinic id)
+#for i in $(seq 1 $clients); do
+#  payload=$clinic_id
+#  mqtt-benchmark --broker "$broker" --count 1 --clients 1 --insecure --username "Administrator" --password "Vaibhav12Taha" --qos 2 --topic "ClinicService/Clinic/getClinicById" --client-prefix "mqtt-client-$i" --payload "$payload" &
+#done
+
+#wait
+
 # Stress-test schedule service (get appointments)
 #for i in $(seq 1 $clients); do
 #  payload="{\"Get Appointments $i\"}"
