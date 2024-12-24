@@ -47,37 +47,13 @@
             <label class="book-appointment-label">Book Appointment</label>
             <hr>
 
-            <div class="col-12 email-continer">
-              <label class="email-label">Email</label>
-              <input class="form-control email-input">
+            <div class="col-12 map-description-container">
+              <label class="map-description-header">Select Your Clinic</label>
+              <label class="map-description-label">From hundreds of clinics all around Sweden with world class dentists, select your prefered clinic from the map below</label>
             </div>
 
-            <div class="col-12 mobile-container">
-              <label class="mobile-label">Mobile</label>
-              <input class="form-control mobile-input">
-            </div>
-
-            <div class="dropdown clinic-container">
-
-              <label class="clinic-label">Clinic</label>
-              <button
-                class="btn btn-secondary dropdown-toggle clinic-dropdown-button"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                text="Select a clinic"
-                >
-                {{ selectedClinicName || 'Select a clinic' }}
-              </button>
-
-              <ul class="dropdown-menu">
-                <li class="dropdown-item" v-for="clinic in clinics" :key="clinic.id" @click="selectAClinic(clinic)">{{ clinic.name }}</li>
-              </ul>
-
-            </div>
-
-            <div class="col-12 button-container">
-              <button class="col-8 btn show-slot-button" @click="gotToAppointmentPage">Show Slots</button>
+            <div class="col-12 select-map-container">
+              <PatientMapComponent :clinics="clinics"/>
             </div>
 
           </div>
@@ -92,11 +68,13 @@
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
 import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
+import PatientMapComponent from '../components/PatientComponents/PatientMapComponent.vue'
 
 export default {
   name: 'PatientHomePage',
   components: {
-    PatientTopBar
+    PatientTopBar,
+    PatientMapComponent
   },
   data() {
     return {
@@ -320,7 +298,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 4.5%;
+  padding: 5%;
   justify-content: end;
 }
 
@@ -332,10 +310,19 @@ export default {
   background-color: #FFF;
 }
 
-.email-continer, .mobile-container, .clinic-container {
-  height: 20%;
+.map-description-container {
   display: flex;
   flex-direction: column;
+  text-align: start;
+  height: 25%;
+}
+
+.select-map-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60%;
 }
 
 .book-appointment-label {
@@ -347,60 +334,42 @@ export default {
   line-height: normal;
 }
 
-.email-label, .mobile-label, .clinic-label {
-  color: #515151;
+.map-description-header {
+  color: #015C5C;
   font-family: Inter;
   font-size: 24px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   line-height: normal;
   text-align: start;
 }
 
-.clinic-dropdown-button {
-  border-radius: 15px;
-  border: 1px solid #D2D1D1;
-  background: #FFF;
-  width: 100%;
-
-  color: #BBB9B9;
-  text-align: left;
+.map-description-label {
+  padding-top: 5px;
+  color: #015C5C;
   font-family: Inter;
-  font-size: 20px;
+  font-size: 19px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 200;
   line-height: normal;
+  text-align: start;
 }
 
-.dropdown-item {
-  text-align: left;
-  font-family: Inter;
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+@media (max-width: 1380px) {
+  .map-description-label {
+    padding-top: 5px;
+    font-size: 17px;
+  }
 }
 
-.button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 20%;
-}
+@media (max-width: 1200px) {
+  .map-description-header {
+    font-size: 22px;
+  }
 
-.show-slot-button {
-  border-radius: 15px;
-  background: #1FC2C2 !important;
-  box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
-
-  color: #FFF !important;
-  text-align: center;
-  font-family: Inter;
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+  .map-description-label {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -410,6 +379,20 @@ export default {
 
   .description-content-label {
     font-size: 20px;
+  }
+
+  .map-description-header {
+    font-size: 20px;
+  }
+
+  .map-description-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 930px) {
+  .map-description-header {
+    font-size: 18px;
   }
 }
 
@@ -440,5 +423,24 @@ export default {
   .right-section {
     width: 100%;
   }
+
+  .map-description-header {
+    font-size: 24px;
+  }
+
+  .map-description-label {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .map-description-header {
+    font-size: 18px;
+  }
+
+  .map-description-label {
+    font-size: 15px;
+  }
+
 }
 </style>
