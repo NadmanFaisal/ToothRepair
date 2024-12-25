@@ -20,7 +20,7 @@ frontend-build:
 # Stress-tests MQTT & the system (if its running)
 stress-test-mqtt:
   stage: test
-  image: ubuntu:latest
+  image: ubuntu:22.04
   tags:
     - docker
   before_script:
