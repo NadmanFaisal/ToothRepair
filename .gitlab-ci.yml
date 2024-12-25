@@ -30,7 +30,7 @@ stress-test-mqtt:
     # Add MongoDB to Ubuntu and then install mongosh
     - apt-get update && apt-get install -y gnupg
     - curl -fsSL https://pgp.mongodb.com/server-6.0.asc | apt-key add -
-    - echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+    - echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
     - apt-get update && apt-get install -y mongodb-mongosh 
 
     # Install Go
