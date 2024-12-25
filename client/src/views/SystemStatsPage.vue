@@ -49,18 +49,20 @@ export default {
     })
   },
   unmounted() {
-  client.removeAllListeners('message')
-  console.log("This page is Unmounted")
+    client.removeAllListeners('message')
+    console.log('This page is Unmounted')
   },
   created() {
     this.$watch(
       () => this.$route,
-      this.getUserCount,
-      this.getAvailableAppointmentsCount,
-      this.getTotalMessagesAuth,
-      this.getTotalMessagesClinic,
-      this.getTotalMessagesSchedule,
-      this.getTotalMessagesNotification,
+      () => {
+        this.getUserCount()
+        this.getAvailableAppointmentsCount()
+        this.getTotalMessagesAuth()
+        this.getTotalMessagesClinic()
+        this.getTotalMessagesSchedule()
+        this.getTotalMessagesNotification()
+      },
       { immediate: true }
     )
   },

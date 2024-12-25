@@ -49,7 +49,7 @@
 
             <div class="col-12 map-description-container">
               <label class="map-description-header">Select Your Clinic</label>
-              <label class="map-description-label">From hundreds of clinics all around Sweden with world class dentists, select your prefered clinic from the map below</label>
+              <label class="map-description-label">From hundreds of clinics all around Sweden with world class dentists, select your prefered clinic from the map</label>
             </div>
 
             <div class="col-12 select-map-container">
