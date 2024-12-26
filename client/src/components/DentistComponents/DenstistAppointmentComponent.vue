@@ -193,7 +193,7 @@ export default {
         publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
-        alert("Successfully made a " + this.selectAppointmentStartTime + " AM appointment slot available on " + this.dentistSelectedDate)
+        alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

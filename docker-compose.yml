@@ -1,22 +1,38 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  client:
+  authentication-service:
     build:
-      context: ./client
+      context: services/AuthenticationService
+      dockerfile: dockerfile
     ports:
-      - "8080:80" # Vue.js frontend exposed on port 8080
+      - "8081:8080"
+    container_name: authentication-service
+    restart: always
 
-  backend:
+  clinic-service:
     build:
-      context: ./server
+      context: services/ClinicService
+      dockerfile: dockerfile
     ports:
-      - "3000:3000" # Backend API exposed on port 3000
-    depends_on:
-      - mongo
+      - "8082:8080"
+    container_name: clinic-service
+    restart: always
 
-  mongo:
-    image: mongo
-    container_name: mongo
+  notification-service:
+    build:
+      context: services/NotificationService
+      dockerfile: dockerfile
     ports:
-      - "27017:27017" # MongoDB exposed on default port 27017
+      - "8083:8080"
+    container_name: notification-service
+    restart: always
+
+  schedule-service:
+    build:
+      context: services/ScheduleService
+      dockerfile: dockerfile
+    ports:
+      - "8084:8080"
+    container_name: schedule-service
+    restart: always

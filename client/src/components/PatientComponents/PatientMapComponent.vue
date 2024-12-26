@@ -28,6 +28,7 @@ export default {
     navigateToClinic(clinic) {
       console.log('Will work')
       console.log(clinic.name)
+      localStorage.setItem('ClinicID', clinic.id)
       this.$router.push({
         path: '/patientAppointmentPage',
         query: {
@@ -123,10 +124,9 @@ export default {
 .map-container {
   display: flex;
   max-width: 100%;
-  height: 50%;
+  height: 100%;
   position: relative;
   overflow: hidden;
-  padding: 40px;
 }
 
 .map-content-container {
@@ -142,17 +142,15 @@ export default {
 @media (max-width: 1260px) {
   .map-container {
     height: 100%;
-    max-width: 50%;
-    padding: 40px;
+    max-width: 100%;
   }
 
 }
 
 @media (max-width: 800px) {
   .map-container {
-    height: 50%;
+    height: 100%;
     max-width: 100%;
-    padding: 40px;
   }
 
 }

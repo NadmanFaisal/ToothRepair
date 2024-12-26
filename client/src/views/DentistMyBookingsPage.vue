@@ -1,6 +1,5 @@
 <template>
     <div class="col-12 screen-container">
-        <BButton @click="logout"> Log Out button</BButton>
 
         <DentistTopBar />
 
@@ -95,7 +94,9 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments,
+      ()=>{
+      this.getAppointments()
+      },
       { immediate: true }
     )
   },
@@ -116,7 +117,16 @@ export default {
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
-
+        console.log('Subscribing to topic...')
+        const topic = 'Client/ScheduleService/AppointmentInfo'
+        if (!this.subscribedTopics.includes(topic)) {
+          await subscribeToTopic(topic)
+          this.subscribedTopics.push(topic)
+          console.log('Subscribed successfully')
+        }
+        console.log('Publishing request for appointments...')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
+        
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
@@ -127,15 +137,6 @@ export default {
           }
         })
 
-        console.log('Subscribing to topic...')
-        const topic = 'Client/ScheduleService/AppointmentInfo'
-        if (!this.subscribedTopics.includes(topic)) {
-          await subscribeToTopic(topic)
-          this.subscribedTopics.push(topic)
-          console.log('Subscribed successfully')
-        }
-        console.log('Publishing request for appointments...')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
@@ -183,21 +184,20 @@ export default {
       console.log('reshceduling: ', appointmentId)
     },
     async cancelAppointment(appointment) {
+      const confirmation = confirm('This has already been booked by patients. Do you want to cancel it?')
+      if (!confirmation) {
+        return
+      }
+
       try {
         console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
         this.getAppointments()
-        alert("Cancelled an Appointment at " + appointment.startTime + " on " + appointment.date)
+        alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
-    },
-    logout() {
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
     },
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')

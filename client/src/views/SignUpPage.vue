@@ -41,7 +41,7 @@
 
               <div class="col-12 password-section">
                 <label class="password-label">Password</label>
-                <input class="form-control password-input" v-model="password" placeholder="**********">
+                <input type="password" class="form-control password-input" v-model="password" placeholder="**********">
               </div>
 
             </div>
@@ -55,7 +55,7 @@
 
               <div class="col-12 confirm-password-section">
                 <label class="confirm-password-label">Confirm Password</label>
-                <input class="form-control confirm-password-input" v-model="confirmPassword" placeholder="**********">
+                <input type="password" class="form-control confirm-password-input" v-model="confirmPassword" placeholder="**********">
               </div>
 
             </div>

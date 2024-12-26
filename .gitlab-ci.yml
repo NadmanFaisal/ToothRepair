@@ -17,22 +17,34 @@ frontend-build:
     paths:
       - client/dist
 
+# Stress-tests MQTT & the system (if its running)
 stress-test-mqtt:
   stage: test
-  image: ubuntu:latest
+  image: ubuntu:22.04
   tags:
     - docker
   before_script:
-    - apt-get update && apt-get install -y curl git #Install curl
-    - curl -LO https://go.dev/dl/go1.23.4.linux-amd64.tar.gz #Install go
-    - tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz #open file
+    # Install curl
+    - apt-get update && apt-get install -y curl git
+
+    # Add MongoDB to Ubuntu and then install mongosh
+    - apt-get update && apt-get install -y gnupg
+    - curl -fsSL https://pgp.mongodb.com/server-6.0.asc | apt-key add -
+    - echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+    - apt-get update && apt-get install -y mongodb-mongosh 
+
+    # Install Go
+    - curl -LO https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
+    - tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz # open file
     - export PATH=$PATH:/usr/local/go/bin
     - go version
-    - go install github.com/krylovsk/mqtt-benchmark@main # Install stress-test tool
+    
+    # Install stress-test tool
+    - go install github.com/krylovsk/mqtt-benchmark@main
     - export PATH=$PATH:$(go env GOPATH)/bin
   script:
-    - chmod +x mqtt_test.sh #execute stress-test bash
-    - ./mqtt_test.sh #start bash
+    - chmod +x mqtt_test.sh # Execute stress-test bash
+    - ./mqtt_test.sh # Start bash
 
 # Builds the authentication service
 Authentication-service-build:

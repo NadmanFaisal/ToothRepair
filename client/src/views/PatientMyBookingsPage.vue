@@ -1,6 +1,5 @@
 <template>
   <div class="col-12 screen-container">
-      <BButton @click="logout"> Log Out button</BButton>
 
       <PatientTopBar />
 
@@ -66,6 +65,7 @@
               </div>
 
               <div class="maps-container">
+                <PatientMapComponent :clinics="clinics" />
               </div>
 
           </div>
@@ -76,6 +76,7 @@
 
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
+import PatientMapComponent from '../components/PatientComponents/PatientMapComponent.vue'
 import { subscribeToTopic, messageArrived, unsubscribeFromTopic, publishToTopic, client } from '../mqtt/mqtt'
 
 export default {
@@ -89,27 +90,42 @@ export default {
     }
   },
   components: {
-    PatientTopBar
+    PatientTopBar,
+    PatientMapComponent
   },
 
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments,
-      { immediate: true }
+      this.getAppointmentsByPatient,
+      this.getAllClinics
     )
   },
   mounted() {
-    client.on('connect', () => {
-      this.getAppointments()
-      console.log(this.appointments)
-    })
+    const connectAndRun = async () => {
+      if (!client.connected) {
+        console.log('Waiting for MQTT connection...')
+        setTimeout(connectAndRun, 500)
+        return
+      }
+      console.log('MQTT connected, fetching data...')
+      try {
+        await this.getAllClinics()
+        await this.getAppointmentsByPatient()
+      } catch (error) {
+        console.error('Error during data fetch:', error)
+      }
+    }
+    connectAndRun()
   },
   unmounted() {
-    this.cleanupSubscriptions()
+    client.removeAllListeners('message')
+    client.removeAllListeners('connect')
+    console.log('This page is Unmounted')
+    // this.cleanupSubscriptions()
   },
   methods: {
-    async getAppointments() {
+    async getAppointmentsByPatient() {
       try {
         console.log('Setting up message listener...')
 
@@ -137,10 +153,10 @@ export default {
         console.log('Publishing request for appointments...')
         publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
       } catch (error) {
-        console.error('Error in getAppointments:', error)
+        console.error('Error in getAppointmentsByPatient:', error)
       }
     },
-    async getClinic(clinicId) {
+    async getClinicForAppointments(clinicId) {
       try {
         console.log('Setting up message listener for clinic info...')
 
@@ -167,6 +183,59 @@ export default {
         console.error('Error in getClinic:', error)
       }
     },
+    async getAllClinics() {
+      try {
+        await subscribeToTopic('clinicService/clinics/getClinicList')
+        await subscribeToTopic('authenticationService/dentist/getDentistNames')
+        publishToTopic('clinicService/clinic/getClinicAlert', 'Get Clinics')
+
+        messageArrived((topic, message) => {
+          if (topic === 'clinicService/clinics/getClinicList') {
+            console.log('Recieved clinic list: ', message)
+            this.clinics = JSON.parse(message)
+            if (this.clinics) {
+              this.clinics.forEach(clinic => {
+                clinic.dentists = clinic.dentists.map(dentistId => ({
+                  dentistId,
+                  dentistName: ''
+                }))
+              })
+              const allDentistIds = this.clinics.flatMap(clinic => clinic.dentists.map(d => d.dentistId))
+              console.log('dentistIds: ', allDentistIds)
+              publishToTopic('authenticationService/dentist/getDentistNamesAlert', JSON.stringify(allDentistIds))
+            }
+
+            unsubscribeFromTopic('clinicService/clinics/getClinicList')
+          } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            const newMessage = JSON.parse(message)
+            console.log('fixed message: ', newMessage)
+            if (message) {
+              newMessage.forEach(dentistData => {
+                this.clinics.forEach(clinic => {
+                  clinic.dentists.forEach(dentist => {
+                    if (dentist.dentistId === dentistData.id) {
+                      dentist.dentistName = dentistData.name
+                      console.log('Dentist id: ' + dentist.dentistId + 'Dentist name: ' + dentist.dentistName)
+                    }
+                  })
+                })
+                console.log('Here are all the clinics', this.clinics)
+              })
+              unsubscribeFromTopic('authenticationService/dentist/getDentistNames')
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve all clinics: ', error)
+      }
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log('Clinic ID fetched')
+          resolve()
+        }, 500)
+      })
+    },
+    /*
     async cleanupSubscriptions() {
       try {
         for (const topic of this.subscribedTopics) {
@@ -179,24 +248,25 @@ export default {
         console.error('Error unsubscribing from topics:', error)
       }
     },
+    */
     rescheduleAppointment(appointmentId) {
       console.log('reshceduling: ', appointmentId)
     },
+
     async cancelAppointment(appointmentId) {
+      const confirmation = confirm('Are you sure you want to cancel the appointment?')
+      if (!confirmation) {
+        return
+      }
+
       try {
         console.log('Attempting to cancel appointment' + appointmentId)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointmentId + '", "patient": ' + this.userId + '}')
-        this.getAppointments()
+        this.getAppointmentsByPatient()
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
-    },
-    logout() {
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
     },
     navigateToHomePage() {
       this.$router.push('/patientHomePage')

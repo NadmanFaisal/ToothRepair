@@ -1,8 +1,7 @@
 <template>
     <div class="screen-container">
-        <BButton @click="logout"> Log Out button</BButton>
 
-        <DentistTopBarComponent />
+        <DentistTopBarComponent :dentistUsername="dentistUsername" />
 
         <div class="col-12 content-section">
 
@@ -34,7 +33,8 @@ export default {
     return {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
-      appointments: []
+      appointments: [],
+      dentistUsername: 'Loading...'
     }
   },
   components: {
@@ -52,23 +52,24 @@ export default {
       console.log('MQTT connected, fetching data...')
       try {
         await this.getAppointments()
+        await this.getDentistName()
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
     }
     connectAndRun()
   },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments
-    )
+  unmounted() {
+    client.removeAllListeners('message')
+    console.log('This page is Unmounted')
   },
   methods: {
     async getAppointments() {
       try {
         await this.getClinicId()
         console.log('Entered')
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             // Check if the receiving message is already a JSON string, if not, parse it
@@ -77,10 +78,26 @@ export default {
             this.appointments = [...parsedMessage]
           }
         })
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
+      }
+    },
+    async getDentistName() {
+      try {
+        await subscribeToTopic('authenticationService/dentist/dentistName')
+        publishToTopic('authenticationService/dentist/getDentistName', JSON.parse(localStorage.getItem('UserID')))
+
+        messageArrived((topic, message) => {
+          if (topic === 'authenticationService/dentist/dentistName') {
+            console.log('Recieved dentist name: ', message)
+            this.dentistUsername = message
+            localStorage.setItem('Username', message)
+
+            unsubscribeFromTopic('authenticationService/dentist/dentistName')
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve dentist name: ', error)
       }
     },
     async getClinicId() {
@@ -108,16 +125,6 @@ export default {
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
-    },
-    logout() {
-      const PUBLISH_LOGOUT_TOPIC = "logout"
-      const PUBLISH_LOGGED_OUT_USER_ID = "authenticationService/dentist/logout"
-      publishToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System")
-      publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
     },
     updateSelectedDate(date) {
       console.log('Parent received selectedDate from child:', date)
