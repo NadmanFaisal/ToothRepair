@@ -2,6 +2,7 @@ package main.java.mqtt;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,12 +25,12 @@ import main.java.service.ClinicService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com" ,"tcp://broker.emqx.io" , "tcp://test.mosquitto.org"};    
-    private static final String CLIENT_ID = "ClinicClient";      // Unique client ID
+    private static final String CLIENT_ID = "ClinicClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOPIC_CLINICS = "clinicService/clinics/getClinicList";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "clinicService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "clinicService/totalMsgReceived";
     private final ClinicService clinicService; // CRUD Operations for the clinic database
-    private static final String[] SUBSCRIBED_TOPICS = {"clinicService/clinic/getClinicAlert", "clinicService/dentist/addDentist", "clinicService/clinic/createClinic", "ClinicService/Clinic/getClinicById", "clinicService/totalMsgSentAlert", "clinicService/totalMsgReceivedAlert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"$share/clinicReplica/clinicService/clinic/getClinicAlert", "$share/clinicReplica/clinicService/dentist/addDentist", "$share/clinicReplica/clinicService/clinic/createClinic", "$share/clinicReplica/ClinicService/Clinic/getClinicById", "$share/clinicReplica/clinicService/totalMsgSentAlert", "$share/clinicReplica/clinicService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();

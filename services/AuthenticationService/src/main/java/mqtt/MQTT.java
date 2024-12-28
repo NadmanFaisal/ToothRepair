@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,7 +29,7 @@ import main.java.service.PatientService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://broker.emqx.io", "tcp://test.mosquitto.org"};
-    private static final String CLIENT_ID = "AuthenticationServiceClient";      // Unique client ID
+    private static final String CLIENT_ID = "AuthenticationServiceClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_STATUS_TOPIC = "authenticationService/dentist&patient/status";
     private static final String PUBLISHED_CLINIC_TOPIC = "clinicService/dentist/addDentist";
     private static final String PUBLISHED_LOGIN_TOPIC = "authenticationService/alert/login";
@@ -47,12 +48,12 @@ public class MQTT implements MqttCallback {
 
     private final PatientService patientService; // CRUD Operations for the patient database
     private final DentistService dentistService; // CRUD Operations for the dentist  database
-    private static final String[] SUBSCRIBED_TOPICS = { "authenticationService/patient/signup", "authenticationService/dentist/signup", 
-    "authenticationService/patient/login", "authenticationService/dentist/login", 
-    "authenticationService/dentist/getDentistNamesAlert", "AuthenticationService/Dentist/GetClinicId", 
-    "authenticationService/patient/logout" ,"authenticationService/dentist/logout", 
-    "authenticationService/users/getActiveUsersAlert", "authenticationService/totalMsgSentAlert", "authenticationService/totalMsgReceivedAlert",
-    "scheduleService/dentist&patient/sendBookingIdToAuth", "scheduleService/patient/sendCancellingIdToAuth", "scheduleService/dentist/sendCancellingIdToAuth", "scheduleService/dentist/sendAvailableIdToAuth", "authenticationService/patient/getPatientName", "authenticationService/dentist/getDentistName" };
+    private static final String[] SUBSCRIBED_TOPICS = { "$share/authenticationReplica/authenticationService/patient/signup", "$share/authenticationReplica/authenticationService/dentist/signup", 
+    "$share/authenticationReplica/authenticationService/patient/login", "$share/authenticationReplica/authenticationService/dentist/login", 
+    "$share/authenticationReplica/authenticationService/dentist/getDentistNamesAlert", "$share/authenticationReplica/AuthenticationService/Dentist/GetClinicId", 
+    "$share/authenticationReplica/authenticationService/patient/logout" ,"$share/authenticationReplica/authenticationService/dentist/logout", 
+    "$share/authenticationReplica/authenticationService/users/getActiveUsersAlert", "$share/authenticationReplica/authenticationService/totalMsgSentAlert", "$share/authenticationReplica/authenticationService/totalMsgReceivedAlert",
+    "$share/authenticationReplica/scheduleService/dentist&patient/sendBookingIdToAuth", "$share/authenticationReplica/scheduleService/patient/sendCancellingIdToAuth", "$share/authenticationReplica/scheduleService/dentist/sendCancellingIdToAuth", "$share/authenticationReplica/scheduleService/dentist/sendAvailableIdToAuth", "$share/authenticationReplica/authenticationService/patient/getPatientName", "$share/authenticationReplica/authenticationService/dentist/getDentistName" };
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private ObjectMapper objectMapper = new ObjectMapper();

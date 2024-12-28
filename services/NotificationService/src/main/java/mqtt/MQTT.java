@@ -1,8 +1,8 @@
 package main.java.mqtt;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,13 +25,13 @@ import main.java.service.LogService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com", "tcp://broker.emqx.io", "tcp://test.mosquitto.org"};    
-    private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
+    private static final String CLIENT_ID = "LogAndNotificationServiceClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "notificationService/totalMsgReceived";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
-    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", 
-    "authenticationService/appointment/getAppointmentInfo", "authenticationService/appointment&patient/getCancelledAppointmentInfo", 
-    "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
-    "notificationService/totalMsgReceivedAlert", "notificationService/totalMsgSentAlert" };
+    private static final String[] SUBSCRIBED_TOPICS = {"$share/notificationReplica/authenticationService/dentist&patient/userID", "$share/notificationReplica/logout", 
+    "$share/notificationReplica/authenticationService/appointment/getAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&patient/getCancelledAppointmentInfo", 
+    "$share/notificationReplica/authenticationService/appointment&dentist/getCancelledAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
+    "$share/notificationReplica/notificationService/totalMsgReceivedAlert", "$share/notificationReplica/notificationService/totalMsgSentAlert" };
     private final LogService logService;
     private final EmailService emailService;
     private LogSchema log;

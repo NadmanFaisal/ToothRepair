@@ -1,5 +1,6 @@
 package main.java.mqtt;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,7 +24,7 @@ import main.java.service.AppointmentService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
-    private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
+    private static final String CLIENT_ID = "ScheduleClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
@@ -33,11 +34,11 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_ENTITY_IDS_DENTIST_CANCEL = "scheduleService/dentist/sendCancellingIdToAuth";
     private static final String PUBLISHED_ENTITY_IDS_DENTIST = "scheduleService/dentist/sendAvailableIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
-     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
-     "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
-     "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert", "scheduleService/totalMsgSentAlert", "scheduleService/totalMsgReceivedAlert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"$share/scheduleReplica/ScheduleService/Appointment/getAppointments",
+     "$share/scheduleReplica/ScheduleService/Appointment/createAppointment", "$share/scheduleReplica/ScheduleService/Appointment/bookAppointment",
+     "$share/scheduleReplica/ScheduleService/Appointment/makeAppointmentAvailable", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByClinic",
+     "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByPatient", "$share/scheduleReplica/ScheduleService/Appointment/dentistCancelAppointments",
+    "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist", "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert", "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
