@@ -452,9 +452,9 @@ export default {
   flex-direction: column;
   height: 80%;
   width: 38%;
-  padding: 10px;
   background: #FBFBFB;
-  margin: 15px;
+  margin-top: 15px;
+  margin-left: 1%;
   }
 
   .reschedule-button {
