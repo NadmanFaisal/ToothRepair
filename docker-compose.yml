@@ -4,7 +4,7 @@ services:
   authentication-service:
     image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service:latest
     deploy:
-      replicas: 3  # 3 instances of authentication-service
+      replicas: 3
       restart_policy:
         condition: on-failure
     ports:
@@ -15,7 +15,7 @@ services:
   clinic-service:
     image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service:latest
     deploy:
-      replicas: 3  # 2 instances of clinic-service
+      replicas: 3
       restart_policy:
         condition: on-failure
     ports:
@@ -26,7 +26,7 @@ services:
   notification-service:
     image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/notification-service:latest
     deploy:
-      replicas: 2  # 3 instances of notification-service
+      replicas: 2
       restart_policy:
         condition: on-failure
     ports:
@@ -37,7 +37,7 @@ services:
   schedule-service:
     image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service:latest
     deploy:
-      replicas: 4  # 4 instances of schedule-service
+      replicas: 4
       restart_policy:
         condition: on-failure
     ports:

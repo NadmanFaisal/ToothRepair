@@ -162,10 +162,10 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws MqttException prints the Error Stack trace
      */
-    private void publishAppointmentList(String topic, String message){
+    private void publishAppointmentList(String message){
         try {
             //Publish the payload as bytes to the topic.
-            System.out.println("PUBLSIHING APPOINTMENTS TO THIS TOPIC: " + topic);
+            System.out.println("PUBLSIHING APPOINTMENTS TO THIS TOPIC: " + PUBLISHED_TOPIC);
             System.out.println(message);
             middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
             totalMsgSent++;
@@ -245,7 +245,7 @@ public class MQTT implements MqttCallback {
                     if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
                         String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
-                        this.publishAppointmentList(topic, appointmentListJson);
+                        this.publishAppointmentList(appointmentListJson);
                     }   
                     break;
                 }
@@ -254,7 +254,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Will publish all appointments per clinic");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    this.publishAppointmentList(appointmentListJson);
                     break;
                 }
 
@@ -262,7 +262,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Will publish all appointments per patient");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    this.publishAppointmentList(appointmentListJson);
                     break;
                 }
 
@@ -270,7 +270,7 @@ public class MQTT implements MqttCallback {
                     System.out.println("Will publish all appointments per dentist");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
-                    this.publishAppointmentList(topic, appointmentListJson);
+                    this.publishAppointmentList(appointmentListJson);
                     break;
                 }
 
@@ -287,6 +287,8 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
@@ -295,6 +297,8 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
@@ -303,8 +307,10 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered dentist cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
+                    this.publishAppointmentList(appointmentListJson);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
 
@@ -312,8 +318,10 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered patient cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
-                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.patientCancel(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
+                    this.publishAppointmentList(appointmentListJson);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{

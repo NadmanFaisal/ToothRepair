@@ -112,6 +112,7 @@ export default {
       localStorage.setItem('ClinicID', this.selectedClinicId)
       console.log(this.selectedClinicId)
     },
+    // Navigation to appointmentPage not allowed without selecting clinic
     gotToAppointmentPage() {
       if (!localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic')
@@ -124,6 +125,7 @@ export default {
         }
       })
     },
+    // Patient name fetched to send to TOPBAR
     async getPatientName() {
       try {
         await subscribeToTopic('authenticationService/patient/patientName')
@@ -132,7 +134,9 @@ export default {
         messageArrived((topic, message) => {
           if (topic === 'authenticationService/patient/patientName') {
             console.log('Recieved patient name: ', message)
+            // Variable set if the message arrives
             this.patientUsername = message
+            // Local storage set if the message arrives
             localStorage.setItem('Username', message)
 
             unsubscribeFromTopic('authenticationService/patient/patientName')
@@ -142,6 +146,7 @@ export default {
         console.error('Tried to retrieve patient name: ', error)
       }
     },
+    // All clinics fetched for displaying clinic in the map
     async getAllClinics() {
       try {
         await subscribeToTopic('clinicService/clinics/getClinicList')
@@ -166,6 +171,7 @@ export default {
 
             unsubscribeFromTopic('clinicService/clinics/getClinicList')
           } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            // Dentist names fetched to show dentists in the individual clinics inside the map
             const newMessage = JSON.parse(message)
             console.log('fixed message: ', newMessage)
             if (message) {

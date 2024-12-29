@@ -90,7 +90,6 @@ export default {
             this.appointments = [...JSON.parse(message)]
           }
         })
-        console.log(`This should be working: ${this.appointments}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }

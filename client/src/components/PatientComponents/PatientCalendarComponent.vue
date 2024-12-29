@@ -40,19 +40,23 @@ export default {
     }
   },
   watch: {
+    // Watches for new appointments
     appointments: {
       immediate: true,
       handler(newAppointments) {
+        // If there are new appoinemtnts, updateEvents method called
         this.updateEvents(newAppointments)
       }
     }
   },
   methods: {
+    // The new selected date is emitted to parent components
     updateSelectedDate(date) {
       this.selectedDate = new Date(date).toISOString().split('T')[0]
       this.$emit('patientSelectedDate', this.selectedDate)
       console.log('Emitting selectedDate from child:', this.selectedDate)
     },
+    // Updates the event field of the calendar for allowing counting in the calendar
     updateEvents(appointments) {
       // Update the events field with new appointments upon change in prop
       this.events = []

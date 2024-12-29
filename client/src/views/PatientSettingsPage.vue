@@ -23,6 +23,7 @@ export default {
     PatientTopBarComponent
   },
   methods: {
+    // Destroys saved data upon logging out, as well as removes all types of listeners
     logout() {
       const PUBLISH_LOGOUT_TOPIC = 'logout'
       const PUBLISH_LOGGED_OUT_USER_ID = 'authenticationService/patient/logout'
