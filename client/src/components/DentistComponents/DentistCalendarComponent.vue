@@ -31,6 +31,7 @@ export default {
     VueCal
   },
   methods: {
+    // New selected date is emitted to parent component
     updateSelectedDate(date) {
       this.selectedDate = new Date(date).toISOString().split('T')[0]
       this.$emit('dentistSelectedDate', this.selectedDate)

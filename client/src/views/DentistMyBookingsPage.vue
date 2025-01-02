@@ -48,7 +48,6 @@
                       <div class="col-3 status-container">
 
                         <div v-if="today <= appointment.date" class="col-12 button-container">
-                          <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
                           <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                         </div>
 
@@ -94,8 +93,8 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      ()=>{
-      this.getAppointments()
+      () => {
+        this.getAppointments()
       },
       { immediate: true }
     )
@@ -112,21 +111,21 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        console.log('Setting up message listener...')
-
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
-        console.log('Subscribing to topic...')
+
         const topic = 'Client/ScheduleService/AppointmentInfo'
+        // If a same topic has been subscribed, does not subscribe any further
         if (!this.subscribedTopics.includes(topic)) {
           await subscribeToTopic(topic)
           this.subscribedTopics.push(topic)
           console.log('Subscribed successfully')
         }
         console.log('Publishing request for appointments...')
+        // Publishes userID to receive appointments for that specific user
         publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
-        
+
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
@@ -136,7 +135,6 @@ export default {
             this.appointments = [...parsedMessage]
           }
         })
-
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
@@ -180,11 +178,8 @@ export default {
         console.error('Error unsubscribing from topics:', error)
       }
     },
-    rescheduleAppointment(appointmentId) {
-      console.log('reshceduling: ', appointmentId)
-    },
     async cancelAppointment(appointment) {
-      const confirmation = confirm('This has already been booked by patients. Do you want to cancel it?')
+      const confirmation = confirm('Are you sure you want to cancel it?')
       if (!confirmation) {
         return
       }
@@ -192,8 +187,8 @@ export default {
       try {
         console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        // Publishes the appointmentID and userID for cancelling appointments
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
-        this.getAppointments()
         alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
@@ -202,6 +197,7 @@ export default {
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')
     },
+    // Date is taken and the corresponding month and day is shown in the bookings page
     formatAppointmentDate(dateString) {
       const date = new Date(dateString)
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -215,6 +211,7 @@ export default {
       const dayOfMonth = date.getDate()
       const ordinal = this.getOrdinal(dayOfMonth)
 
+      // Returns the value of day and its ordinal, as well as month
       return {
         day: `${dayOfMonth}${ordinal}`,
         monthAndDay: `${month}, ${day}`
@@ -455,9 +452,9 @@ export default {
   flex-direction: column;
   height: 80%;
   width: 38%;
-  padding: 10px;
   background: #FBFBFB;
-  margin: 15px;
+  margin-top: 15px;
+  margin-left: 1%;
   }
 
   .reschedule-button {

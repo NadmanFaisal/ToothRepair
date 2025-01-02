@@ -2,37 +2,45 @@ version: '3.9'
 
 services:
   authentication-service:
-    build:
-      context: services/AuthenticationService
-      dockerfile: dockerfile
+    image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/authentication-service:latest
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     ports:
       - "8081:8080"
-    container_name: authentication-service
-    restart: always
+    environment:
+      - CLIENT_ID=auth-service-${HOSTNAME}
 
   clinic-service:
-    build:
-      context: services/ClinicService
-      dockerfile: dockerfile
+    image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/clinic-service:latest
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     ports:
       - "8082:8080"
-    container_name: clinic-service
-    restart: always
+    environment:
+      - CLIENT_ID=clinic-service-${HOSTNAME}
 
   notification-service:
-    build:
-      context: services/NotificationService
-      dockerfile: dockerfile
+    image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/notification-service:latest
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
     ports:
       - "8083:8080"
-    container_name: notification-service
-    restart: always
+    environment:
+      - CLIENT_ID=notification-service-${HOSTNAME}
 
   schedule-service:
-    build:
-      context: services/ScheduleService
-      dockerfile: dockerfile
+    image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service:latest
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     ports:
       - "8084:8080"
-    container_name: schedule-service
-    restart: always
+    environment:
+      - CLIENT_ID=schedule-service-${HOSTNAME}

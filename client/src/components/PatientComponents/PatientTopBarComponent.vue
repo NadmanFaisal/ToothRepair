@@ -51,10 +51,12 @@ export default {
   },
   methods: {
     navigateTo(item) {
+      // Does not go to appointment page without clinicID
       if (item.route === '/patientAppointmentPage' && !localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic first')
         return
       } else if ((item.route === '/patientAppointmentPage' && localStorage.getItem('ClinicID'))) {
+        // Navigates to clinic by setting Query parameter (required for showing appointments)
         this.$router.push({
           path: '/patientAppointmentPage',
           query: {

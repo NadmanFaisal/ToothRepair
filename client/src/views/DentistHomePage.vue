@@ -13,7 +13,7 @@
 
             <div class="col-9 right-section">
 
-                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :triggerGetAppointments="getAppointments"/>
+                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :clinicId="clinicId"/>
 
             </div>
 
@@ -66,9 +66,11 @@ export default {
   methods: {
     async getAppointments() {
       try {
+        // Clinic ID required for getAppointments to work
         await this.getClinicId()
-        console.log('Entered')
+        // Topic which receives appointments list
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        // Sends the clinicID to receive appointment list for that specific clinic
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
         messageArrived((topic, message) => {
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
@@ -76,6 +78,7 @@ export default {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
             this.appointments = [...parsedMessage]
+            console.log(this.appointments)
           }
         })
       } catch (error) {
@@ -84,13 +87,17 @@ export default {
     },
     async getDentistName() {
       try {
+        // Topic to receive dentist name
         await subscribeToTopic('authenticationService/dentist/dentistName')
+        // Sends used ID as message to receive the name of user with that specific user id
         publishToTopic('authenticationService/dentist/getDentistName', JSON.parse(localStorage.getItem('UserID')))
 
         messageArrived((topic, message) => {
           if (topic === 'authenticationService/dentist/dentistName') {
             console.log('Recieved dentist name: ', message)
+            // Sets the variable for top bar to show username
             this.dentistUsername = message
+            // Sets the local storage for top bar to show username when there are route changes for TOPBAR
             localStorage.setItem('Username', message)
 
             unsubscribeFromTopic('authenticationService/dentist/dentistName')
@@ -102,8 +109,11 @@ export default {
     },
     async getClinicId() {
       try {
+        // User ID to be used for getting clinicID for that specific dentist
         const userId = localStorage.getItem('UserID')
+        // Topic to receive the clinicID
         await subscribeToTopic('Client/AuthenticationService/ClinicId')
+        // Promise to wait for setting up messageArrived
         const clinicIdPromise = new Promise((resolve, reject) => {
           messageArrived((topic, message) => {
             if (topic === 'Client/AuthenticationService/ClinicId') {
@@ -117,8 +127,7 @@ export default {
             }
           })
         })
-        console.log('localstorage: ' + localStorage.getItem('UserID'))
-        console.log('userid:' + userId)
+        // Sends userID to receive clinicID for that specific dentist
         publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + userId + '}')
 
         await clinicIdPromise
@@ -126,6 +135,7 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
+    // Variable updated to send information to child component through prop feature
     updateSelectedDate(date) {
       console.log('Parent received selectedDate from child:', date)
       this.dentistSelectedDate = date

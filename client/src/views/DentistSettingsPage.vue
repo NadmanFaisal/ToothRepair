@@ -23,6 +23,7 @@ export default {
     DentistTopBarComponent
   },
   methods: {
+    // Logs out by destroying necessary saved detailes and listeners.
     logout() {
       const PUBLISH_LOGOUT_TOPIC = 'logout'
       const PUBLISH_LOGGED_OUT_USER_ID = 'authenticationService/dentist/logout'
@@ -31,7 +32,7 @@ export default {
       document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
       unsubscribeFromTopic('client/scheduleService/appointmentInfo')
       localStorage.clear()
-      client.removeAllListeners();
+      client.removeAllListeners()
       this.$router.push('/login')
     }
   }

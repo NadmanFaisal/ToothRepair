@@ -130,8 +130,8 @@ export default {
       type: Array,
       default: () => []
     },
-    triggerGetAppointments: {
-      type: Function,
+    clinicId: {
+      type: String,
       required: true
     }
   },
@@ -143,7 +143,6 @@ export default {
     }
   },
   computed: {
-    // computed because the changes are cached only if selectedDate changes
     // computed because the changes are cached only if selectedDate changes
     morningFilteredAppointments() {
       // Filters the appointments according to its time
@@ -182,18 +181,22 @@ export default {
     }
   },
   methods: {
+    // Makes selected appointment available
     async makeAvailable() {
       const userId = localStorage.getItem('UserID')
+      // If no appointments selected, does not proceed
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
         return
       }
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
-        this.selectedAppointmentId = null
-        this.triggerGetAppointments()
+        // Sends the selected appointment ID and dentist ID for making slot available
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        // Alert for confirmation of slot booking showing necessary details
         alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
+        // Sets the selectedAppointmentId to null to prevent making same appointment available again
+        this.selectedAppointmentId = null
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
@@ -208,12 +211,14 @@ export default {
       return status === 'available' ? checkMark : crossMark
     },
     selectAppointment(appointment) {
+      // If booked, does not allow selectoin
       if (appointment.status === 'booked') {
         const confirmation = confirm('This has already been booked by patients.')
         if (!confirmation) {
           return
         }
       }
+      // Allows selection by setting necessary parameters
       this.selectAppointmentStartTime = this.selectAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       console.log(appointment.id)

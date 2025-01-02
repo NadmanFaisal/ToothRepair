@@ -19,7 +19,7 @@
 
           <div class="col-9 right-section">
 
-                <AppointmentComponent :patientSelectedDate="patientSelectedDate" :appointments="appointments" :triggerGetAppointments="getAppointments"/>
+                <AppointmentComponent :patientSelectedDate="patientSelectedDate" :appointments="appointments" :clinicId="clinicId"/>
 
           </div>
 
@@ -47,7 +47,8 @@ export default {
     return {
       clinics: [],
       patientSelectedDate: new Date().toISOString().split('T')[0],
-      appointments: []
+      appointments: [],
+      clinicId: this.$route.query.clinicId || localStorage.getItem('ClinicID')
     }
   },
   mounted() {
@@ -90,7 +91,6 @@ export default {
             this.appointments = [...JSON.parse(message)]
           }
         })
-        console.log(`This should be working: ${this.appointments}`)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }

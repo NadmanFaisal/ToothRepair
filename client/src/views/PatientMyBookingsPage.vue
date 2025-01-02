@@ -48,7 +48,6 @@
                     <div class="col-3 status-container">
 
                       <div v-if="today <= appointment.date" class="col-12 button-container">
-                        <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
                         <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
                       </div>
 
@@ -143,7 +142,7 @@ export default {
           }
         })
 
-        console.log('Subscribing to topic...')
+        // If topic already subscribed, does not subscribe again
         const topic = 'Client/ScheduleService/AppointmentInfo'
         if (!this.subscribedTopics.includes(topic)) {
           await subscribeToTopic(topic)
@@ -151,6 +150,7 @@ export default {
           console.log('Subscribed successfully')
         }
         console.log('Publishing request for appointments...')
+        // Sends user ID for getting appointments as per the user
         publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
       } catch (error) {
         console.error('Error in getAppointmentsByPatient:', error)
@@ -183,6 +183,7 @@ export default {
         console.error('Error in getClinic:', error)
       }
     },
+    // This method is used for filling up the map with the necessary clinics
     async getAllClinics() {
       try {
         await subscribeToTopic('clinicService/clinics/getClinicList')
@@ -207,6 +208,7 @@ export default {
 
             unsubscribeFromTopic('clinicService/clinics/getClinicList')
           } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            // The list of dentists also fetched as per each clinic to show dentist names in the clinic IN THE MAP
             const newMessage = JSON.parse(message)
             console.log('fixed message: ', newMessage)
             if (message) {
@@ -249,10 +251,8 @@ export default {
       }
     },
     */
-    rescheduleAppointment(appointmentId) {
-      console.log('reshceduling: ', appointmentId)
-    },
 
+    // Cancels a specific appointment for that specific user
     async cancelAppointment(appointmentId) {
       const confirmation = confirm('Are you sure you want to cancel the appointment?')
       if (!confirmation) {
@@ -271,6 +271,7 @@ export default {
     navigateToHomePage() {
       this.$router.push('/patientHomePage')
     },
+    // Date is taken and the corresponding month and day is shown in the bookings page
     formatAppointmentDate(dateString) {
       const date = new Date(dateString)
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -284,6 +285,7 @@ export default {
       const dayOfMonth = date.getDate()
       const ordinal = this.getOrdinal(dayOfMonth)
 
+      // Returns the value of day and its ordinal, as well as month
       return {
         day: `${dayOfMonth}${ordinal}`,
         monthAndDay: `${month}, ${day}`
