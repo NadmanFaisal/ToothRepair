@@ -192,7 +192,6 @@ export default {
     async cancelAppointment(appointmentId) {
       try {
         console.log('Attempting to cancel appointment' + appointmentId)
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointmentId + '", "dentist": ' + this.userId + '}')
         this.getAppointments()
       } catch (error) {

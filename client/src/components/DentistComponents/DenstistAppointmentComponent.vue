@@ -189,7 +189,6 @@ export default {
         return
       }
       try {
-        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
         this.selectedAppointmentId = null
         this.triggerGetAppointments()
