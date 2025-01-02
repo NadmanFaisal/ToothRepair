@@ -287,7 +287,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
                     this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;
@@ -297,7 +297,7 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
                     this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     break;

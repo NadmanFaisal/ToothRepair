@@ -13,7 +13,7 @@
 
             <div class="col-9 right-section">
 
-                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :triggerGetAppointments="getAppointments"/>
+                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :clinicId="clinicId"/>
 
             </div>
 
@@ -78,6 +78,7 @@ export default {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
             this.appointments = [...parsedMessage]
+            console.log(this.appointments)
           }
         })
       } catch (error) {

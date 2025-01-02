@@ -115,13 +115,13 @@ export default {
     patientSelectedDate: {
       type: String
     },
-    triggerGetAppointments: {
-      type: Function,
-      required: true
-    },
     appointments: {
       type: Array,
       default: () => []
+    },
+    clinicId: {
+      type: String,
+      required: true
     }
   },
   computed: {
@@ -180,7 +180,7 @@ export default {
       try {
         const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         alert(`Successfully booked appointment at ${this.selectedAppointmentStartTime}`)
         this.selectedAppointmentId = null
       } catch (error) {

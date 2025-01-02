@@ -37,7 +37,7 @@ services:
   schedule-service:
     image: registry.git.chalmers.se/courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20/schedule-service:latest
     deploy:
-      replicas: 4
+      replicas: 3
       restart_policy:
         condition: on-failure
     ports:

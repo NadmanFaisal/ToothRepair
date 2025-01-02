@@ -130,8 +130,8 @@ export default {
       type: Array,
       default: () => []
     },
-    triggerGetAppointments: {
-      type: Function,
+    clinicId: {
+      type: String,
       required: true
     }
   },
@@ -192,7 +192,7 @@ export default {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         // Sends the selected appointment ID and dentist ID for making slot available
-        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + '}')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         // Alert for confirmation of slot booking showing necessary details
         alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
         // Sets the selectedAppointmentId to null to prevent making same appointment available again
