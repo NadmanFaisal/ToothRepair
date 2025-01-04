@@ -8,6 +8,8 @@ import PatientHomePage from './views/PatientHomePage.vue'
 import PatientMyBookingsPage from './views/PatientMyBookingsPage.vue'
 import DentistMyBookingsPage from './views/DentistMyBookingsPage.vue'
 import SystemStatsPage from './views/SystemStatsPage.vue'
+import PatientSettingsPage from './views/PatientSettingsPage.vue'
+import DentistSettingsPage from './views/DentistSettingsPage.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -16,11 +18,12 @@ const routes = [
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
   { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
   { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } },
-  { path: '/systemStats', name: 'SystemStats', component: SystemStatsPage}
-,
+  { path: '/systemStats', name: 'SystemStats', component: SystemStatsPage },
   { path: '/patientHomePage', name: 'PatientSelectionScreen', component: PatientHomePage, meta: { requiredRole: 'patient' } },
   { path: '/patientMyBookingsPage', name: 'PatientMyBookingsPage', component: PatientMyBookingsPage, meta: { requiredRole: 'patient' } },
-  { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiredRole: 'dentist' } }
+  { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiredRole: 'dentist' } },
+  { path: '/patientSettingsPage', name: 'PatientSettingsPage', component: PatientSettingsPage, meta: { requiredRole: 'patient' } },
+  { path: '/dentistSettingsPage', name: 'DentistSettingsPage', component: DentistSettingsPage, meta: { requiredRole: 'dentist' } }
 ]
 
 const router = createRouter({

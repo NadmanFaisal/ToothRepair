@@ -10,11 +10,6 @@ const BROKER_URLS = [
     port: 8884,
     protocol: 'wss',
     path: '/mqtt'
-  }/*,
-  {
-    host: 'test.mosquitto.org',
-    port: 8081,
-    protocol: 'wss'
   },
   {
     host: 'broker.emqx.io',
@@ -22,7 +17,12 @@ const BROKER_URLS = [
     protocol: 'wss',
     path: '/mqtt'
 
-  }*/
+  },
+  {
+    host: 'test.mosquitto.org',
+    port: 8081,
+    protocol: 'wss'
+  }
 ]
 
 export let client = mqtt.connect({
@@ -158,7 +158,6 @@ export function unsubscribeFromTopic(topic) {
 export function messageArrived(callback) {
   client.on('message', (topic, message) => {
     try {
-      console.log('This is the JSON format of the message' + message)
       callback(topic, message.toString())
     } catch (error) {
       console.error('Error Parsing the message', error)

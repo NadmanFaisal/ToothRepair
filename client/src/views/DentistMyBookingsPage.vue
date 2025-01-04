@@ -1,6 +1,5 @@
 <template>
     <div class="col-12 screen-container">
-        <BButton @click="logout"> Log Out button</BButton>
 
         <DentistTopBar />
 
@@ -50,7 +49,7 @@
 
                         <div v-if="today <= appointment.date" class="col-12 button-container">
                           <!--<button class="col-10 btn reschedule-button" @click="rescheduleAppointment(appointment.id)">Reschedule</button>-->
-                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
+                          <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                         </div>
 
                         <div v-else class="col-12 completed-container">
@@ -95,7 +94,9 @@ export default {
   created() {
     this.$watch(
       () => this.$route,
-      this.getAppointments,
+      () => {
+        this.getAppointments()
+      },
       { immediate: true }
     )
   },
@@ -111,14 +112,12 @@ export default {
   methods: {
     async getAppointments() {
       try {
-        console.log('Setting up message listener...')
-
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
 
-        console.log('Subscribing to topic...')
         const topic = 'Client/ScheduleService/AppointmentInfo'
+         // If a same topic has been subscribed, does not subscribe any further
         if (!this.subscribedTopics.includes(topic)) {
           await subscribeToTopic(topic)
           this.subscribedTopics.push(topic)
@@ -126,6 +125,7 @@ export default {
         }
         subscribeToTopic('client/scheduleService/getAppointmentStatus')
         console.log('Publishing request for appointments...')
+        // Publishes userID to receive appointments for that specific user
         publishToTopic('ScheduleService/Appointment/getAppointmentsByDentist', `{"dentist": ${this.userId}}`)
 
         messageArrived((topic, message) => {
@@ -186,27 +186,26 @@ export default {
         console.error('Error unsubscribing from topics:', error)
       }
     },
-    rescheduleAppointment(appointmentId) {
-      console.log('reshceduling: ', appointmentId)
-    },
-    async cancelAppointment(appointmentId) {
+    async cancelAppointment(appointment) {
+      const confirmation = confirm('Are you sure you want to cancel it?')
+      if (!confirmation) {
+        return
+      }
+
       try {
-        console.log('Attempting to cancel appointment' + appointmentId)
-        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointmentId + '", "dentist": ' + this.userId + '}')
-        this.getAppointments()
+        console.log('Attempting to cancel appointment' + appointment.id)
+        await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        // Publishes the appointmentID and userID for cancelling appointments
+        publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
+        alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    logout() {
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
-    },
     navigateToHomePage() {
       this.$router.push('/dentistHomePage')
     },
+    // Date is taken and the corresponding month and day is shown in the bookings page
     formatAppointmentDate(dateString) {
       const date = new Date(dateString)
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -220,6 +219,7 @@ export default {
       const dayOfMonth = date.getDate()
       const ordinal = this.getOrdinal(dayOfMonth)
 
+      // Returns the value of day and its ordinal, as well as month
       return {
         day: `${dayOfMonth}${ordinal}`,
         monthAndDay: `${month}, ${day}`
@@ -460,9 +460,9 @@ export default {
   flex-direction: column;
   height: 80%;
   width: 38%;
-  padding: 10px;
   background: #FBFBFB;
-  margin: 15px;
+  margin-top: 15px;
+  margin-left: 1%;
   }
 
   .reschedule-button {

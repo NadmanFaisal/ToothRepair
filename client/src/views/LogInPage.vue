@@ -27,7 +27,7 @@
 
             <div class="col-12 password-section">
               <label class="email-label">Password</label>
-              <input class="form-control password-input" v-model="password" placeholder="**********">
+              <input type="password" class="form-control password-input" v-model="password" placeholder="**********">
             </div>
 
             <div class="col-12 user-type-section">

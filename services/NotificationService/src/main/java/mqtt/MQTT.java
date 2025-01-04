@@ -23,14 +23,14 @@ import main.java.service.LogService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = {"tcp://broker.hivemq.com"/*, "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"*/};
-    private static final String CLIENT_ID = "LogAndNotificationServiceClient";      // Unique client ID
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://broker.emqx.io", "tcp://test.mosquitto.org"};    
+    private static final String CLIENT_ID = "LogAndNotificationServiceClient";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "notificationService/totalMsgReceived";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
-    private static final String[] SUBSCRIBED_TOPICS = {"authenticationService/dentist&patient/userID", "logout", 
-    "authenticationService/appointment/getAppointmentInfo", "authenticationService/appointment&patient/getCancelledAppointmentInfo", 
-    "authenticationService/appointment&dentist/getCancelledAppointmentInfo", "authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
-    "notificationService/totalMsgReceivedAlert", "notificationService/totalMsgSentAlert" };
+    private static final String[] SUBSCRIBED_TOPICS = {"$share/notificationReplica/authenticationService/dentist&patient/userID", "$share/notificationReplica/logout", 
+    "$share/notificationReplica/authenticationService/appointment/getAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&patient/getCancelledAppointmentInfo", 
+    "$share/notificationReplica/authenticationService/appointment&dentist/getCancelledAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
+    "$share/notificationReplica/notificationService/totalMsgReceivedAlert", "$share/notificationReplica/notificationService/totalMsgSentAlert" };
     private final LogService logService;
     private final EmailService emailService;
     private LogSchema log;
@@ -38,7 +38,7 @@ public class MQTT implements MqttCallback {
     private IMqttClient middleware; // MQTT client
     private int currentBrokerIndex = 0;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private String [] patientDetails = new String[2];
+    private String [] patientDetails = {"", ""};
     private int totalMsgReceived = 0;
     private int totalMsgSent = 0;
     /**
@@ -208,62 +208,16 @@ public class MQTT implements MqttCallback {
                     this.log = new LogSchema();
                     break;
                 case "authenticationService/appointment/getAppointmentInfo":
-                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
-                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
-                    
-                    String dentistName = (String) appointmentInfo.get("dentistName");
-                    String patientName = (String) appointmentInfo.get("patientName");
-                    String patientEmail = (String) appointmentInfo.get("patientEmail");
-                    String appointmentDate = (String) appointmentInfo.get("date");
-                    String startTime = (String) appointmentInfo.get("startTime");
-                    this.patientDetails[0] = patientName;
-                    this.patientDetails[1] = patientEmail;
-                    String emailBody = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been registered!", patientName, dentistName, startTime, appointmentDate);
-                    System.out.println("This is the emailBody: " + emailBody);
-                    this.emailService.sendSimpleMessage(patientEmail, "Successfull Booking of Dentist Appointment!", emailBody);
-
+                    this.sendGmailNotification(stringMessage, "authenticationService/appointment/getAppointmentInfo");
                     break;
                 case "authenticationService/appointment&patient/getCancelledAppointmentInfo":
-                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
-                    Map<String, Object> appointmentInfo2 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
-                    
-                    String dentistName2 = (String) appointmentInfo2.get("dentistName");
-                    String patientName2 = (String) appointmentInfo2.get("patientName");
-                    String dentistEmail2 = (String) appointmentInfo2.get("dentistEmail");
-                    String appointmentDate2 = (String) appointmentInfo2.get("date");
-                    String startTime2 = (String) appointmentInfo2.get("startTime");
-
-                    String emailBody2 = String.format("Hi, %s!\nYour booking with Patient: %s at: %s on the date: %s on TeethRepair has been cancelled", dentistName2, patientName2, startTime2, appointmentDate2);
-                    System.out.println("This is the emailBody: " + emailBody2);
-                    this.emailService.sendSimpleMessage(dentistEmail2 , "Your appointment has been cancelled", emailBody2);
+                    this.sendGmailNotification(stringMessage, "authenticationService/appointment&patient/getCancelledAppointmentInfo");
                     break;
                 case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
-                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
-                    Map<String, Object> appointmentInfo3 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
-                    
-                    String dentistName3 = (String) appointmentInfo3.get("dentistName");
-                    String patientName3 = (String) appointmentInfo3.get("patientName");
-                    String patientEmail3 = (String) appointmentInfo3.get("patientEmail");
-                    String appointmentDate3 = (String) appointmentInfo3.get("date");
-                    String startTime3 = (String) appointmentInfo3.get("startTime");
-
-                    String emailBody3 = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been cancelled", patientName3, dentistName3, startTime3, appointmentDate3);
-                    System.out.println("This is the emailBody: " + emailBody3);
-                    this.emailService.sendSimpleMessage(patientEmail3, "Your appointment has been cancelled", emailBody3);
+                    this.sendGmailNotification(stringMessage, "authenticationService/appointment&dentist/getCancelledAppointmentInfo");
                     break;
                 case "authenticationService/appointment&dentist/getAvailableAppointmentInfo":
-                    System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
-                    Map<String, Object> appointmentInfo4 = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});
-                    
-                    String dentistName4 = (String) appointmentInfo4.get("dentistName");
-                    String appointmentDate4 = (String) appointmentInfo4.get("date");
-                    String startTime4 = (String) appointmentInfo4.get("startTime");
-                    String patientName4 = this.patientDetails[0];
-                    String patientEmail4 = this.patientDetails[1];
-
-                    String emailBody4 = String.format("Hi, %s!\nAn appointment time slot with with Dr.%s at: %s on the date: %s on TeethRepair is now available to book!", patientName4, dentistName4, startTime4, appointmentDate4);
-                    System.out.println("This is the emailBody: " + emailBody4);
-                    this.emailService.sendSimpleMessage(patientEmail4, "A new Appointment with Dr." + dentistName4 +" is now Available!", emailBody4);
+                    this.sendGmailNotification(stringMessage, "authenticationService/appointment&dentist/getAvailableAppointmentInfo");
                     break;
                 case "notificationService/totalMsgReceivedAlert": 
                     System.out.println("PUBLISHING TOTAL MESSAGES RECEIVED: " + this.totalMsgReceived);
@@ -285,6 +239,71 @@ public class MQTT implements MqttCallback {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    public void sendGmailNotification(String stringMessage, String topic){
+        System.out.println("RECIEVED UPDATED APPOINTMENT INFO FROM AUTHENTICATIONSERVICE: " + stringMessage);
+        try {
+            Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>() {});  
+            
+            String dentistName = (String) appointmentInfo.get("dentistName");
+            String patientName = "";
+            if((String) appointmentInfo.get("patientName") != null){
+                patientName = (String) appointmentInfo.get("patientName");
+            }else{
+                patientName = patientDetails[0];
+            }
+            String patientEmail = "";
+            if((String) appointmentInfo.get("patientEmail") != null){
+                patientEmail = (String) appointmentInfo.get("patientEmail");
+            }else{
+                patientEmail = patientDetails[1];
+            }        
+            String appointmentDate = (String) appointmentInfo.get("date");
+            String startTime = (String) appointmentInfo.get("startTime");
+            String dentistEmail = (String) appointmentInfo.get("dentistEmail");
+            String emailBody = "";
+
+            switch (topic) {
+                case "authenticationService/appointment/getAppointmentInfo":
+                    emailBody = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been registered!", patientName, dentistName, startTime, appointmentDate);
+                    System.out.println("This is the emailBody: " + emailBody);
+                    emailService.sendSimpleMessage(patientEmail, "Successfull Booking of Dentist Appointment!", emailBody);
+                    this.patientDetails[0] = patientName;
+                    this.patientDetails[1] = patientEmail;
+                    break;
+                case "authenticationService/appointment&patient/getCancelledAppointmentInfo":
+                    emailBody = String.format("Hi, %s!\nYour booking with Patient: %s at: %s on the date: %s on TeethRepair has been cancelled", dentistName, patientName, startTime, appointmentDate);
+                    System.out.println("This is the emailBody: " + emailBody);
+                    emailService.sendSimpleMessage(dentistEmail , "Your appointment has been cancelled", emailBody);
+                    break;
+                case "authenticationService/appointment&dentist/getCancelledAppointmentInfo":
+                    System.out.println("DENTIST IS CANCELLING APPOINTMENT WITH PATIENT");
+                    emailBody = String.format("Hi, %s!\nYour booking with Dr.%s at: %s on the date: %s on TeethRepair has been cancelled", patientName, dentistName, startTime, appointmentDate);
+                    System.out.println("This is the emailBody: " + emailBody);
+                    emailService.sendSimpleMessage(patientEmail, "Your appointment has been cancelled", emailBody);
+                    this.patientDetails[0] = patientName;
+                    this.patientDetails[1] = patientEmail;
+                    break;
+                case "authenticationService/appointment&dentist/getAvailableAppointmentInfo":
+                    if(!patientEmail.equals("") && !patientEmail.equals(null)){
+                    emailBody = String.format("Hi, %s!\nAn new appointment time slot with with Dr.%s at: %s on the date: %s on TeethRepair is now available to book!", patientName, dentistName, startTime, appointmentDate);
+                    System.out.println("This is the emailBody: " + emailBody);
+                    this.emailService.sendSimpleMessage(patientEmail, "A new Appointment with Dr." + dentistName +" is now Available!", emailBody);
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERROR OCCURED WHEN TRYING TO MAP APPOINTMENT INFO");
+        }
+        
+
+
     }
 
 

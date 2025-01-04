@@ -14,22 +14,25 @@
             </div>
         </div>
 
-        <div class="col-3 settings-container">
+        <div class="col-3 settings-container" @click="navigateToSettingsPage">
             <img src="../../assets/notifications.png" class="notification-label">
             <img src="../../assets/profile-picture.png" class="profile-picture">
-            <label class="patient-name-label"> Name of Patient</label>
+            <label class="patient-name-label"> {{ patientUsername || localstorageUsername }}</label>
         </div>
 
     </div>
 </template>
 
 <script>
-import { store } from '../../store'
 
 export default {
   name: 'PatientTopBarComponent',
   props: {
     selectedClinicId: {
+      type: String,
+      default: null
+    },
+    patientUsername: {
       type: String,
       default: null
     }
@@ -39,18 +42,33 @@ export default {
       navItems: [
         { name: 'My Home', route: '/patientHomePage' },
         { name: 'Book Appointments', route: '/patientAppointmentPage' },
-        { name: 'My Bookings', route: '/patientMyBookingsPage' }
+        { name: 'My Bookings', route: '/patientMyBookingsPage' },
+        { name: 'System Stats', route: '/systemStats' }
         // Add more navigation items here
-      ]
+      ],
+      localstorageUsername: localStorage.getItem('Username')
     }
   },
   methods: {
     navigateTo(item) {
-      if (item.route === '/patientAppointmentPage' && !store.getSelectedClinicId()) {
+      // Does not go to appointment page without clinicID
+      if (item.route === '/patientAppointmentPage' && !localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic first')
+        return
+      } else if ((item.route === '/patientAppointmentPage' && localStorage.getItem('ClinicID'))) {
+        // Navigates to clinic by setting Query parameter (required for showing appointments)
+        this.$router.push({
+          path: '/patientAppointmentPage',
+          query: {
+            clinicId: localStorage.getItem('ClinicID')
+          }
+        })
         return
       }
       this.$router.push(item.route)
+    },
+    navigateToSettingsPage() {
+      this.$router.push('/patientSettingsPage')
     }
   }
 }

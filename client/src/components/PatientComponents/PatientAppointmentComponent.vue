@@ -99,7 +99,7 @@
 
 <script>
 
-import { subscribeToTopic, publishToTopic, client } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
 
@@ -115,21 +115,14 @@ export default {
     patientSelectedDate: {
       type: String
     },
-    triggerGetAppointments: {
-      type: Function,
-      required: true
-    },
     appointments: {
       type: Array,
       default: () => []
+    },
+    clinicId: {
+      type: String,
+      required: true
     }
-  },
-  mounted() {
-    console.log('Component mounted')
-    client.on('connect', () => {
-      console.log('MQTT Client connected')
-      console.log(this.appointments)
-    })
   },
   computed: {
     // computed because the changes are cached only if selectedDate changes
@@ -187,10 +180,9 @@ export default {
       try {
         const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + '}')
-        this.selectedAppointmentId = null
-        this.triggerGetAppointments()
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime + ' on ' + this.patientSelectedDate)
+        this.selectedAppointmentId = null
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

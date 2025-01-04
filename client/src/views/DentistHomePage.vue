@@ -1,8 +1,7 @@
 <template>
     <div class="screen-container">
-        <BButton @click="logout"> Log Out button</BButton>
 
-        <DentistTopBarComponent />
+        <DentistTopBarComponent :dentistUsername="dentistUsername" />
 
         <div class="col-12 content-section">
 
@@ -14,7 +13,7 @@
 
             <div class="col-9 right-section">
 
-                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :triggerGetAppointments="getAppointments"/>
+                <DenstistAppointmentComponent :dentistSelectedDate="dentistSelectedDate" :appointments="appointments" :clinicId="clinicId"/>
 
             </div>
 
@@ -35,6 +34,7 @@ export default {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
       appointments: [],
+      dentistUsername: 'Loading...',
       userId: localStorage.getItem('UserID'),
       getAppointmentStatus: null
     }
@@ -54,26 +54,27 @@ export default {
       console.log('MQTT connected, fetching data...')
       try {
         await this.getAppointments()
+        await this.getDentistName()
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
     }
     connectAndRun()
   },
-  created() {
-    this.$watch(
-      () => this.$route,
-      this.getAppointments
-    )
+  unmounted() {
+    client.removeAllListeners('message')
+    console.log('This page is Unmounted')
   },
   methods: {
     async getAppointments() {
       try {
+        // Clinic ID required for getAppointments to work
         await this.getClinicId()
         await subscribeToTopic('client/scheduleService/getAppointmentStatus')
+        // Topic which receives appointments list
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
+        // Sends the clinicID and userId to receive appointment list for that specific clinic and to filter which user recieves it
         publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.clinicId}"}`)
-        console.log('Entered')
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'client/scheduleService/getAppointmentStatus') {
@@ -107,9 +108,35 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
+    async getDentistName() {
+      try {
+        // Topic to receive dentist name
+        await subscribeToTopic('authenticationService/dentist/dentistName')
+        // Sends used ID as message to receive the name of user with that specific user id
+        publishToTopic('authenticationService/dentist/getDentistName', JSON.parse(localStorage.getItem('UserID')))
+
+        messageArrived((topic, message) => {
+          if (topic === 'authenticationService/dentist/dentistName') {
+            console.log('Recieved dentist name: ', message)
+            // Sets the variable for top bar to show username
+            this.dentistUsername = message
+            // Sets the local storage for top bar to show username when there are route changes for TOPBAR
+            localStorage.setItem('Username', message)
+
+            unsubscribeFromTopic('authenticationService/dentist/dentistName')
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve dentist name: ', error)
+      }
+    },
     async getClinicId() {
       try {
+        // User ID to be used for getting clinicID for that specific dentist
+        const userId = localStorage.getItem('UserID')
+        // Topic to receive the clinicID
         await subscribeToTopic('Client/AuthenticationService/ClinicId')
+        // Promise to wait for setting up messageArrived
         const clinicIdPromise = new Promise((resolve, reject) => {
           messageArrived((topic, message) => {
             if (topic === 'Client/AuthenticationService/ClinicId') {
@@ -123,6 +150,7 @@ export default {
             }
           })
         })
+        // Sends userID to receive clinicID for that specific dentist
         console.log('localstorage: ' + localStorage.getItem('UserID'))
         console.log('userid:' + this.userId)
         publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.userId + '}')
@@ -132,16 +160,7 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    logout() {
-      const PUBLISH_LOGOUT_TOPIC = 'logout'
-      const PUBLISH_LOGGED_OUT_USER_ID = 'authenticationService/dentist/logout'
-      publishToTopic(PUBLISH_LOGOUT_TOPIC, 'User has logged out of the Teeth Repair System')
-      publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('client/scheduleService/appointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
-    },
+    // Variable updated to send information to child component through prop feature
     updateSelectedDate(date) {
       console.log('Parent received selectedDate from child:', date)
       this.dentistSelectedDate = date

@@ -25,8 +25,8 @@ import main.java.service.AppointmentService;
 
 @Component
 public class MQTT implements MqttCallback {
-    private static final String [] BROKER_URLS = { "tcp://broker.hivemq.com"/*, "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"*/};
-    private static final String CLIENT_ID = "ScheduleClient";      // Unique client ID
+    private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
+    private static final String CLIENT_ID = "ScheduleClient";
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_TOPIC_STATUS = "client/scheduleService/getAppointmentStatus";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
@@ -37,11 +37,13 @@ public class MQTT implements MqttCallback {
     private static final String PUBLISHED_ENTITY_IDS_DENTIST_CANCEL = "scheduleService/dentist/sendCancellingIdToAuth";
     private static final String PUBLISHED_ENTITY_IDS_DENTIST = "scheduleService/dentist/sendAvailableIdToAuth";
     private final AppointmentService appointmentService; // CRUD Operations for the schedule database
-    private static final String[] SUBSCRIBED_TOPICS = {"ScheduleService/Appointment/getAppointments",
-     "ScheduleService/Appointment/createAppointment", "ScheduleService/Appointment/bookAppointment",
-     "ScheduleService/Appointment/makeAppointmentAvailable", "ScheduleService/Appointment/getAppointmentsByClinic",
-     "ScheduleService/Appointment/getAppointmentsByPatient", "ScheduleService/Appointment/dentistCancelAppointments",
-    "ScheduleService/Appointment/patientCancelAppointments", "ScheduleService/Appointment/getAppointmentsByDentist", "scheduleService/appointment/getAvailableAppointmentsAlert", "scheduleService/totalMsgSentAlert", "scheduleService/totalMsgReceivedAlert"}; 
+    private static final String[] SUBSCRIBED_TOPICS = {"$share/scheduleReplica/ScheduleService/Appointment/getAppointments",
+     "$share/scheduleReplica/ScheduleService/Appointment/createAppointment", "$share/scheduleReplica/ScheduleService/Appointment/bookAppointment",
+     "$share/scheduleReplica/ScheduleService/Appointment/makeAppointmentAvailable", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByClinic",
+     "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByPatient", "$share/scheduleReplica/ScheduleService/Appointment/dentistCancelAppointments",
+    "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist",
+    "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert",
+    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -165,11 +167,12 @@ public class MQTT implements MqttCallback {
      * @param N/A no params needed
      * @throws MqttException prints the Error Stack trace
      */
-    private void publishAppointmentList(String topic, String message){
+    private void publishAppointmentList(String message){
         try {
             //Publish the payload as bytes to the topic.
+            System.out.println("PUBLSIHING APPOINTMENTS TO THIS TOPIC: " + PUBLISHED_TOPIC);
             System.out.println(message);
-            middleware.publish(topic, message.getBytes(), 2, false);
+            middleware.publish(PUBLISHED_TOPIC, message.getBytes(), 2, false);
             totalMsgSent++;
         } catch (Exception e) {
             e.printStackTrace();
@@ -243,11 +246,11 @@ public class MQTT implements MqttCallback {
             System.out.println("Topic given: " + topic);
             switch (topic) {
                 
-                case "scheduleService/appointment/getAppointments": {
+                case "ScheduleService/Appointment/getAppointments": {
                     if(stringMessage.contains("Get Appointments")){
                         System.out.println("Will publish all appointments");
                         String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAllAppointments());
-                        this.publishAppointmentList(PUBLISHED_TOPIC, appointmentListJson);
+                        this.publishAppointmentList(appointmentListJson);
                     }   
                     break;
                 }
@@ -260,7 +263,7 @@ public class MQTT implements MqttCallback {
                     appointmentInfo.remove("clinic");
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
@@ -271,7 +274,7 @@ public class MQTT implements MqttCallback {
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patient);
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
@@ -282,7 +285,7 @@ public class MQTT implements MqttCallback {
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentist);
                     appointmentInfo.put("appointments", appointmentListJson);
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
-                    this.publishAppointmentList(PUBLISHED_TOPIC, payload);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
@@ -299,8 +302,10 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.bookAppointment(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo.getClinic()));
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
-                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "booking");
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "booking".getBytes(), 2, false);
                     break;
                 }
                 
@@ -309,8 +314,10 @@ public class MQTT implements MqttCallback {
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
                     appointmentService.makeAppointmentAvailable(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo.getClinic()));
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
-                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "available");
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "available".getBytes(), 2, false);
                     break;
                 }
 
@@ -318,9 +325,12 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered dentist cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
+                    appointmentService.dentistCancel(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo.getDentist()));
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.dentistCancel(appointmentInfo);
-                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "cancelling");
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "cancelling".getBytes(), 2, false);
                     break;
                 }
 
@@ -328,9 +338,12 @@ public class MQTT implements MqttCallback {
                     System.out.println("Entered patient cancel if statement");
                     AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
                     System.out.println(appointmentInfo.toString());
+                    appointmentService.patientCancel(appointmentInfo);
+                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo.getPatient()));
+                    this.publishAppointmentList(appointmentListJson);
                     middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
                     appointmentService.patientCancel(appointmentInfo);
-                    this.publishAppointmentList(PUBLISHED_TOPIC_STATUS, "cancelling");
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "cancelling".getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{

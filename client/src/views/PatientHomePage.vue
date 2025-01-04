@@ -1,9 +1,8 @@
 <template>
 
     <div class="screen-container">
-      <BButton @click="logout"> Log Out button</BButton>
 
-      <PatientTopBar />
+      <PatientTopBar :patientUsername="patientUsername"/>
 
       <div class="col-9 content-section">
         <div class="col-7 left-section">
@@ -48,37 +47,13 @@
             <label class="book-appointment-label">Book Appointment</label>
             <hr>
 
-            <div class="col-12 email-continer">
-              <label class="email-label">Email</label>
-              <input class="form-control email-input">
+            <div class="col-12 map-description-container">
+              <label class="map-description-header">Select Your Clinic</label>
+              <label class="map-description-label">From hundreds of clinics all around Sweden with world class dentists, select your prefered clinic from the map</label>
             </div>
 
-            <div class="col-12 mobile-container">
-              <label class="mobile-label">Mobile</label>
-              <input class="form-control mobile-input">
-            </div>
-
-            <div class="dropdown clinic-container">
-
-              <label class="clinic-label">Clinic</label>
-              <button
-                class="btn btn-secondary dropdown-toggle clinic-dropdown-button"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                text="Select a clinic"
-                >
-                {{ selectedClinicName || 'Select a clinic' }}
-              </button>
-
-              <ul class="dropdown-menu">
-                <li class="dropdown-item" v-for="clinic in clinics" :key="clinic.id" @click="selectAClinic(clinic)">{{ clinic.name }}</li>
-              </ul>
-
-            </div>
-
-            <div class="col-12 button-container">
-              <button class="col-8 btn show-slot-button" @click="gotToAppointmentPage">Show Slots</button>
+            <div class="col-12 select-map-container">
+              <PatientMapComponent :clinics="clinics"/>
             </div>
 
           </div>
@@ -93,33 +68,53 @@
 <script>
 import PatientTopBar from '../components/PatientComponents/PatientTopBarComponent.vue'
 import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic, client } from '../mqtt/mqtt.js'
-import { store } from '../store'
+import PatientMapComponent from '../components/PatientComponents/PatientMapComponent.vue'
 
 export default {
   name: 'PatientHomePage',
   components: {
-    PatientTopBar
+    PatientTopBar,
+    PatientMapComponent
   },
   data() {
     return {
       clinics: [],
-      selectedClinicName: null
+      selectedClinicName: null,
+      patientUsername: 'Loading...'
     }
   },
   mounted() {
-    client.on('connect', () => {
-      this.getAllClinics()
-    })
+    const connectAndRun = async () => {
+      if (!client.connected) {
+        console.log('Waiting for MQTT connection...')
+        setTimeout(connectAndRun, 500)
+        return
+      }
+      console.log('MQTT connected, fetching data...')
+      try {
+        await this.getAllClinics()
+        await this.getPatientName()
+      } catch (error) {
+        console.error('Error during data fetch:', error)
+      }
+    }
+    connectAndRun()
+  },
+  unmounted() {
+    client.removeAllListeners('message')
+    client.removeAllListeners('connect')
+    console.log('This page is Unmounted')
   },
   methods: {
     selectAClinic(clinic) {
-      store.setSelectedClinic(clinic)
-      this.selectedClinicName = store.getSelectedClinicName()
-      this.selectedClinicId = store.getSelectedClinicId()
+      this.selectedClinicName = clinic.name
+      this.selectedClinicId = clinic.id
+      localStorage.setItem('ClinicID', this.selectedClinicId)
       console.log(this.selectedClinicId)
     },
+    // Navigation to appointmentPage not allowed without selecting clinic
     gotToAppointmentPage() {
-      if (!store.getSelectedClinicId()) {
+      if (!localStorage.getItem('ClinicID')) {
         alert('No clinic has been selected. Please select a clinic')
         return
       }
@@ -130,6 +125,28 @@ export default {
         }
       })
     },
+    // Patient name fetched to send to TOPBAR
+    async getPatientName() {
+      try {
+        await subscribeToTopic('authenticationService/patient/patientName')
+        publishToTopic('authenticationService/patient/getPatientName', JSON.parse(localStorage.getItem('UserID')))
+
+        messageArrived((topic, message) => {
+          if (topic === 'authenticationService/patient/patientName') {
+            console.log('Recieved patient name: ', message)
+            // Variable set if the message arrives
+            this.patientUsername = message
+            // Local storage set if the message arrives
+            localStorage.setItem('Username', message)
+
+            unsubscribeFromTopic('authenticationService/patient/patientName')
+          }
+        })
+      } catch (error) {
+        console.error('Tried to retrieve patient name: ', error)
+      }
+    },
+    // All clinics fetched for displaying clinic in the map
     async getAllClinics() {
       try {
         await subscribeToTopic('clinicService/clinics/getClinicList')
@@ -154,6 +171,7 @@ export default {
 
             unsubscribeFromTopic('clinicService/clinics/getClinicList')
           } else if (topic === 'authenticationService/dentist/getDentistNames') {
+            // Dentist names fetched to show dentists in the individual clinics inside the map
             const newMessage = JSON.parse(message)
             console.log('fixed message: ', newMessage)
             if (message) {
@@ -166,7 +184,6 @@ export default {
                     }
                   })
                 })
-                console.log('Here are all the clinics', this.clinics)
               })
               unsubscribeFromTopic('authenticationService/dentist/getDentistNames')
             }
@@ -175,22 +192,15 @@ export default {
       } catch (error) {
         console.error('Tried to retrieve all clinics: ', error)
       }
-    },
-    logout() {
-      const PUBLISH_LOGOUT_TOPIC = "logout"
-      const PUBLISH_LOGGED_OUT_USER_ID = "authenticationService/patient/logout"
-      publishToTopic(PUBLISH_LOGOUT_TOPIC, "User has logged out of the Teeth Repair System")
-      publishToTopic(PUBLISH_LOGGED_OUT_USER_ID, JSON.parse(localStorage.getItem('UserID')))
-      document.cookie = 'userInfo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-      unsubscribeFromTopic('Client/ScheduleService/AppointmentInfo')
-      localStorage.clear()
-      this.$router.push('/login')
     }
   },
   created() {
     this.$watch(
       () => this.$route,
-      this.getAllClinics,
+      () => {
+        this.getAllClinics()
+        this.getPatientName()
+      },
       { immediate: true }
     )
   }
@@ -294,7 +304,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 4.5%;
+  padding: 5%;
   justify-content: end;
 }
 
@@ -306,10 +316,19 @@ export default {
   background-color: #FFF;
 }
 
-.email-continer, .mobile-container, .clinic-container {
-  height: 20%;
+.map-description-container {
   display: flex;
   flex-direction: column;
+  text-align: start;
+  height: 25%;
+}
+
+.select-map-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60%;
 }
 
 .book-appointment-label {
@@ -321,60 +340,42 @@ export default {
   line-height: normal;
 }
 
-.email-label, .mobile-label, .clinic-label {
-  color: #515151;
+.map-description-header {
+  color: #015C5C;
   font-family: Inter;
   font-size: 24px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   line-height: normal;
   text-align: start;
 }
 
-.clinic-dropdown-button {
-  border-radius: 15px;
-  border: 1px solid #D2D1D1;
-  background: #FFF;
-  width: 100%;
-
-  color: #BBB9B9;
-  text-align: left;
+.map-description-label {
+  padding-top: 5px;
+  color: #015C5C;
   font-family: Inter;
-  font-size: 20px;
+  font-size: 19px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 200;
   line-height: normal;
+  text-align: start;
 }
 
-.dropdown-item {
-  text-align: left;
-  font-family: Inter;
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+@media (max-width: 1380px) {
+  .map-description-label {
+    padding-top: 5px;
+    font-size: 17px;
+  }
 }
 
-.button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 20%;
-}
+@media (max-width: 1200px) {
+  .map-description-header {
+    font-size: 22px;
+  }
 
-.show-slot-button {
-  border-radius: 15px;
-  background: #1FC2C2 !important;
-  box-shadow: 0px 4px 4px 0px rgba(31, 194, 194, 0.70);
-
-  color: #FFF !important;
-  text-align: center;
-  font-family: Inter;
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+  .map-description-label {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -384,6 +385,20 @@ export default {
 
   .description-content-label {
     font-size: 20px;
+  }
+
+  .map-description-header {
+    font-size: 20px;
+  }
+
+  .map-description-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 930px) {
+  .map-description-header {
+    font-size: 18px;
   }
 }
 
@@ -414,5 +429,24 @@ export default {
   .right-section {
     width: 100%;
   }
+
+  .map-description-header {
+    font-size: 24px;
+  }
+
+  .map-description-label {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .map-description-header {
+    font-size: 18px;
+  }
+
+  .map-description-label {
+    font-size: 15px;
+  }
+
 }
 </style>
