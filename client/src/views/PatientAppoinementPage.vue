@@ -101,21 +101,18 @@ export default {
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
             console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
-            if (this.getAppointmentStatus) {
-              if (this.getAppointmentStatus === 'cancelling') {
-                this.getAppointmentStatus = null
-                this.getAppointments()
-              } else {
-                this.appointments = [...parsedMessage.appointments]
-                this.getAppointmentStatus = null
-              }
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
             } else {
-              if (JSON.parse(this.userId) === parsedMessage.userID) {
-                this.appointments = [...parsedMessage.appointments]
+              console.log('Received another users request')
+              if (this.getAppointmentStatus === null) {
+                console.log('Someone refreshed or changed clinic')
               } else {
-                console.log('Recieved another users request')
+                console.log('cancel, book, pending or available')
+                this.getAppointments()
               }
             }
+            this.getAppointmentStatus = null
           }
         })
         console.log(`This should be working: ${this.appointments}`)

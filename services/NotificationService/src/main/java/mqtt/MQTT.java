@@ -2,6 +2,7 @@ package main.java.mqtt;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,7 +25,7 @@ import main.java.service.LogService;
 @Component
 public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://broker.emqx.io", "tcp://test.mosquitto.org"};    
-    private static final String CLIENT_ID = "LogAndNotificationServiceClient";
+    private static final String CLIENT_ID = "LogAndNotificationServiceClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "notificationService/totalMsgReceived";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "notificationService/totalMsgSent";
     private static final String[] SUBSCRIBED_TOPICS = {"$share/notificationReplica/authenticationService/dentist&patient/userID", "$share/notificationReplica/logout", 
