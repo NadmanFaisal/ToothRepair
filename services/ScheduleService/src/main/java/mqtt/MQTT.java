@@ -378,7 +378,7 @@ public class MQTT implements MqttCallback {
                     String patientId = (String)appointmentInfo.get("patient");
                     String appointmentId = (String)appointmentInfo.get("id");
 
-                    appointmentService.patientCancel(patientId);
+                    appointmentService.patientCancel(appointmentId);
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patientId);
                     appointmentInfo.remove("id");
                     appointmentInfo.remove("patient");

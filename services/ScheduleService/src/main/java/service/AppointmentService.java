@@ -65,8 +65,8 @@ public class AppointmentService {
 
     }
 
-    public Optional<AppointmentSchema> patientCancel(String patientId) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(patientId);
+    public Optional<AppointmentSchema> patientCancel(String appointmentId) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
     
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();

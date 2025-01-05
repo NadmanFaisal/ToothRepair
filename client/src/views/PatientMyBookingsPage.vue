@@ -48,7 +48,7 @@
                     <div class="col-3 status-container">
 
                       <div v-if="today <= appointment.date" class="col-12 button-container">
-                        <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
+                        <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                       </div>
 
                       <div v-else class="col-12 completed-container">
@@ -161,7 +161,7 @@ export default {
             } else {
               if (this.getAppointmentStatus === 'cancelling') {
                 this.getAppointmentStatus = null
-                this.getAppointments()
+                this.getAppointmentsByPatient()
               }
               console.log('Recieved another users request')
             }
@@ -268,17 +268,40 @@ export default {
     */
 
     // Cancels a specific appointment for that specific user
-    async cancelAppointment(appointmentId) {
+    async cancelAppointment(appointment) {
       const confirmation = confirm('Are you sure you want to cancel the appointment?')
       if (!confirmation) {
         return
       }
 
       try {
-        console.log('Attempting to cancel appointment' + appointmentId)
+        console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointmentId + '", "patient": ' + this.userId + '}')
-        this.getAppointmentsByPatient()
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
+        publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointment.id + '", "patient": ' + this.userId + '}')
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentsByPatient()
+              }
+              console.log('Recieved another users request')
+            }
+          }
+        })
+        this.getAppointmentStatus = null
+        alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

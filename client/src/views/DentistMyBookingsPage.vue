@@ -134,9 +134,9 @@ export default {
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
             console.log('What happens when parsing' + parsedMessage)
-            console.log('userid = ' + parsedMessage.dentist)
+            console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
-            if (JSON.parse(this.userId) === parsedMessage.dentist) {
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
               this.appointments = parsedMessage.appointments
             } else {
               console.log('Recieved another users request')
@@ -197,6 +197,21 @@ export default {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         // Publishes the appointmentID and userID for cancelling appointments
         publishToTopic('ScheduleService/Appointment/dentistCancelAppointments', '{"id": "' + appointment.id + '", "dentist": ' + this.userId + '}')
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              console.log('Recieved another users request')
+            }
+          }
+        })
         alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
