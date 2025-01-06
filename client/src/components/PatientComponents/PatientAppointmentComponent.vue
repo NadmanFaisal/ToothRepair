@@ -99,16 +99,18 @@
 
 <script>
 
-import { subscribeToTopic, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
+import { parse } from 'vue/compiler-sfc';
 
 export default {
   name: 'AppointmentComponent',
   data() {
     return {
       selectedAppointmentId: null,
-      selectedAppointmentStartTime: null
+      selectedAppointmentStartTime: null,
+      pendingAppointments: new Map()
     }
   },
   props: {
@@ -187,7 +189,39 @@ export default {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    selectAppointment(appointment) {
+    async selectAppointment(appointment) {
+      const userId = localStorage.getItem('UserID')
+      let counter = 0
+      await subscribeToTopic('client/appointment/pendingAppointments')
+      messageArrived((topic, message) => {
+        if (topic === 'client/appointment/pendingAppointments') {
+          const parsedMessage = JSON.parse(message)
+          console.log('The parsedMessage: ', parsedMessage.id)
+          if (parsedMessage.id != "null") {
+            console.log('Appointment id if statement true')
+            for (let [key, value] of this.pendingAppointments.entries()) {
+              console.log(key, value)
+              if (value.userId === userId) {
+                this.pendingAppointments.set(key, parsedMessage.id)
+                counter++
+              }
+            }
+            if (counter === 0) {
+              this.pendingAppointments.set(userId, parsedMessage.id)
+            }
+            console.log('counter: ' + counter)
+            counter = 0
+            console.log('pending array' + this.pendingAppointments)
+          } else {
+            console.log('Inside else, check userId')
+            for (let [key, value] of this.pendingAppointments.entries()) {
+              if (key === userId) {
+                this.pendingAppointments.delete(key)
+              }
+            }
+          }
+        }
+      })
       if (appointment.status === 'unavailable') {
         alert('This slot is unavailable')
         return
@@ -196,9 +230,15 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
+      if (this.pendingAppointments.has(appointment.id)) {
+        alert('This slot is pending please wait')
+        return
+      }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
+      publishToTopic('client/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "userId": ' + userId + '}')
       console.log(appointment.id)
+      console.log(this.pendingAppointments)
     }
   }
 }
