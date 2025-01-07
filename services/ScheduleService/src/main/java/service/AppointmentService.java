@@ -44,6 +44,57 @@ public class AppointmentService {
 
     }
 
+    public Optional<AppointmentSchema>pendingAppointment(String appointmentId, String userId, boolean isPatient) {
+        if (appointmentId.equals("null")) {
+            System.out.println("null if statement");
+            List<AppointmentSchema> appointments;
+            AppointmentSchema appointment = new AppointmentSchema();
+
+            if (isPatient) {
+                appointments = this.getAppointmentsByPatient(userId);
+                for (AppointmentSchema appointmentSchema : appointments) {
+                    if (appointmentSchema.getStatus().equals("pending")) {
+                        appointment = appointmentSchema;
+                    }
+                }
+                appointment.setStatus("available");
+            } else {
+                appointments = this.getAppointmentsByDentist(userId);
+                for (AppointmentSchema appointmentSchema : appointments) {
+                    if (appointmentSchema.getStatus().equals("pending")) {
+                        appointment = appointmentSchema;
+                    }
+                }
+                appointment.setStatus("unavailable");
+            }
+
+            appointmentRepository.save(appointment);
+            return Optional.of(appointment);
+
+        } else {
+            
+            Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
+            
+            if (optionalAppointment.isPresent()) {
+                AppointmentSchema appointment = optionalAppointment.get();
+                
+                if (isPatient) {
+                    appointment.setPatient(userId);
+                } else {
+                    appointment.setDentist(userId);
+                }
+                appointment.setStatus("pending");
+                
+                appointmentRepository.save(appointment);
+
+                return Optional.of(appointment);
+            } else {
+                return Optional.empty();
+            }
+        }
+
+    }
+
     //might need to refactor
     public Optional<AppointmentSchema> makeAppointmentAvailable(String appointmentId, String dentistId) {
         Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);

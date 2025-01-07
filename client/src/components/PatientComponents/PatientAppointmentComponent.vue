@@ -29,6 +29,7 @@
             'available-slot': appointment.status === 'available',
             'booked-slot': appointment.status === 'booked',
             'unavailable-slot': appointment.status === 'unavailable',
+            'pending-slot': appointment.status === 'pending',
             'selected-slot': appointment.id === selectedAppointmentId
             } "
             @click="selectAppointment(appointment)"
@@ -76,6 +77,7 @@
             'available-slot': appointment.status === 'available',
             'booked-slot': appointment.status === 'booked',
             'unavailable-slot': appointment.status === 'unavailable',
+            'pending-slot': appointment.status === 'pending',
             'selected-slot': appointment.id === selectedAppointmentId
             } "
             @click="selectAppointment(appointment)"
@@ -110,7 +112,7 @@ export default {
     return {
       selectedAppointmentId: null,
       selectedAppointmentStartTime: null,
-      pendingAppointments: new Map()
+      isPending: false
     }
   },
   props: {
@@ -191,33 +193,14 @@ export default {
     },
     async selectAppointment(appointment) {
       const userId = localStorage.getItem('UserID')
-      let counter = 0
       await subscribeToTopic('client/appointment/pendingAppointments')
       messageArrived((topic, message) => {
         if (topic === 'client/appointment/pendingAppointments') {
           const parsedMessage = JSON.parse(message)
-          console.log('The parsedMessage: ', parsedMessage.id)
-          if (parsedMessage.id != "null") {
-            console.log('Appointment id if statement true')
-            for (let [key, value] of this.pendingAppointments.entries()) {
-              console.log(key, value)
-              if (value.userId === userId) {
-                this.pendingAppointments.set(key, parsedMessage.id)
-                counter++
-              }
-            }
-            if (counter === 0) {
-              this.pendingAppointments.set(userId, parsedMessage.id)
-            }
-            console.log('counter: ' + counter)
-            counter = 0
-            console.log('pending array' + this.pendingAppointments)
-          } else {
-            console.log('Inside else, check userId')
-            for (let [key, value] of this.pendingAppointments.entries()) {
-              if (key === userId) {
-                this.pendingAppointments.delete(key)
-              }
+          console.log(parsedMessage)
+          for (let pendingAppointment in parsedMessage.appointments) {
+            if (pendingAppointment.id === appointment.id) {
+              this.isPending = true
             }
           }
         }
@@ -230,15 +213,16 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-      if (this.pendingAppointments.has(appointment.id)) {
+      if (this.isPending) {
+        this.isPending = false
         alert('This slot is pending please wait')
         return
       }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
-      publishToTopic('client/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "userId": ' + userId + '}')
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
       console.log(appointment.id)
-      console.log(this.pendingAppointments)
+      console.log(appointment.status)
     }
   }
 }
@@ -380,6 +364,18 @@ export default {
   border-radius: 5px;
   border: 1px solid #E70505;
   background-color: #E70505;
+  box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
+  color:white;
+}
+
+.pending-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  border: 1px solid yellow;
+  background-color: yellow;
   box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
   color:white;
 }
