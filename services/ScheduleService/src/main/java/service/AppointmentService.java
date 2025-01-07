@@ -58,6 +58,7 @@ public class AppointmentService {
                     }
                 }
                 appointment.setStatus("available");
+                appointment.setPatient(null);
             } else {
                 appointments = this.getAppointmentsByDentist(userId);
                 for (AppointmentSchema appointmentSchema : appointments) {
@@ -66,6 +67,7 @@ public class AppointmentService {
                     }
                 }
                 appointment.setStatus("unavailable");
+                appointment.setDentist(null);
             }
 
             appointmentRepository.save(appointment);

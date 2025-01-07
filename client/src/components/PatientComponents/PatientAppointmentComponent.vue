@@ -111,8 +111,7 @@ export default {
   data() {
     return {
       selectedAppointmentId: null,
-      selectedAppointmentStartTime: null,
-      isPending: false
+      selectedAppointmentStartTime: null
     }
   },
   props: {
@@ -193,18 +192,10 @@ export default {
     },
     async selectAppointment(appointment) {
       const userId = localStorage.getItem('UserID')
-      await subscribeToTopic('client/appointment/pendingAppointments')
-      messageArrived((topic, message) => {
-        if (topic === 'client/appointment/pendingAppointments') {
-          const parsedMessage = JSON.parse(message)
-          console.log(parsedMessage)
-          for (let pendingAppointment in parsedMessage.appointments) {
-            if (pendingAppointment.id === appointment.id) {
-              this.isPending = true
-            }
-          }
-        }
-      })
+      console.log(appointment.id)
+      console.log(appointment.status)
+      console.log(appointment.patient)
+      console.log(userId)
       if (appointment.status === 'unavailable') {
         alert('This slot is unavailable')
         return
@@ -213,16 +204,13 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-      if (this.isPending) {
-        this.isPending = false
+      if (appointment.status === 'pending' && !(appointment.patient === JSON.parse(userId))) {
         alert('This slot is pending please wait')
         return
       }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
-      console.log(appointment.id)
-      console.log(appointment.status)
     }
   }
 }
@@ -374,10 +362,11 @@ export default {
   flex-direction: row;
   height: 75px;
   border-radius: 5px;
-  border: 1px solid yellow;
   background-color: yellow;
-  box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
+  box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
   color:white;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }
 
 .status-mark-container {

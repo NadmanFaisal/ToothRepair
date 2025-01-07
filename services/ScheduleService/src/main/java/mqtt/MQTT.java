@@ -30,7 +30,6 @@ public class MQTT implements MqttCallback {
     private static final String CLIENT_ID = "ScheduleClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
     private static final String PUBLISHED_TOPIC_STATUS = "client/scheduleService/getAppointmentStatus";
-    private static final String PUBLISHED_TOPIC_PENDING = "client/appointment/pendingAppointments";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
@@ -45,7 +44,7 @@ public class MQTT implements MqttCallback {
      "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByPatient", "$share/scheduleReplica/ScheduleService/Appointment/dentistCancelAppointments",
     "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist",
     "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert",
-    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert", "scheduleService/appointment/pendingAppointments"}; 
+    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -355,7 +354,6 @@ public class MQTT implements MqttCallback {
                     System.out.println("Published status: pending in pendingAppointment");
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
                     this.publishAppointmentList(payload);
-                    middleware.publish(PUBLISHED_TOPIC_PENDING, payload.getBytes(), 2, false);
                     break;
                 }
                 
