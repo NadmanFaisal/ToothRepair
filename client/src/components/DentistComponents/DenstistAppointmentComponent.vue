@@ -21,9 +21,10 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container"
+            <div v-if="this.dentistSelectedDate >= today"
+            class="col-2 appointment-slot-container"
             v-for="appointment in morningFilteredAppointments"
-            :key="appointment.id"
+            :key="`future-${appointment.id}`"
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
@@ -44,6 +45,21 @@
                   >
                     {{ getTypeOfTime(appointment.startTime) }}
                   </label>
+              </div>
+            </div>
+
+            <div v-else class="col-2 appointment-slot-container"
+            v-for="appointment in morningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+              @click="showOldAppointmentAlert()">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label">
+                  {{ getTypeOfTime(appointment.startTime) }}
+                </label>
               </div>
             </div>
 
@@ -74,9 +90,10 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container"
+            <div v-if="this.dentistSelectedDate >= today"
+            class="col-2 appointment-slot-container"
             v-for="appointment in eveningFilteredAppointments"
-            :key="appointment.id"
+            :key="`future-${appointment.id}`"
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
@@ -96,6 +113,21 @@
                   }"
                   >
                     {{ getTypeOfTime(appointment.startTime) }}
+                </label>
+              </div>
+            </div>
+
+            <div v-else class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+              @click="showOldAppointmentAlert()">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label">
+                  {{ getTypeOfTime(appointment.startTime) }}
                 </label>
               </div>
             </div>
@@ -122,7 +154,8 @@ export default {
       selectedAppointmentId: null,
       selectAppointmentStartTime: null,
       userId: localStorage.getItem('UserID'),
-      pendingTimer: null
+      pendingTimer: null,
+      today: new Date().toISOString().split('T')[0]
     }
   },
   props: {
@@ -209,6 +242,9 @@ export default {
       const period = hour >= 12 ? 'PM' : 'AM' // Determine if it’s AM or PM
       const adjustedHour = hour % 12 || 12 // Convert 0 hour to 12 for AM and handle 12-hour format
       return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${period}` // Format the time with leading zeros
+    },
+    showOldAppointmentAlert() {
+      alert('This appointment is older than the current date, please try to make another appointment available.')
     },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
@@ -351,6 +387,18 @@ export default {
   border: 1px solid #DEDEDE;
   background-color: #FFF;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+#old-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  border: 1px solid #DEDEDE;
+  background-color: #FFF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color:#DCDCDC;
 }
 
 .available-slot {

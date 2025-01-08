@@ -21,10 +21,10 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div
+          <div v-if="this.patientSelectedDate >= today"
           class="col-2 appointment-slot-container"
           v-for="appointment in morningFilteredAppointments"
-          :key="appointment.id"
+          :key="`future-${appointment.id}`"
           :class="{
             'available-slot': appointment.status === 'available',
             'booked-slot': appointment.status === 'booked',
@@ -40,6 +40,21 @@
             <div class="col-8 appointment-information-container">
               <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
             </div>
+          </div>
+
+          <div v-else
+            class="col-2 appointment-slot-container"
+            v-for="appointment in morningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+            @click="showOldAppointmentAlert()"
+            >
+            <div class="col- 4 status-mark-container">
+              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+            </div>
+            <div class="col-8 appointment-information-container">
+              <label class="appointment-information-label">{{ getTypeOfTime(appointment.startTime) }}</label>
+            </div> 
           </div>
 
         </div>
@@ -69,7 +84,7 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div
+          <div v-if="this.patientSelectedDate >= today"
           class="col-2 appointment-slot-container"
           v-for="appointment in eveningFilteredAppointments"
           :key="appointment.id"
@@ -88,6 +103,21 @@
             <div class="col-8 appointment-information-container">
               <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
             </div>
+          </div>
+
+          <div v-else
+            class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+            @click="showOldAppointmentAlert()"
+            >
+            <div class="col- 4 status-mark-container">
+              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+            </div>
+            <div class="col-8 appointment-information-container">
+              <label class="appointment-information-label">{{ getTypeOfTime(appointment.startTime) }}</label>
+            </div> 
           </div>
 
         </div>
@@ -113,7 +143,8 @@ export default {
       selectedAppointmentId: null,
       selectedAppointmentStartTime: null,
       userId: localStorage.getItem('UserID'),
-      pendingTimer: null
+      pendingTimer: null,
+      today: new Date().toISOString().split('T')[0]
     }
   },
   props: {
@@ -176,6 +207,9 @@ export default {
     },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
+    },
+    showOldAppointmentAlert() {
+      alert('This appointment is older than the current date, please try to book an appointment that has not passed.')
     },
     async bookAppointment() {
       if (!this.selectedAppointmentId) {
@@ -329,6 +363,18 @@ export default {
   background-color: #009C15;
   box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
   color:white;
+}
+
+#old-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  border: 1px solid #DEDEDE;
+  background-color: #FFF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color:#DCDCDC;
 }
 
 .unavailable-slot {
