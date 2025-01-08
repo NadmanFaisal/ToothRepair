@@ -120,7 +120,9 @@ export default {
   data() {
     return {
       selectedAppointmentId: null,
-      selectAppointmentStartTime: null
+      selectAppointmentStartTime: null,
+      userId: localStorage.getItem('UserID'),
+      pendingTimer: null
     }
   },
   props: {
@@ -185,7 +187,6 @@ export default {
   methods: {
     // Makes selected appointment available
     async makeAvailable() {
-      const userId = localStorage.getItem('UserID')
       // If no appointments selected, does not proceed
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
@@ -194,7 +195,7 @@ export default {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         // Sends the selected appointment ID and dentist ID for making slot available
-        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         // Alert for confirmation of slot booking showing necessary details
         alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
         // Sets the selectedAppointmentId to null to prevent making same appointment available again
@@ -213,11 +214,10 @@ export default {
       return status === 'available' ? checkMark : crossMark
     },
     async selectAppointment(appointment) {
-      const userId = localStorage.getItem('UserID')
       console.log(appointment.id)
       console.log(appointment.status)
       console.log(appointment.dentist)
-      console.log(userId)
+      console.log(this.userId)
       if (appointment.status === 'available') {
         alert('This slot is already available, please make another slot available')
         return
@@ -226,17 +226,29 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-      if (appointment.status === 'pending' && !(appointment.dentist === JSON.parse(userId))) {
-        alert('This slot is pending please wait')
+      if (appointment.status === 'pending' && !(appointment.dentist === JSON.parse(this.userId))) {
+        if (appointment.patient === null) {
+          alert('This slot is pending, it might soon become available so check other appointments')
+        } else {
+          alert('This slot is pending, it might soon be booked so check other appointments')
+        }
         return
       }
-      if (this.selectedAppointmentId !== null && !(appointment.dentist === JSON.parse(userId))) {
+      if (this.selectedAppointmentId !== null && !(appointment.dentist === JSON.parse(this.userId))) {
         alert('Please unselect your pending appointment')
         return
       }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
-      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      if (this.pendingTimer) {
+        clearTimeout(this.pendingTimer)
+      }
+      this.pendingTimer = setTimeout(() => {
+        console.log('Clinic ID fetched')
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        this.selectedAppointmentId = null
+      }, 10000)
     }
   }
 

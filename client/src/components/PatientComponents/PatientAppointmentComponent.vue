@@ -104,14 +104,16 @@
 import { subscribeToTopic, publishToTopic, messageArrived } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
-import { parse } from 'vue/compiler-sfc';
+import { parse } from 'vue/compiler-sfc'
 
 export default {
   name: 'AppointmentComponent',
   data() {
     return {
       selectedAppointmentId: null,
-      selectedAppointmentStartTime: null
+      selectedAppointmentStartTime: null,
+      userId: localStorage.getItem('UserID'),
+      pendingTimer: null
     }
   },
   props: {
@@ -181,9 +183,8 @@ export default {
         return
       }
       try {
-        const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime + ' on ' + this.patientSelectedDate)
         this.selectedAppointmentId = null
       } catch (error) {
@@ -191,11 +192,10 @@ export default {
       }
     },
     async selectAppointment(appointment) {
-      const userId = localStorage.getItem('UserID')
       console.log(appointment.id)
       console.log(appointment.status)
       console.log(appointment.patient)
-      console.log(userId)
+      console.log(this.userId)
       if (appointment.status === 'unavailable') {
         alert('This slot is unavailable')
         return
@@ -204,17 +204,29 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
-      if (appointment.status === 'pending' && !(appointment.patient === JSON.parse(userId))) {
-        alert('This slot is pending please wait')
+      if (appointment.status === 'pending' && !(appointment.patient === JSON.parse(this.userId))) {
+        if (appointment.patient === null) {
+          alert('This slot is pending, it might soon become available')
+        } else {
+          alert('This slot is pending, it might soon be booked so check other appointments')
+        }
         return
       }
-      if (this.selectedAppointmentId !== null && !(appointment.patient === JSON.parse(userId))) {
+      if (this.selectedAppointmentId !== null && !(appointment.patient === JSON.parse(this.userId))) {
         alert('Please unselect your pending appointment')
         return
       }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
-      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      if (this.pendingTimer) {
+        clearTimeout(this.pendingTimer)
+      }
+      this.pendingTimer = setTimeout(() => {
+        console.log('Clinic ID fetched')
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        this.selectedAppointmentId = null
+      }, 10000)
     }
   }
 }

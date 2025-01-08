@@ -55,6 +55,7 @@ export default {
       try {
         await this.getAppointments()
         await this.getDentistName()
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
