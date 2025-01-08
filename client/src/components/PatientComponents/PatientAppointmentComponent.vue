@@ -208,6 +208,10 @@ export default {
         alert('This slot is pending please wait')
         return
       }
+      if (this.selectedAppointmentId !== null && !(appointment.patient === JSON.parse(userId))) {
+        alert('Please unselect your pending appointment')
+        return
+      }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')

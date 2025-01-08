@@ -27,6 +27,7 @@
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
+              'pending-slot': appointment.status === 'pending',
               'selected-slot': appointment.id === selectedAppointmentId
               }
               " @click="selectAppointment(appointment)">
@@ -79,6 +80,7 @@
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
+              'pending-slot': appointment.status === 'pending',
               'selected-slot': appointment.id === selectedAppointmentId
               }
               " @click="selectAppointment(appointment)">
@@ -210,18 +212,31 @@ export default {
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
-    selectAppointment(appointment) {
-      // If booked, does not allow selectoin
-      if (appointment.status === 'booked') {
-        const confirmation = confirm('This has already been booked by patients.')
-        if (!confirmation) {
-          return
-        }
-      }
-      // Allows selection by setting necessary parameters
-      this.selectAppointmentStartTime = this.selectAppointmentStartTime === appointment.startTime ? null : appointment.startTime
-      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
+    async selectAppointment(appointment) {
+      const userId = localStorage.getItem('UserID')
       console.log(appointment.id)
+      console.log(appointment.status)
+      console.log(appointment.dentist)
+      console.log(userId)
+      if (appointment.status === 'available') {
+        alert('This slot is already available, please make another slot available')
+        return
+      }
+      if (appointment.status === 'booked') {
+        alert('Slot has already been booked. Please select a different slot')
+        return
+      }
+      if (appointment.status === 'pending' && !(appointment.dentist === JSON.parse(userId))) {
+        alert('This slot is pending please wait')
+        return
+      }
+      if (this.selectedAppointmentId !== null && !(appointment.dentist === JSON.parse(userId))) {
+        alert('Please unselect your pending appointment')
+        return
+      }
+      this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
+      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
     }
   }
 
@@ -345,6 +360,17 @@ export default {
   height: 75px;
   border-radius: 5px;
   background-color: #FFF;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+}
+
+.pending-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  background-color: yellow;
   border: 3px solid #007BFF;
   box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }

@@ -44,7 +44,7 @@ public class MQTT implements MqttCallback {
      "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByPatient", "$share/scheduleReplica/ScheduleService/Appointment/dentistCancelAppointments",
     "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist",
     "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert",
-    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert"}; 
+    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert", "scheduleService/appointment/pendingAppointments"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
