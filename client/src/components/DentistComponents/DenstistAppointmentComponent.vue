@@ -152,7 +152,7 @@ export default {
   data() {
     return {
       selectedAppointmentId: null,
-      selectAppointmentStartTime: null,
+      selectedAppointmentStartTime: null,
       userId: localStorage.getItem('UserID'),
       pendingTimer: null,
       today: new Date().toISOString().split('T')[0]
@@ -230,7 +230,7 @@ export default {
         // Sends the selected appointment ID and dentist ID for making slot available
         publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         // Alert for confirmation of slot booking showing necessary details
-        alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
+        alert('Successfully made a ' + this.selectedAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
         // Sets the selectedAppointmentId to null to prevent making same appointment available again
         this.selectedAppointmentId = null
       } catch (error) {
@@ -274,7 +274,9 @@ export default {
         alert('Please unselect your pending appointment')
         return
       }
+      console.log("Before assigning value to selectedAppointmentStartTime: ", this.selectedAppointmentStartTime)
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
+      console.log("After assigning value to selectedAppointmentStartTime: ", this.selectedAppointmentStartTime)
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
       publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
       if (this.pendingTimer) {
