@@ -29,8 +29,8 @@
 
                   <div class="col-12 appointment-content-section">
 
-                    <div class="col-12 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id">
-
+                    <div class="col-12 appointment-slot-container" v-for="appointment in availableAppointments" :key="appointment.id" >
+                      
                       <div class="col-1 logo-container">
                         <img src="../assets/appointment-slot-image.png" class="appointment-image">
                         <div class="vl"></div>
@@ -59,6 +59,7 @@
                       </div>
 
                     </div>
+                   
 
                   </div>
 
@@ -108,6 +109,11 @@ export default {
   },
   unmounted() {
     this.cleanupSubscriptions()
+  },
+  computed: {
+    availableAppointments() {
+      return this.appointments.filter((appointment) => appointment.status === 'available')
+    }
   },
   methods: {
     async getAppointments() {

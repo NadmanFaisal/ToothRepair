@@ -29,8 +29,7 @@
 
                 <div class="col-12 appointment-content-section">
 
-                  <div class="col-12 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id">
-
+                  <div class="col-12 appointment-slot-container" v-for="appointment in bookedAppointments" :key="appointment.id">
                     <div class="col-1 logo-container">
                       <img src="../assets/appointment-slot-image.png" class="appointment-image">
                       <div class="vl"></div>
@@ -54,7 +53,6 @@
                       <div v-else class="col-12 completed-container">
                         <label class="completed-label">COMPLETED!</label>
                       </div>
-
                     </div>
 
                   </div>
@@ -123,6 +121,11 @@ export default {
     client.removeAllListeners('connect')
     console.log('This page is Unmounted')
     // this.cleanupSubscriptions()
+  },
+  computed: {
+    bookedAppointments() {
+      return this.appointments.filter((appointment) => appointment.status === 'booked')
+    }
   },
   methods: {
     async getAppointmentsByPatient() {
