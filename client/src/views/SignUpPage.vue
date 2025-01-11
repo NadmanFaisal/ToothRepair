@@ -48,13 +48,6 @@
 
             <div class="col-6 middle-right-section">
 
-              <!-- Phone number section will be implemented for version 2 -->
-
-              <!-- <div class="col-12 phone-section">
-                <label class="phone-label">Phone <span class="optional-label">(optional)</span></label>
-                <input class="form-control phone-input" v-model="phone" placeholder="073*******">
-              </div> -->
-
               <div class="col-12 confirm-password-section">
                 <label class="confirm-password-label">Confirm Password</label>
                 <input type="password" class="form-control confirm-password-input" v-model="confirmPassword" placeholder="**********">

@@ -15,7 +15,7 @@
         </div>
 
         <div class="col-3 settings-container" @click="navigateToSettingsPage">
-            <img src="../../assets/notifications.png" class="notification-label">
+
             <img src="../../assets/profile-picture.png" class="profile-picture">
             <label class="patient-name-label"> {{ patientUsername || localstorageUsername }}</label>
         </div>
@@ -128,14 +128,8 @@ export default {
   align-items: center;
 }
 
-.notification-label {
-  margin-left: 150px;
-  height: 35px;
-  width: 35px;
-}
-
 .profile-picture {
-  margin-left: 10px;;
+  margin-left: 150px;;
   height: 50px;
   width: 50px;
 }
@@ -157,12 +151,23 @@ export default {
     width: 100%;
   }
 
-  .notification-label {
+  .profile-picture {
     margin-left: 15px;
-    height: 35px;
-    width: 35px;
   }
 
+}
+
+@media (max-width: 870px) {
+  .profile-picture {
+    margin-left: 70px;
+  }
+}
+
+@media (max-width: 750px) {
+  .router-label {
+    margin-left: 5px;
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -185,7 +190,6 @@ export default {
   }
 
   .router-label {
-    margin-left: 5px;
     font-size: 15px;
   }
 
@@ -200,12 +204,17 @@ export default {
     font-size: 10px;
   }
 
-  .notification-label {
+  .profile-picture {
     margin-left: 5px;
-    height: 25px;
-    width: 25px;
   }
 
+}
+
+@media (max-width: 575px) {
+  .router-label {
+    margin-left: 5px;
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 470px) {
@@ -220,14 +229,8 @@ export default {
   }
 
   .patient-name-label {
-    padding-left: 5px;
+    padding-left: 45px;
     font-size: 8px;
-  }
-
-  .notification-label {
-    margin-left: 5px;
-    height: 20px;
-    width: 20px;
   }
 
 }

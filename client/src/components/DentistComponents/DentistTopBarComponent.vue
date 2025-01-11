@@ -17,7 +17,6 @@
         </div>
 
         <div class="col-3 settings-container" @click="navigateToSettingsPage">
-            <img src="../../assets/notifications.png" class="notification-label">
             <img src="../../assets/profile-picture.png" class="profile-picture">
             <label class="patient-name-label"> {{ dentistUsername || localstorageUsername }}</label>
         </div>
@@ -114,7 +113,7 @@ export default {
 }
 
 .profile-picture {
-    margin-left: 10px;;
+    margin-left: 150px;
     height: 50px;
     width: 50px;
 }
@@ -136,11 +135,9 @@ export default {
   width: 100%;
 }
 
-.notification-label {
-  margin-left: 15px;
-  height: 35px;
-  width: 35px;
-}
+  .profile-picture {
+    margin-left: 15px;
+  }
 
 }
 
@@ -179,11 +176,9 @@ export default {
   font-size: 10px;
 }
 
-.notification-label {
-  margin-left: 5px;
-  height: 25px;
-  width: 25px;
-}
+  .profile-picture {
+    margin-left: 5px;
+  }
 
 }
 
@@ -203,11 +198,9 @@ export default {
   font-size: 8px;
 }
 
-.notification-label {
-  margin-left: 5px;
-  height: 20px;
-  width: 20px;
-}
+  .profile-picture {
+    margin-left: 5px;
+  }
 
 }
 </style>
