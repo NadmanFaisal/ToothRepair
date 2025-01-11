@@ -30,14 +30,14 @@
             <input class="form-control username-input" v-model="username" placeholder="Your name...">
           </div>
 
+          <div class="col-12 email-section">
+            <label class="email-label">Email</label>
+            <input class="form-control email-input" v-model="email" placeholder="example@email.com">
+          </div>
+
           <div class="col-12 middle-middle-section">
 
             <div class="col-6 middle-left-section">
-
-              <div class="col-12 email-section">
-                <label class="email-label">Email</label>
-                <input class="form-control email-input" v-model="email" placeholder="example@email.com">
-              </div>
 
               <div class="col-12 password-section">
                 <label class="password-label">Password</label>
@@ -48,10 +48,12 @@
 
             <div class="col-6 middle-right-section">
 
-              <div class="col-12 phone-section">
+              <!-- Phone number section will be implemented for version 2 -->
+
+              <!-- <div class="col-12 phone-section">
                 <label class="phone-label">Phone <span class="optional-label">(optional)</span></label>
                 <input class="form-control phone-input" v-model="phone" placeholder="073*******">
-              </div>
+              </div> -->
 
               <div class="col-12 confirm-password-section">
                 <label class="confirm-password-label">Confirm Password</label>
@@ -403,44 +405,17 @@ export default {
   line-height: normal;
 }
 
-.username-section {
+.username-section, .email-section {
   display: flex;
   flex-direction: column;
   height: 15%;
   align-items: start;
 }
 
-.username-label {
-  padding: 5px;
-  color: #515151;
-  text-align: center;
-  font-family: Inter;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
-}
-
-.username-input {
-  border-radius: 15px;
-  border: 1px solid #D2D1D1;
-  background: #FFF;
-
-  height: 45%;
-  width: 100%;
-  color: #BBB9B9;
-  text-align: left;
-  font-family: Inter;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-}
-
 .middle-middle-section {
   display: flex;
   flex-direction: row;
-  height: 35%;
+  height: 20%;
   flex-wrap: wrap;
 }
 
@@ -449,15 +424,15 @@ export default {
   flex-direction: column;
 }
 
-.email-section, .password-section, .phone-section, .confirm-password-section {
+.password-section, .phone-section, .confirm-password-section {
   padding: 5px;
   display: flex;
   flex-direction: column;
-  height: 50%;
+  height: 85%;
   align-items: start;
 }
 
-.email-label, .password-label, .phone-label, .confirm-password-label {
+.username-label, .email-label, .password-label, .phone-label, .confirm-password-label {
   padding: 5px;
   color: #515151;
   text-align: center;
@@ -479,7 +454,7 @@ export default {
   line-height: normal;
 }
 
-.email-input, .password-input, .phone-input, .confirm-password-input {
+.username-input, .email-input, .password-input, .phone-input, .confirm-password-input {
   border-radius: 15px;
   border: 1px solid #D2D1D1;
   background: #FFF;
