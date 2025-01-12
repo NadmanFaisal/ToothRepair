@@ -88,7 +88,15 @@ export default {
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            this.appointments = [...JSON.parse(message)]
+            this.appointments = JSON.parse(message).sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
           }
         })
       } catch (error) {

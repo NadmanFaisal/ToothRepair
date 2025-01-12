@@ -206,9 +206,15 @@ export default {
           // The time for the first appointment
           let startTime = '09:00'
 
-          // Creates 5 appointments each day
-          for (let i = 0; i < 5; i++) {
+          // Creates 15 appointments each day
+          for (let i = 0; i < 15; i++) {
             const endTime = incrementTime(startTime)
+
+            // 12pm to 1pm is break time, so jumps slot creation to 13:00
+            if (startTime === '12:00') {
+              startTime = '13:00'
+              continue
+            }
 
             const newAppointment = {
               status: 'unavailable',

@@ -131,8 +131,15 @@ export default {
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             console.log('Received appointments for specific dentist:', parsedMessage)
 
-            // Updates the appointments list state for reactivity
-            this.appointments = [...parsedMessage]
+            this.appointments = parsedMessage.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
           }
         })
       } catch (error) {

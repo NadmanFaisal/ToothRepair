@@ -77,7 +77,15 @@ export default {
             // Check if the receiving message is already a JSON string, if not, parse it
             const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
             // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
-            this.appointments = [...parsedMessage]
+            this.appointments = parsedMessage.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
             console.log(this.appointments)
           }
         })
