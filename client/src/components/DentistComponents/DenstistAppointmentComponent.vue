@@ -284,7 +284,7 @@ export default {
       }
       this.pendingTimer = setTimeout(() => {
         console.log('Clinic ID fetched')
-        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         this.selectedAppointmentId = null
       }, 10000)
     }
