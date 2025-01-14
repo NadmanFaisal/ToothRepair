@@ -21,14 +21,15 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div
+          <div v-if="this.patientSelectedDate >= today"
           class="col-2 appointment-slot-container"
           v-for="appointment in morningFilteredAppointments"
-          :key="appointment.id"
+          :key="`future-${appointment.id}`"
           :class="{
             'available-slot': appointment.status === 'available',
             'booked-slot': appointment.status === 'booked',
             'unavailable-slot': appointment.status === 'unavailable',
+            'pending-slot': appointment.status === 'pending',
             'selected-slot': appointment.id === selectedAppointmentId
             } "
             @click="selectAppointment(appointment)"
@@ -39,6 +40,21 @@
             <div class="col-8 appointment-information-container">
               <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
             </div>
+          </div>
+
+          <div v-else
+            class="col-2 appointment-slot-container"
+            v-for="appointment in morningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+            @click="showOldAppointmentAlert()"
+            >
+            <div class="col- 4 status-mark-container">
+              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+            </div>
+            <div class="col-8 appointment-information-container">
+              <label class="appointment-information-label">{{ getTypeOfTime(appointment.startTime) }}</label>
+            </div> 
           </div>
 
         </div>
@@ -68,7 +84,7 @@
         <div class="col-10 slot-section">
 
           <!-- Dynamically sets the color of the slots according to the status -->
-          <div
+          <div v-if="this.patientSelectedDate >= today"
           class="col-2 appointment-slot-container"
           v-for="appointment in eveningFilteredAppointments"
           :key="appointment.id"
@@ -76,6 +92,7 @@
             'available-slot': appointment.status === 'available',
             'booked-slot': appointment.status === 'booked',
             'unavailable-slot': appointment.status === 'unavailable',
+            'pending-slot': appointment.status === 'pending',
             'selected-slot': appointment.id === selectedAppointmentId
             } "
             @click="selectAppointment(appointment)"
@@ -86,6 +103,21 @@
             <div class="col-8 appointment-information-container">
               <label class="appointment-information-label" :class="{ 'unavailable-label': appointment.status === 'unavailable' }">{{ getTypeOfTime(appointment.startTime) }}</label>
             </div>
+          </div>
+
+          <div v-else
+            class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+            @click="showOldAppointmentAlert()"
+            >
+            <div class="col- 4 status-mark-container">
+              <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+            </div>
+            <div class="col-8 appointment-information-container">
+              <label class="appointment-information-label">{{ getTypeOfTime(appointment.startTime) }}</label>
+            </div> 
           </div>
 
         </div>
@@ -99,16 +131,20 @@
 
 <script>
 
-import { subscribeToTopic, publishToTopic } from '../../mqtt/mqtt.js'
+import { subscribeToTopic, publishToTopic, messageArrived } from '../../mqtt/mqtt.js'
 import checkMark from '../../assets/check-mark.png'
 import crossMark from '../../assets/cross-mark.png'
+import { parse } from 'vue/compiler-sfc'
 
 export default {
   name: 'AppointmentComponent',
   data() {
     return {
       selectedAppointmentId: null,
-      selectedAppointmentStartTime: null
+      selectedAppointmentStartTime: null,
+      userId: localStorage.getItem('UserID'),
+      pendingTimer: null,
+      today: new Date().toISOString().split('T')[0]
     }
   },
   props: {
@@ -172,22 +208,28 @@ export default {
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
+    showOldAppointmentAlert() {
+      alert('This appointment is older than the current date, please try to book an appointment that has not passed.')
+    },
     async bookAppointment() {
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
         return
       }
       try {
-        const userId = localStorage.getItem('UserID')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
-        alert(`Successfully booked appointment at ${this.selectedAppointmentStartTime}`)
+        publishToTopic('ScheduleService/Appointment/bookAppointment', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        alert('Successfully booked an Appointment at: ' + this.selectedAppointmentStartTime + ' on ' + this.patientSelectedDate)
         this.selectedAppointmentId = null
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }
     },
-    selectAppointment(appointment) {
+    async selectAppointment(appointment) {
+      console.log(appointment.id)
+      console.log(appointment.status)
+      console.log(appointment.patient)
+      console.log(this.userId)
       if (appointment.status === 'unavailable') {
         alert('This slot is unavailable')
         return
@@ -196,9 +238,29 @@ export default {
         alert('Slot has already been booked. Please select a different slot')
         return
       }
+      if (appointment.status === 'pending' && !(appointment.patient === JSON.parse(this.userId))) {
+        if (appointment.patient === null) {
+          alert('This slot is pending, it might soon become available')
+        } else {
+          alert('This slot is pending, it might soon be booked so check other appointments')
+        }
+        return
+      }
+      if (this.selectedAppointmentId !== null && !(appointment.patient === JSON.parse(this.userId))) {
+        alert('Please unselect your pending appointment')
+        return
+      }
       this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
       this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
-      console.log(appointment.id)
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      if (this.pendingTimer) {
+        clearTimeout(this.pendingTimer)
+      }
+      this.pendingTimer = setTimeout(() => {
+        console.log('Clinic ID fetched')
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        this.selectedAppointmentId = null
+      }, 10000)
     }
   }
 }
@@ -303,6 +365,18 @@ export default {
   color:white;
 }
 
+#old-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  border: 1px solid #DEDEDE;
+  background-color: #FFF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color:#DCDCDC;
+}
+
 .unavailable-slot {
   margin: 20px;
   display: flex;
@@ -342,6 +416,19 @@ export default {
   background-color: #E70505;
   box-shadow: 0px 4px 4px 0px rgba(231, 5, 5, 0.25);
   color:white;
+}
+
+.pending-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  background-color: yellow;
+  box-shadow: 0px 4px 4px 0px rgba(0, 156, 31, 0.25);
+  color:white;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }
 
 .status-mark-container {

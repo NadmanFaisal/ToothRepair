@@ -21,12 +21,14 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container"
+            <div v-if="this.dentistSelectedDate >= today"
+            class="col-2 appointment-slot-container"
             v-for="appointment in morningFilteredAppointments"
-            :key="appointment.id"
+            :key="`future-${appointment.id}`"
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
+              'pending-slot': appointment.status === 'pending',
               'selected-slot': appointment.id === selectedAppointmentId
               }
               " @click="selectAppointment(appointment)">
@@ -43,6 +45,21 @@
                   >
                     {{ getTypeOfTime(appointment.startTime) }}
                   </label>
+              </div>
+            </div>
+
+            <div v-else class="col-2 appointment-slot-container"
+            v-for="appointment in morningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+              @click="showOldAppointmentAlert()">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label">
+                  {{ getTypeOfTime(appointment.startTime) }}
+                </label>
               </div>
             </div>
 
@@ -73,12 +90,14 @@
           <div class="col-10 slot-section">
 
             <!-- Dynamically sets the color of the slots according to the status -->
-            <div class="col-2 appointment-slot-container"
+            <div v-if="this.dentistSelectedDate >= today"
+            class="col-2 appointment-slot-container"
             v-for="appointment in eveningFilteredAppointments"
-            :key="appointment.id"
+            :key="`future-${appointment.id}`"
             :class="{
               'available-slot': appointment.status === 'available',
               'unavailable-slot': appointment.status !== 'available',
+              'pending-slot': appointment.status === 'pending',
               'selected-slot': appointment.id === selectedAppointmentId
               }
               " @click="selectAppointment(appointment)">
@@ -94,6 +113,21 @@
                   }"
                   >
                     {{ getTypeOfTime(appointment.startTime) }}
+                </label>
+              </div>
+            </div>
+
+            <div v-else class="col-2 appointment-slot-container"
+            v-for="appointment in eveningFilteredAppointments"
+            :key="`past-${appointment.id}`"
+            id="old-slot"
+              @click="showOldAppointmentAlert()">
+              <div class="col- 4 status-mark-container">
+                <img :src="getStatusImage(appointment.status)" class="status-mark-image">
+              </div>
+              <div class="col-8 appointment-information-container">
+                <label class="appointment-information-label">
+                  {{ getTypeOfTime(appointment.startTime) }}
                 </label>
               </div>
             </div>
@@ -118,7 +152,10 @@ export default {
   data() {
     return {
       selectedAppointmentId: null,
-      selectAppointmentStartTime: null
+      selectedAppointmentStartTime: null,
+      userId: localStorage.getItem('UserID'),
+      pendingTimer: null,
+      today: new Date().toISOString().split('T')[0]
     }
   },
   props: {
@@ -183,7 +220,6 @@ export default {
   methods: {
     // Makes selected appointment available
     async makeAvailable() {
-      const userId = localStorage.getItem('UserID')
       // If no appointments selected, does not proceed
       if (!this.selectedAppointmentId) {
         alert('No booking slot has been selected')
@@ -192,9 +228,9 @@ export default {
       try {
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
         // Sends the selected appointment ID and dentist ID for making slot available
-        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        publishToTopic('ScheduleService/Appointment/makeAppointmentAvailable', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
         // Alert for confirmation of slot booking showing necessary details
-        alert('Successfully made a ' + this.selectAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
+        alert('Successfully made a ' + this.selectedAppointmentStartTime + ' AM appointment slot available on ' + this.dentistSelectedDate)
         // Sets the selectedAppointmentId to null to prevent making same appointment available again
         this.selectedAppointmentId = null
       } catch (error) {
@@ -207,21 +243,50 @@ export default {
       const adjustedHour = hour % 12 || 12 // Convert 0 hour to 12 for AM and handle 12-hour format
       return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${period}` // Format the time with leading zeros
     },
+    showOldAppointmentAlert() {
+      alert('This appointment is older than the current date, please try to make another appointment available.')
+    },
     getStatusImage(status) {
       return status === 'available' ? checkMark : crossMark
     },
-    selectAppointment(appointment) {
-      // If booked, does not allow selectoin
-      if (appointment.status === 'booked') {
-        const confirmation = confirm('This has already been booked by patients.')
-        if (!confirmation) {
-          return
-        }
-      }
-      // Allows selection by setting necessary parameters
-      this.selectAppointmentStartTime = this.selectAppointmentStartTime === appointment.startTime ? null : appointment.startTime
-      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
+    async selectAppointment(appointment) {
       console.log(appointment.id)
+      console.log(appointment.status)
+      console.log(appointment.dentist)
+      console.log(this.userId)
+      if (appointment.status === 'available') {
+        alert('This slot is already available, please make another slot available')
+        return
+      }
+      if (appointment.status === 'booked') {
+        alert('Slot has already been booked. Please select a different slot')
+        return
+      }
+      if (appointment.status === 'pending' && !(appointment.dentist === JSON.parse(this.userId))) {
+        if (appointment.patient === null) {
+          alert('This slot is pending, it might soon become available so check other appointments')
+        } else {
+          alert('This slot is pending, it might soon be booked so check other appointments')
+        }
+        return
+      }
+      if (this.selectedAppointmentId !== null && !(appointment.dentist === JSON.parse(this.userId))) {
+        alert('Please unselect your pending appointment')
+        return
+      }
+      console.log("Before assigning value to selectedAppointmentStartTime: ", this.selectedAppointmentStartTime)
+      this.selectedAppointmentStartTime = this.selectedAppointmentStartTime === appointment.startTime ? null : appointment.startTime
+      console.log("After assigning value to selectedAppointmentStartTime: ", this.selectedAppointmentStartTime)
+      this.selectedAppointmentId = this.selectedAppointmentId === appointment.id ? null : appointment.id
+      publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "' + this.selectedAppointmentId + '", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+      if (this.pendingTimer) {
+        clearTimeout(this.pendingTimer)
+      }
+      this.pendingTimer = setTimeout(() => {
+        console.log('Clinic ID fetched')
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
+        this.selectedAppointmentId = null
+      }, 10000)
     }
   }
 
@@ -326,6 +391,18 @@ export default {
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
+#old-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  border: 1px solid #DEDEDE;
+  background-color: #FFF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color:#DCDCDC;
+}
+
 .available-slot {
   margin: 20px;
   display: flex;
@@ -345,6 +422,17 @@ export default {
   height: 75px;
   border-radius: 5px;
   background-color: #FFF;
+  border: 3px solid #007BFF;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+}
+
+.pending-slot {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  height: 75px;
+  border-radius: 5px;
+  background-color: yellow;
   border: 3px solid #007BFF;
   box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
 }
