@@ -85,6 +85,7 @@
 </template>
 
 <script>
+// FOR ADMINS PLEASE SELECT I AM A PATIENT AND LOG IN WITH admin@gmail.com and admin123
 import { subscribeToTopic, publishToTopic, messageArrived, unsubscribeFromTopic } from '../mqtt/mqtt.js'
 export default {
   name: 'LogInPage',
@@ -131,9 +132,17 @@ export default {
             console.log(message)
 
             if (message === 'User is sucessfully logged in!') {
-              const userInfo = {
-                email: this.email,
-                role: this.isDentist ? 'dentist' : 'patient'
+              let userInfo
+              if (this.email === 'admin@gmail.com') {
+                userInfo = {
+                  email: this.email,
+                  role: 'admin'
+                }
+              } else {
+                userInfo = {
+                  email: this.email,
+                  role: this.isDentist ? 'dentist' : 'patient'
+                }
               }
               console.log(userInfo)
               const encodedUserInfo = btoa(JSON.stringify(userInfo))
