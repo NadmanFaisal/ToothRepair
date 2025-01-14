@@ -18,9 +18,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import main.java.db.LogSchema;
 import main.java.email.EmailService;
-import main.java.service.LogService;
 
 @Component
 public class MQTT implements MqttCallback {
@@ -32,9 +30,7 @@ public class MQTT implements MqttCallback {
     "$share/notificationReplica/authenticationService/appointment/getAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&patient/getCancelledAppointmentInfo", 
     "$share/notificationReplica/authenticationService/appointment&dentist/getCancelledAppointmentInfo", "$share/notificationReplica/authenticationService/appointment&dentist/getAvailableAppointmentInfo", 
     "$share/notificationReplica/notificationService/totalMsgReceivedAlert", "$share/notificationReplica/notificationService/totalMsgSentAlert" };
-    private final LogService logService;
     private final EmailService emailService;
-    private LogSchema log;
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private IMqttClient middleware; // MQTT client
     private int currentBrokerIndex = 0;
@@ -51,11 +47,9 @@ public class MQTT implements MqttCallback {
      */
 
     @Autowired
-    public MQTT(LogService logService, EmailService emailService){
+    public MQTT(EmailService emailService){
         
             this.threadPool = Executors.newCachedThreadPool(); // Dynamically expand thread poo
-            this.logService = logService;
-            this.log = new LogSchema();
             this.emailService = emailService;
         try {  
             initializeClient();
@@ -193,21 +187,7 @@ public class MQTT implements MqttCallback {
 
         try {
             String stringMessage = new String(message.getPayload());
-
             switch (topic) {
-                case "authenticationService/dentist&patient/userID":
-                    String userID = stringMessage;
-                    this.log.setUserId(userID);
-                    System.out.println(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
-                    this.log.setUserLog(currentTime +" "+userID+ " Has logged into the Teeth Repair System");
-                    this.emailService.sendSimpleMessage("Vaibhavpuram05@gmail.com", "Please work", "Test message");
-                    break;
-                case "logout":    
-                    System.out.println("Logged this into the DB: "+currentTime+" "+this.log.getUserId()+" "+stringMessage);
-                    this.log.setUserLog(currentTime+" "+this.log.getUserId()+" "+stringMessage);
-                    logService.createLog(log); 
-                    this.log = new LogSchema();
-                    break;
                 case "authenticationService/appointment/getAppointmentInfo":
                     this.sendGmailNotification(stringMessage, "authenticationService/appointment/getAppointmentInfo");
                     break;
