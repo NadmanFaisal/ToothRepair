@@ -18,12 +18,12 @@ const routes = [
   { path: '/signup', name: 'SignUpPage', component: SignUpPage, meta: { guestOnly: true } },
   { path: '/login', name: 'LogInPage', component: LogInPage, meta: { guestOnly: true } },
   { path: '/mapView', name: 'MapView', component: MapView, meta: { requiresRole: 'patient' } },
-  { path: '/systemStats', name: 'SystemStats', component: SystemStatsPage },
-  { path: '/patientHomePage', name: 'PatientSelectionScreen', component: PatientHomePage, meta: { requiredRole: 'patient' } },
-  { path: '/patientMyBookingsPage', name: 'PatientMyBookingsPage', component: PatientMyBookingsPage, meta: { requiredRole: 'patient' } },
-  { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiredRole: 'dentist' } },
-  { path: '/patientSettingsPage', name: 'PatientSettingsPage', component: PatientSettingsPage, meta: { requiredRole: 'patient' } },
-  { path: '/dentistSettingsPage', name: 'DentistSettingsPage', component: DentistSettingsPage, meta: { requiredRole: 'dentist' } }
+  { path: '/systemStats', name: 'SystemStats', component: SystemStatsPage, meta: { requiresRole: 'admin' } },
+  { path: '/patientHomePage', name: 'PatientSelectionScreen', component: PatientHomePage, meta: { requiresRole: 'patient' } },
+  { path: '/patientMyBookingsPage', name: 'PatientMyBookingsPage', component: PatientMyBookingsPage, meta: { requiresRole: 'patient' } },
+  { path: '/dentistMyBookingsPage', name: 'DentistMyBookingsPage', component: DentistMyBookingsPage, meta: { requiresRole: 'dentist' } },
+  { path: '/patientSettingsPage', name: 'PatientSettingsPage', component: PatientSettingsPage, meta: { requiresRole: 'patient' } },
+  { path: '/dentistSettingsPage', name: 'DentistSettingsPage', component: DentistSettingsPage, meta: { requiresRole: 'dentist' } }
 ]
 
 const router = createRouter({
@@ -50,15 +50,49 @@ function getUserInfoCookie() {
 
 router.beforeEach((to, from, next) => {
   const userInfo = getUserInfoCookie()
+
+  // 2) Check if the route requires a specific role:
   if (to.meta.requiresRole) {
-    if (!userInfo || userInfo.role !== to.meta.requiresRole) {
-      next(userInfo ? `/${userInfo.role}HomePage` : '/login')
+    if (!userInfo || !userInfo.role || userInfo.role !== to.meta.requiresRole) {
+      if (userInfo && userInfo.role) {
+        if (userInfo.role === 'admin') {
+          next('/systemStats')
+          return
+        } else if (userInfo.role === 'dentist') {
+          next('/dentistHomePage')
+          return
+        } else if (userInfo.role === 'patient') {
+          next('/patientHomePage')
+          return
+        } else {
+          next('/login')
+          return
+        }
+      } else {
+        next('/login')
+        return
+      }
+    }
+
+    if (userInfo.role === 'admin' && to.name !== 'SystemStats') {
+      next('/systemStats')
       return
     }
   }
-  if (to.meta.guestOnly && userInfo) {
-    next(`/${userInfo.role}HomePage`)
-    return
+
+  if (to.meta.guestOnly && userInfo && userInfo.role) {
+    if (userInfo.role === 'admin') {
+      next('/systemStats')
+      return
+    }
+    if (userInfo.role === 'dentist') {
+      next('/dentistHomePage')
+      return
+    }
+    if (userInfo.role === 'patient') {
+      next('/patientHomePage')
+      return
+    }
   }
 
   next()
