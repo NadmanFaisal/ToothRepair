@@ -32,7 +32,6 @@ export default {
       navItems: [
         { name: 'My Appointments', route: 'dentistHomePage' },
         { name: 'My Bookings', route: '/dentistMyBookingsPage' },
-        { name: 'System Stats', route: '/systemStats' }
         // Add more navigation items here
       ],
       localstorageUsername: localStorage.getItem('Username')

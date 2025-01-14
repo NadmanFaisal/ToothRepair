@@ -43,7 +43,6 @@ export default {
         { name: 'My Home', route: '/patientHomePage' },
         { name: 'Book Appointments', route: '/patientAppointmentPage' },
         { name: 'My Bookings', route: '/patientMyBookingsPage' },
-        { name: 'System Stats', route: '/systemStats' }
         // Add more navigation items here
       ],
       localstorageUsername: localStorage.getItem('Username')

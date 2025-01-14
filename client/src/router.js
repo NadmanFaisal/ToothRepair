@@ -51,7 +51,6 @@ function getUserInfoCookie() {
 router.beforeEach((to, from, next) => {
   const userInfo = getUserInfoCookie()
 
-  // 2) Check if the route requires a specific role:
   if (to.meta.requiresRole) {
     if (!userInfo || !userInfo.role || userInfo.role !== to.meta.requiresRole) {
       if (userInfo && userInfo.role) {
