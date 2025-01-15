@@ -48,7 +48,9 @@ export default {
       clinics: [],
       patientSelectedDate: new Date().toISOString().split('T')[0],
       appointments: [],
-      clinicId: this.$route.query.clinicId || localStorage.getItem('ClinicID')
+      clinicId: this.$route.query.clinicId || localStorage.getItem('ClinicID'),
+      userId: localStorage.getItem('UserID'),
+      getAppointmentStatus: null
     }
   },
   mounted() {
@@ -60,8 +62,10 @@ export default {
       }
       console.log('MQTT connected, fetching data...')
       try {
+        this.getAppointmentStatus = null
         await this.getAllClinics()
         await this.getAppointments()
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "patient": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
@@ -80,17 +84,41 @@ export default {
         const clinicId = this.$route.query.clinicId || localStorage.getItem('ClinicID')
         console.log('Subscribing to topic...')
         console.log('Publishing request for appointments...')
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"clinic": "${clinicId}"}`)
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.$route.query.clinicId}"}`)
         console.log('Subscribed successfully')
 
         console.log('Setting up message listener...')
         messageArrived((topic, message) => {
           console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            this.appointments = [...JSON.parse(message)]
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              console.log('Received another users request')
+              if (this.getAppointmentStatus === null) {
+                console.log('Someone refreshed or changed clinic')
+              } else {
+                console.log('cancel, book, pending or available')
+                this.getAppointments()
+              }
+            }
+            this.getAppointmentStatus = null
           }
         })
+        console.log(`This should be working: ${this.appointments}`)
+        this.getAppointmentStatus = null
+        console.log('Should be null:' + this.getAppointmentStatus)
       } catch (error) {
         console.error('Error in getAppointments:', error)
       }
