@@ -1,5 +1,5 @@
 <div style="text-align: center;">
-    <img src="mobile/iSenseCool/assets/logo.png" alt="TeethRepair Logo" style="width: 100%; height: auto;">
+    <img src="images/Logo (1).png" alt="TeethRepair Logo" style="width: 100%; height: auto;">
 </div>
 
 ## Table of Content 
