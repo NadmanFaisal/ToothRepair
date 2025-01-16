@@ -1,5 +1,5 @@
 <div style="text-align: center;">
-    <img src="mobile/iSenseCool/assets/logo.png" alt="iSenseCool Logo" style="width: 100%; height: auto;">
+    <img src="mobile/iSenseCool/assets/logo.png" alt="TeethRepair Logo" style="width: 100%; height: auto;">
 </div>
 
 ## Table of Content 
@@ -29,12 +29,29 @@
 ## System's Architecture
 
 
+<details><summary>ER Diagram</summary>
 
+</details>
+<details><summary>Architecture Diagram</summary>
+
+</details>
+<details><summary>Deployment Diagram</summary>
+
+</details>
+
+
+## Development Process
 
 
 ## Contributors
 
-
+|  Name  | username |
+| ------ | ---------|
+|    Mohamed Taha Jasser    |   @mohamedt        |
+|    Nadman Abdullah Bin Faisal    |    @nadman      |
+|    Vaibhav Puram    |   @puram       |
+|    Danis Music    |    @danism      |
+|    Filipe Rosa    |    @filipero      |
 
 ## Acknowledgments
 
