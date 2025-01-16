@@ -96,6 +96,7 @@ export default {
             this.getAppointmentStatus = message
           }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            
             console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
             console.log('What happens when parsing' + parsedMessage)
@@ -103,7 +104,15 @@ export default {
             console.log('localstorage = ' + this.userId)
             console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
             if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = parsedMessage.appointments
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
             } else {
               console.log('Received another users request')
               if (this.getAppointmentStatus === null) {
