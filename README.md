@@ -30,13 +30,13 @@
 
 
 <details><summary>ER Diagram</summary>
-
+![diagram](images/DSDARCHDIAGRAM.drawio.png)
 </details>
 <details><summary>Architecture Diagram</summary>
-
+![diagram](images/DSDDEPLOYDIAGRAM.drawio.png)
 </details>
 <details><summary>Deployment Diagram</summary>
-
+![diagram](images/DSDERFINAL.drawio.png)
 </details>
 
 
