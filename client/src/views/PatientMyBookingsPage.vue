@@ -29,8 +29,7 @@
 
                 <div class="col-12 appointment-content-section">
 
-                  <div class="col-12 appointment-slot-container" v-for="appointment in appointments" :key="appointment.id">
-
+                  <div class="col-12 appointment-slot-container" v-for="appointment in bookedAppointments" :key="appointment.id">
                     <div class="col-1 logo-container">
                       <img src="../assets/appointment-slot-image.png" class="appointment-image">
                       <div class="vl"></div>
@@ -48,13 +47,12 @@
                     <div class="col-3 status-container">
 
                       <div v-if="today <= appointment.date" class="col-12 button-container">
-                        <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment.id)">Cancel</button>
+                        <button class="col-10 btn cancel-button" @click="cancelAppointment(appointment)">Cancel</button>
                       </div>
 
                       <div v-else class="col-12 completed-container">
                         <label class="completed-label">COMPLETED!</label>
                       </div>
-
                     </div>
 
                   </div>
@@ -85,7 +83,8 @@ export default {
       userId: localStorage.getItem('UserID'),
       appointments: [],
       clinics: [],
-      subscribedTopics: []
+      subscribedTopics: [],
+      getAppointmentStatus: null
     }
   },
   components: {
@@ -123,6 +122,11 @@ export default {
     console.log('This page is Unmounted')
     // this.cleanupSubscriptions()
   },
+  computed: {
+    bookedAppointments() {
+      return this.appointments.filter((appointment) => appointment.status === 'booked')
+    }
+  },
   methods: {
     async getAppointmentsByPatient() {
       try {
@@ -131,13 +135,19 @@ export default {
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
-
         messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
-            console.log('Received appointments for specific patient:', parsedMessage)
-
-            this.appointments = parsedMessage.sort((a, b) => {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.patient)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.patient) {
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
               const ascendingDate = new Date(a.date) - new Date(b.date)
               if (ascendingDate !== 0) {
                 // If dates are not same, returns ascendingDate
@@ -146,6 +156,13 @@ export default {
               // If dates are same, sorts according to startTime and returns ascendingDate
               return a.startTime.localeCompare(b.startTime)
             })
+            } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointmentsByPatient()
+              }
+              console.log('Recieved another users request')
+            }
           }
         })
 
@@ -156,9 +173,33 @@ export default {
           this.subscribedTopics.push(topic)
           console.log('Subscribed successfully')
         }
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         console.log('Publishing request for appointments...')
         // Sends user ID for getting appointments as per the user
         publishToTopic('ScheduleService/Appointment/getAppointmentsByPatient', `{"patient": ${this.userId}}`)
+
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.patient)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.patient) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointmentsByPatient()
+              }
+              console.log('Recieved another users request')
+            }
+          }
+        })
       } catch (error) {
         console.error('Error in getAppointmentsByPatient:', error)
       }
@@ -260,17 +301,40 @@ export default {
     */
 
     // Cancels a specific appointment for that specific user
-    async cancelAppointment(appointmentId) {
+    async cancelAppointment(appointment) {
       const confirmation = confirm('Are you sure you want to cancel the appointment?')
       if (!confirmation) {
         return
       }
 
       try {
-        console.log('Attempting to cancel appointment' + appointmentId)
+        console.log('Attempting to cancel appointment' + appointment.id)
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointmentId + '", "patient": ' + this.userId + '}')
-        this.getAppointmentsByPatient()
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
+        publishToTopic('ScheduleService/Appointment/patientCancelAppointments', '{"id": "' + appointment.id + '", "patient": ' + this.userId + '}')
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
+              this.appointments = parsedMessage.appointments
+            } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentsByPatient()
+              }
+              console.log('Recieved another users request')
+            }
+          }
+        })
+        this.getAppointmentStatus = null
+        alert('Cancelled an Appointment at ' + appointment.startTime + ' on ' + appointment.date)
       } catch (error) {
         console.error('This bombaclaat wont work' + error)
       }

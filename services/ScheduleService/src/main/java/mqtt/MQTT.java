@@ -1,5 +1,7 @@
 package main.java.mqtt;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,6 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -26,6 +29,7 @@ public class MQTT implements MqttCallback {
     private static final String [] BROKER_URLS = { "ssl://193a0f31e34647d9a74f1e130a9238ba.s1.eu.hivemq.cloud", "tcp://broker.hivemq.com", "tcp://test.mosquitto.org", "tcp://broker.emqx.io"};
     private static final String CLIENT_ID = "ScheduleClient" + UUID.randomUUID().toString();
     private static final String PUBLISHED_TOPIC = "Client/ScheduleService/AppointmentInfo";
+    private static final String PUBLISHED_TOPIC_STATUS = "client/scheduleService/getAppointmentStatus";
     private static final String PUBLISHED_AVAILABLE_APPOINTMENT_COUNT_TOPIC = "scheduleService/availableAppointmentCount";
     private static final String PUBLISHED_TOTAL_MSG_SENT = "scheduleService/totalMsgSent";
     private static final String PUBLISHED_TOTAL_MSG_RECEIVED = "scheduleService/totalMsgReceived";
@@ -38,7 +42,9 @@ public class MQTT implements MqttCallback {
      "$share/scheduleReplica/ScheduleService/Appointment/createAppointment", "$share/scheduleReplica/ScheduleService/Appointment/bookAppointment",
      "$share/scheduleReplica/ScheduleService/Appointment/makeAppointmentAvailable", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByClinic",
      "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByPatient", "$share/scheduleReplica/ScheduleService/Appointment/dentistCancelAppointments",
-    "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist", "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert", "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert"}; 
+    "$share/scheduleReplica/ScheduleService/Appointment/patientCancelAppointments", "$share/scheduleReplica/ScheduleService/Appointment/getAppointmentsByDentist",
+    "$share/scheduleReplica/scheduleService/appointment/getAvailableAppointmentsAlert", "$share/scheduleReplica/scheduleService/totalMsgSentAlert",
+    "$share/scheduleReplica/scheduleService/totalMsgReceivedAlert", "scheduleService/appointment/pendingAppointments"}; 
     private ExecutorService threadPool; // thread to handle each subscribed topic
     private MqttAsyncClient middleware; // MQTT client
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -252,25 +258,35 @@ public class MQTT implements MqttCallback {
 
                 case "ScheduleService/Appointment/getAppointmentsByClinic": {
                     System.out.println("Will publish all appointments per clinic");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String clinic = (String)appointmentInfo.get("clinic");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByClinic(clinic);
+                    appointmentInfo.remove("clinic");
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
                 case "ScheduleService/Appointment/getAppointmentsByPatient": {
-                    System.out.println("Will publish all appointments per patient");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
+                    System.out.println("Will publish all appointments by patient");
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String patient = (String)appointmentInfo.get("patient");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patient);
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
                 case "ScheduleService/Appointment/getAppointmentsByDentist": {
-                    System.out.println("Will publish all appointments per dentist");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
+                    System.out.println("Will publish all appointments by dentist");
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    String dentist = (String)appointmentInfo.get("dentist");
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentist);
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
                     break;
                 }
 
@@ -284,44 +300,130 @@ public class MQTT implements MqttCallback {
 
                 case "ScheduleService/Appointment/bookAppointment": {
                     System.out.println("Entered bookAppointment if statement");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    
+                    String appointmentId = (String)appointmentInfo.get("id");
+                    String patientId = (String)appointmentInfo.get("patient");
+                    String clinicId = (String)appointmentInfo.get("clinic");
+
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.bookAppointment(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
-                    middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    appointmentService.bookAppointment(appointmentId, patientId);
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByClinic(clinicId);
+                    appointmentInfo.remove("clinic");
+                    appointmentInfo.remove("id");
+                    appointmentInfo.remove("patient");
+                    appointmentInfo.put("userID", patientId);
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "booking".getBytes(), 2, false);
+                    System.out.println("Published status: booking in bookAppointment");
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
+                    middleware.publish(PUBLISHED_ENTITY_IDS, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
+
+                case "scheduleService/appointment/pendingAppointments": {
+                    System.out.println("Entered pendingAppointment if statement");
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+                    
+                    String appointmentId = (String)appointmentInfo.get("id");
+                    String clinicId = (String)appointmentInfo.get("clinic");
+                    String patientId;
+                    String dentistId;
+                    if (appointmentInfo.get("patient") != null) {
+                        patientId = (String)appointmentInfo.get("patient");
+                        appointmentService.pendingAppointment(appointmentId, patientId, true);
+                        System.out.println("Appointment info: " + appointmentInfo);
+                        appointmentInfo.remove("patient");
+                        appointmentInfo.put("userID", patientId);
+                    } else {
+                        dentistId = (String)appointmentInfo.get("dentist");
+                        appointmentService.pendingAppointment(appointmentId, dentistId, false);
+                        System.out.println("Appointment info: " + appointmentInfo);
+                        appointmentInfo.remove("dentist");
+                        appointmentInfo.put("userID", dentistId);
+                    }
+
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByClinic(clinicId);
+                    appointmentInfo.remove("clinic");
+                    appointmentInfo.remove("id");
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "pending".getBytes(), 2, false);
+                    System.out.println("Published status: pending in pendingAppointment");
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
+                    break;
+                }
+                
                 case "ScheduleService/Appointment/makeAppointmentAvailable": {
                     System.out.println("Entered makeAppointmentAvailable if statement");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
+
+                    String clinicId = (String)appointmentInfo.get("clinic");
+                    String appointmentId = (String)appointmentInfo.get("id");
+                    String dentistId = (String)appointmentInfo.get("dentist");
+                    
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.makeAppointmentAvailable(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByClinic(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    appointmentService.makeAppointmentAvailable(appointmentId, dentistId);
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByClinic(clinicId);
+                    appointmentInfo.remove("clinic");
+                    appointmentInfo.remove("id");
+                    appointmentInfo.remove("dentist");
+                    appointmentInfo.put("userID", dentistId);
+                    appointmentInfo.put("appointments", appointmentListJson);
+                    
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "available".getBytes(), 2, false);
+                    System.out.println("Published status: available in makeAppointmentAvailable");
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
 
                 case "ScheduleService/Appointment/dentistCancelAppointments": {
                     System.out.println("Entered dentist cancel if statement");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.dentistCancel(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByDentist(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    
+                    String dentistId = (String)appointmentInfo.get("dentist");
+                    String appointmentId = (String)appointmentInfo.get("id");
+
+                    appointmentService.dentistCancel(appointmentId);
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentistId);
+                    appointmentInfo.remove("id");
+                    appointmentInfo.remove("dentist");
+                    appointmentInfo.put("userID", dentistId);
+                    appointmentInfo.put("appointments", appointmentListJson);
+
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "cancelling".getBytes(), 2, false);
+                    System.out.println("Published status: cancelling in dentistCancelAppointments");
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
 
                 case "ScheduleService/Appointment/patientCancelAppointments": {
                     System.out.println("Entered patient cancel if statement");
-                    AppointmentSchema appointmentInfo = objectMapper.readValue(stringMessage, AppointmentSchema.class);
+                    Map<String, Object> appointmentInfo = objectMapper.readValue(stringMessage, new TypeReference<Map<String, Object>>(){});
                     System.out.println(appointmentInfo.toString());
-                    appointmentService.patientCancel(appointmentInfo);
-                    String appointmentListJson = objectMapper.writeValueAsString(this.appointmentService.getAppointmentsByPatient(appointmentInfo));
-                    this.publishAppointmentList(appointmentListJson);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentInfo.getId()).getBytes(), 2, false);
+                    String patientId = (String)appointmentInfo.get("patient");
+                    String appointmentId = (String)appointmentInfo.get("id");
+
+                    appointmentService.patientCancel(appointmentId);
+                    List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patientId);
+                    appointmentInfo.remove("id");
+                    appointmentInfo.remove("patient");
+                    appointmentInfo.put("userID", patientId);
+                    appointmentInfo.put("appointments", appointmentListJson);
+
+                    middleware.publish(PUBLISHED_TOPIC_STATUS, "cancelling".getBytes(), 2, false);
+                    System.out.println("Published status: cancelling in patientCancelAppointments");
+                    String payload = objectMapper.writeValueAsString(appointmentInfo);
+                    this.publishAppointmentList(payload);
+                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{

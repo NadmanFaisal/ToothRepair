@@ -34,7 +34,9 @@ export default {
       dentistSelectedDate: new Date().toISOString().split('T')[0],
       clinicId: null,
       appointments: [],
-      dentistUsername: 'Loading...'
+      dentistUsername: 'Loading...',
+      userId: localStorage.getItem('UserID'),
+      getAppointmentStatus: null
     }
   },
   components: {
@@ -53,6 +55,7 @@ export default {
       try {
         await this.getAppointments()
         await this.getDentistName()
+        publishToTopic('scheduleService/appointment/pendingAppointments', '{"id": "null", "dentist": ' + this.userId + ', "clinic": ' + JSON.stringify(this.clinicId) + '}')
       } catch (error) {
         console.error('Error during data fetch:', error)
       }
@@ -68,16 +71,27 @@ export default {
       try {
         // Clinic ID required for getAppointments to work
         await this.getClinicId()
+        await subscribeToTopic('client/scheduleService/getAppointmentStatus')
         // Topic which receives appointments list
         await subscribeToTopic('Client/ScheduleService/AppointmentInfo')
-        // Sends the clinicID to receive appointment list for that specific clinic
-        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', '{"clinic": "' + this.clinicId + '"}')
+        // Sends the clinicID and userId to receive appointment list for that specific clinic and to filter which user recieves it
+        publishToTopic('ScheduleService/Appointment/getAppointmentsByClinic', `{"userID": ${this.userId}, "clinic": "${this.clinicId}"}`)
         messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            // Check if the receiving message is already a JSON string, if not, parse it
-            const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message
+            console.log(this.appointments)
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.userID)
+            console.log('localstorage = ' + this.userId)
+            console.log('GET APPOINTMENT STATUS: ' + this.getAppointmentStatus)
+            if (JSON.parse(this.userId) === parsedMessage.userID) {
             // Using shallow copy allows Vue to detect changes in this.appointments and helps reactivity
-            this.appointments = parsedMessage.sort((a, b) => {
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
               const ascendingDate = new Date(a.date) - new Date(b.date)
               if (ascendingDate !== 0) {
                 // If dates are not same, returns ascendingDate
@@ -86,7 +100,16 @@ export default {
               // If dates are same, sorts according to startTime and returns ascendingDate
               return a.startTime.localeCompare(b.startTime)
             })
-            console.log(this.appointments)
+            } else {
+              console.log('Received another users request')
+              if (this.getAppointmentStatus === null) {
+                console.log('Someone refreshed or changed clinic')
+              } else {
+                console.log('cancel, book, pending or available')
+                this.getAppointments()
+              }
+            }
+            this.getAppointmentStatus = null
           }
         })
       } catch (error) {
@@ -136,7 +159,9 @@ export default {
           })
         })
         // Sends userID to receive clinicID for that specific dentist
-        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + userId + '}')
+        console.log('localstorage: ' + localStorage.getItem('UserID'))
+        console.log('userid:' + this.userId)
+        publishToTopic('AuthenticationService/Dentist/GetClinicId', '{"id": ' + this.userId + '}')
 
         await clinicIdPromise
       } catch (error) {

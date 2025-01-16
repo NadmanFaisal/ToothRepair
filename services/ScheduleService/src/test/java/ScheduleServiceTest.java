@@ -102,7 +102,7 @@ public class ScheduleServiceTest {
         AppointmentSchema result = testAppointment;
         result.setStatus("booked");
 
-        assertEquals(Optional.of(result), appointmentService.bookAppointment(testAppointment), "The result of this test object should match the booked appointment object");
+        assertEquals(Optional.of(result), appointmentService.bookAppointment(testAppointment.getId(), testAppointment.getPatient()), "The result of this test object should match the booked appointment object");
         
         verify(appointmentRepository, times(1)).findById(testAppointment.getId());
 
@@ -119,7 +119,7 @@ public class ScheduleServiceTest {
         AppointmentSchema result = testAppointment;
         result.setStatus("available");
 
-        assertEquals(Optional.of(result), appointmentService.makeAppointmentAvailable(testAppointment), "The result of this test object should match the available appointment object");
+        assertEquals(Optional.of(result), appointmentService.makeAppointmentAvailable(testAppointment.getId(), testAppointment.getDentist()), "The result of this test object should match the available appointment object");
 
         verify(appointmentRepository, times(1)).findById(testAppointment.getId());
     }

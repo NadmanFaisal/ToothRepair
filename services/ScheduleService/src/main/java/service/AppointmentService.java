@@ -25,13 +25,13 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
-    public Optional<AppointmentSchema> bookAppointment(AppointmentSchema appointmentInfo) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
+    public Optional<AppointmentSchema> bookAppointment(String appointmentId, String patientId) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
 
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
 
-            appointment.setPatient(appointmentInfo.getPatient());
+            appointment.setPatient(patientId);
 
             appointment.setStatus("booked");
 
@@ -44,14 +44,67 @@ public class AppointmentService {
 
     }
 
+    public Optional<AppointmentSchema>pendingAppointment(String appointmentId, String userId, boolean isPatient) {
+        if (appointmentId.equals("null")) {
+            System.out.println("null if statement");
+            List<AppointmentSchema> appointments;
+            AppointmentSchema appointment = new AppointmentSchema();
+
+            if (isPatient) {
+                appointments = this.getAppointmentsByPatient(userId);
+                for (AppointmentSchema appointmentSchema : appointments) {
+                    if (appointmentSchema.getStatus().equals("pending")) {
+                        appointment = appointmentSchema;
+                    }
+                }
+                appointment.setStatus("available");
+                appointment.setPatient(null);
+            } else {
+                appointments = this.getAppointmentsByDentist(userId);
+                for (AppointmentSchema appointmentSchema : appointments) {
+                    if (appointmentSchema.getStatus().equals("pending")) {
+                        appointment = appointmentSchema;
+                    }
+                }
+                appointment.setStatus("unavailable");
+                appointment.setDentist(null);
+            }
+
+            appointmentRepository.save(appointment);
+            return Optional.of(appointment);
+
+        } else {
+            
+            Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
+            
+            if (optionalAppointment.isPresent()) {
+                AppointmentSchema appointment = optionalAppointment.get();
+                
+                if (isPatient) {
+                    appointment.setPatient(userId);
+                } else {
+                    appointment.setDentist(userId);
+                }
+                appointment.setStatus("pending");
+                
+                appointmentRepository.save(appointment);
+
+                return Optional.of(appointment);
+            } else {
+                return Optional.empty();
+            }
+        }
+
+    }
+
     //might need to refactor
-    public Optional<AppointmentSchema> makeAppointmentAvailable(AppointmentSchema appointmentInfo) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
+    public Optional<AppointmentSchema> makeAppointmentAvailable(String appointmentId, String dentistId) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
     
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
 
-            appointment.setDentist(appointmentInfo.getDentist());
+            appointment.setDentist(dentistId);
 
             appointment.setStatus("available");
 
@@ -65,8 +118,8 @@ public class AppointmentService {
 
     }
 
-    public Optional<AppointmentSchema> patientCancel(AppointmentSchema appointmentInfo) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
+    public Optional<AppointmentSchema> patientCancel(String appointmentId) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
     
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
@@ -82,8 +135,8 @@ public class AppointmentService {
         }
     }
 
-    public Optional<AppointmentSchema> dentistCancel(AppointmentSchema appointmentInfo) {
-        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentInfo.getId());
+    public Optional<AppointmentSchema> dentistCancel(String appointmentId) {
+        Optional<AppointmentSchema> optionalAppointment = appointmentRepository.findById(appointmentId);
     
         if (optionalAppointment.isPresent()) {
             AppointmentSchema appointment = optionalAppointment.get();
@@ -110,16 +163,16 @@ public class AppointmentService {
         return appointment;
     }
 
-    public List<AppointmentSchema> getAppointmentsByClinic(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByClinic(appointmentInfo.getClinic());
+    public List<AppointmentSchema> getAppointmentsByClinic(String clinicId) {
+        return appointmentRepository.findByClinic(clinicId);
     }
 
-    public List<AppointmentSchema> getAppointmentsByPatient(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByPatient(appointmentInfo.getPatient());
+    public List<AppointmentSchema> getAppointmentsByPatient(String patientId) {
+        return appointmentRepository.findByPatient(patientId);
     }
 
-    public List<AppointmentSchema> getAppointmentsByDentist(AppointmentSchema appointmentInfo) {
-        return appointmentRepository.findByDentist(appointmentInfo.getDentist());
+    public List<AppointmentSchema> getAppointmentsByDentist(String dentistId) {
+        return appointmentRepository.findByDentist(dentistId);
     }
 
     public int getTotalnumberOfAvailableAppointments(){

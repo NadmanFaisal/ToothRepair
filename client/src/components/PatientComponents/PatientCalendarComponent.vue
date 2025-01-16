@@ -26,7 +26,8 @@ export default {
   data() {
     return {
       selectedDate: new Date().toISOString().split('T')[0],
-      events: []
+      events: [],
+      today: new Date().toISOString().split('T')[0],
     }
   },
   name: 'CalendarComponent',
@@ -63,13 +64,13 @@ export default {
 
       // Iterates over all appointments which are available
       appointments
-        .filter(appointment => appointment.status === 'available')
+        .filter(appointment => appointment.status === 'available' && appointment.date >= this.today)
         .forEach(appointment => {
           this.events.push({
             start: appointment.date,
             end: appointment.date,
             title: 'Available'
-          })
+            })
         })
 
       console.log('Events added to calendar:', this.events)
