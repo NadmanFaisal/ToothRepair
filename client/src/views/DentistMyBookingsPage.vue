@@ -112,7 +112,7 @@ export default {
   },
   computed: {
     availableAppointments() {
-      return this.appointments.filter((appointment) => appointment.status === 'available')
+      return this.appointments.filter((appointment) => appointment.dentist === JSON.parse(this.userId) && !(appointment.status === 'pending'))
     }
   },
   methods: {
@@ -137,13 +137,22 @@ export default {
         messageArrived((topic, message) => {
           console.log(topic)
           if (topic === 'Client/ScheduleService/AppointmentInfo') {
-            console.log('recieved: ' + message)
             const parsedMessage = JSON.parse(message)
+            console.log('Received appointments for specific dentist:', parsedMessage)
+            console.log('recieved: ' + message)
             console.log('What happens when parsing' + parsedMessage)
             console.log('userid = ' + parsedMessage.dentist)
             console.log('localstorage = ' + this.userId)
             if (JSON.parse(this.userId) === parsedMessage.dentist) {
-              this.appointments = parsedMessage.appointments
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
             } else {
               console.log('Recieved another users request')
             }
@@ -212,7 +221,15 @@ export default {
             console.log('userid = ' + parsedMessage.userID)
             console.log('localstorage = ' + this.userId)
             if (JSON.parse(this.userId) === parsedMessage.userID) {
-              this.appointments = parsedMessage.appointments
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+              })
             } else {
               console.log('Recieved another users request')
             }

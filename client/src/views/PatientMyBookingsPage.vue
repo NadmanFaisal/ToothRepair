@@ -135,6 +135,36 @@ export default {
         if (!this.userId) {
           throw new Error('User ID not found in localStorage')
         }
+        messageArrived((topic, message) => {
+          console.log(topic)
+          if (topic === 'client/scheduleService/getAppointmentStatus') {
+            this.getAppointmentStatus = message
+          }
+          if (topic === 'Client/ScheduleService/AppointmentInfo') {
+            console.log('recieved: ' + message)
+            const parsedMessage = JSON.parse(message)
+            console.log('What happens when parsing' + parsedMessage)
+            console.log('userid = ' + parsedMessage.patient)
+            console.log('localstorage = ' + this.userId)
+            if (JSON.parse(this.userId) === parsedMessage.patient) {
+              this.appointments = parsedMessage.appointments.sort((a, b) => {
+              const ascendingDate = new Date(a.date) - new Date(b.date)
+              if (ascendingDate !== 0) {
+                // If dates are not same, returns ascendingDate
+                return ascendingDate
+              }
+              // If dates are same, sorts according to startTime and returns ascendingDate
+              return a.startTime.localeCompare(b.startTime)
+            })
+            } else {
+              if (this.getAppointmentStatus === 'cancelling') {
+                this.getAppointmentStatus = null
+                this.getAppointmentsByPatient()
+              }
+              console.log('Recieved another users request')
+            }
+          }
+        })
 
         // If topic already subscribed, does not subscribe again
         const topic = 'Client/ScheduleService/AppointmentInfo'

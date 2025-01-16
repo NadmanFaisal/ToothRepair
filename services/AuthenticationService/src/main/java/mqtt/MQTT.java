@@ -605,40 +605,46 @@ public class MQTT implements MqttCallback {
      * @param stringPayload payload of the users login credentials.
      * @throws Exception prints the Error Stack trace
      */
-    public void loginPatient(String stringPayload){
+    public void loginPatient(String stringPayload) {
         try {
-
             PatientSchema patient = objectMapper.readValue(stringPayload, PatientSchema.class);
+
             PatientSchema checkPatient = patientService.getPatient(patient);
 
             if (checkPatient == null) {
-                String failureMessage = "Invalid login information, there is no patient with that information";
+                String failureMessage = "Invalid login information, there is no patient with that email.";
                 System.out.println(failureMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
                 totalMsgSent++;
+                return;
             }
-            if (!patientService.checkDuplicatePatient(patient) && !patient.checkPassword(checkPatient.getPassword()) ){ 
+    
+            if (!patient.checkPassword(checkPatient.getPassword())) {
                 String failureMessage = "Invalid email or Password please try again";
                 System.out.println(failureMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
                 totalMsgSent++;
-            } else {
-                String successMessage = "User is sucessfully logged in!";
-                String id = checkPatient.getId();
-                patientService.setIsLoggedIn(checkPatient, true);
-                System.out.println(successMessage);
-                middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
-                totalMsgSent++;
-                middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
-                totalMsgSent++;
-                System.out.println("Published the Patient ID " + id+ "to topic: " + PUBLISHED_USER_ID_TOPIC);
+                return;
             }
-        } catch (Exception e){
-            System.err.println("Error ocurred whilst processing login:");
+    
+            String successMessage = "User is sucessfully logged in!";
+            System.out.println(successMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+            totalMsgSent++;
+    
+            patientService.setIsLoggedIn(checkPatient, true);
+    
+            String userId = checkPatient.getId();
+            middleware.publish(PUBLISHED_USER_ID_TOPIC, userId.getBytes(), 2, false);
+            totalMsgSent++;
+            System.out.println("Published the Patient ID " + userId + " to topic: " + PUBLISHED_USER_ID_TOPIC);
+    
+        } catch (Exception e) {
+            System.err.println("Error occurred whilst processing login:");
             e.printStackTrace();
         }
     }
-
+    
     /**
      * Logic to login the dentist by reading the value as Dentist Schema
      * comparing dentist details with the one in database and if its valid
@@ -648,37 +654,46 @@ public class MQTT implements MqttCallback {
      * @param stringPayload string containing dentist's credentials
      * @throws Exception prints the Error Stack trace
      */
-    public void loginDentist(String stringPayload){
-        try{
-            
+    public void loginDentist(String stringPayload) {
+        try {
             DentistSchema dentist = objectMapper.readValue(stringPayload, DentistSchema.class);
+    
             DentistSchema checkDentist = dentistService.getDentist(dentist);
+    
             if (checkDentist == null) {
-                String failureMessage = "Invalid login information, there is no dentist with that information";
+                String failureMessage = "Invalid login information, there is no dentist with that email";
                 System.out.println(failureMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
                 totalMsgSent++;
-            } else if (!dentistService.checkDuplicateDentist(dentist) && !dentist.checkPassword(checkDentist.getPassword())){ 
+                return;
+            }
+    
+            if (!dentist.checkPassword(checkDentist.getPassword())) {
                 String failureMessage = "Invalid email or Password please try again";
                 System.out.println(failureMessage);
                 middleware.publish(PUBLISHED_LOGIN_TOPIC, failureMessage.getBytes(), 2, false);
                 totalMsgSent++;
-            } else {
-                String successMessage = "User is sucessfully logged in!";
-                String id = checkDentist.getId();
-                dentistService.setIsLoggedIn(checkDentist, true);
-                System.out.println(successMessage);
-                middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
-                totalMsgSent++;
-                middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
-                totalMsgSent++;
-                System.out.println("Published the Dentist ID " + id+ " to topic: " + PUBLISHED_USER_ID_TOPIC);
+                return;
             }
-        } catch(Exception e){
-            System.err.println("Error ocurred whilst processing login:");
+    
+            String successMessage = "User is sucessfully logged in!";
+            System.out.println(successMessage);
+            middleware.publish(PUBLISHED_LOGIN_TOPIC, successMessage.getBytes(), 2, false);
+            totalMsgSent++;
+    
+            dentistService.setIsLoggedIn(checkDentist, true);
+    
+            String id = checkDentist.getId();
+            middleware.publish(PUBLISHED_USER_ID_TOPIC, id.getBytes(), 2, false);
+            totalMsgSent++;
+            System.out.println("Published the Dentist ID " + id + " to topic: " + PUBLISHED_USER_ID_TOPIC);
+    
+        } catch (Exception e) {
+            System.err.println("Error occurred whilst processing login:");
             e.printStackTrace();
         }
     }
+    
 
     /**
      * Delivery Method which shows that the delivery has been completed 
