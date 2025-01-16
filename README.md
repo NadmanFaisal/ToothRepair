@@ -42,6 +42,15 @@
 
 ## Development Process
 
+At the start of the project, we devised a **Social Contract** that would explain the decision-making, processes we use, communication channels and which days we are off. The Social Contract can be found in the **Wiki**.
+
+The team followed a lightweight **SCRUM** Process. It would consist of two meetings a week, a Sprint Planning and a Sprint Review
+
+In the **Sprint Planning**, we discuss the current backlog, and select tasks to distribute to the members.
+
+In the **Sprint Review**, the team would showcase and review each others  tasks and have a constructive feedback session about the team's dynamic.
+
+During the week, members would use the **Issue Board** to track their issues between Open, In-Progress, and Closed as well as open additional code meetings if the members need help or are pair-programming.
 
 ## Contributors
 
