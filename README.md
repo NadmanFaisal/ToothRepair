@@ -8,10 +8,31 @@
 
 ## Introduction
 
-
+**TeethRepair** is a **full-stack** dentist booking system all across Sweden. It allows both patients and dentists to streamline their appointment booking process while offering an intuitive user experience.  The system provide core functionalites such as booking appointments, managing appointment availability, viewing clinics on a map, and staying notified about booking updates.
 
 ## Tech Stack
 
+### Frontend
+
+- [Vue.js](https://vuejs.org/) (Frontend framework)
+
+- [BootstrapVue](https://bootstrap-vue.org/) (Library for building responsive frontend)
+
+- [Leaflet](https://leafletjs.com/) (Libray for the Map)
+
+- [Node Package Manager](https://www.npmjs.com/) (Package Manager)
+
+- [Eclipse Paho](https://github.com/eclipse-paho/paho.mqtt.java) (MQTT Library)
+
+### Backend
+
+- [Maven](https://maven.apache.org/) (Automated Build and Dependency Management Tool)
+
+- [Spring Boot](https://spring.io/projects/spring-boot) (Building Java-based standalone project tool)
+
+- [MongoDB Atlas](https://github.com/mongodb/mongodb-atlas-cli) (Service database)
+
+- [Eclipse Paho](https://projects.eclipse.org/projects/iot.paho)(MQTT Library)
 
 
 ## Installation Guide
@@ -22,7 +43,7 @@
 
 
 
-### Setting up the services
+### Setting up the Services
 
 
 
