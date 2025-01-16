@@ -389,6 +389,8 @@ public class MQTT implements MqttCallback {
                     
                     String dentistId = (String)appointmentInfo.get("dentist");
                     String appointmentId = (String)appointmentInfo.get("id");
+                    
+                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
 
                     appointmentService.dentistCancel(appointmentId);
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByDentist(dentistId);
@@ -401,7 +403,6 @@ public class MQTT implements MqttCallback {
                     System.out.println("Published status: cancelling in dentistCancelAppointments");
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
                     this.publishAppointmentList(payload);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_DENTIST_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
 
@@ -411,6 +412,8 @@ public class MQTT implements MqttCallback {
                     System.out.println(appointmentInfo.toString());
                     String patientId = (String)appointmentInfo.get("patient");
                     String appointmentId = (String)appointmentInfo.get("id");
+                    
+                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
 
                     appointmentService.patientCancel(appointmentId);
                     List<AppointmentSchema> appointmentListJson = this.appointmentService.getAppointmentsByPatient(patientId);
@@ -423,7 +426,6 @@ public class MQTT implements MqttCallback {
                     System.out.println("Published status: cancelling in patientCancelAppointments");
                     String payload = objectMapper.writeValueAsString(appointmentInfo);
                     this.publishAppointmentList(payload);
-                    middleware.publish(PUBLISHED_ENTITY_IDS_PATIENT_CANCEL, this.publishEntityIds(appointmentId).getBytes(), 2, false);
                     break;
                 }
                 case "scheduleService/appointment/getAvailableAppointmentsAlert":{
