@@ -112,7 +112,7 @@ export default {
   },
   computed: {
     availableAppointments() {
-      return this.appointments.filter((appointment) => appointment.status === 'available')
+      return this.appointments.filter((appointment) => appointment.dentist === JSON.parse(this.userId) && !(appointment.status === 'pending'))
     }
   },
   methods: {
