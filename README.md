@@ -37,14 +37,30 @@
 
 ## Installation Guide
 
-
-### Setting up the Application 
-
-
-
+Please follow the installation guide to set up the project.
 
 ### Setting up the Services
 
+### Setting up the Application 
+
+1) Clone the project with the following command
+
+~~~ 
+git clone git@git.chalmers.se:courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20.git 
+~~~
+
+2) Install client dependencies
+
+~~~
+cd client
+npm install
+~~~
+
+3) Run the application
+
+~~~
+npm run dev
+~~~
 
 
 ## System's Architecture
