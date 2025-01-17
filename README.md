@@ -3,7 +3,7 @@
 </div>
 
 <div style="text-align: center;">
-    <img src="images/TEETHREPAIR.png" alt="TeethRepair screen collage" style="width: 100%; height: auto;">
+    <img src="images/TEETHREPAIR.jpg" alt="TeethRepair screen collage" style="width: 100%; height: auto;">
 </div>
 
 ## Table of Content 
