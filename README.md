@@ -106,13 +106,13 @@ npm run dev
 The system relies on the combination between **microservices and publish-subscribe**. It creates a **distributed systems** environment where several services can run independently from each other through different nodes. 
 
 <details><summary>Entity Relationship (ER) Diagram</summary>
-![diagram](images/DSDARCHDIAGRAM.drawio.png)
+![diagram](images/DSDERFINAL.drawio.png)
 </details>
 <details><summary>Architecture Diagram</summary>
-![diagram](images/DSDDEPLOYDIAGRAM.drawio.png)
+![diagram](images/DSDARCHDIAGRAM.drawio.png)
 </details>
 <details><summary>Deployment Diagram</summary>
-![diagram](images/DSDERFINAL.drawio.png)
+![diagram](images/DSDDEPLOYDIAGRAM.drawio.png)
 </details>
 
 
