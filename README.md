@@ -2,6 +2,10 @@
     <img src="images/Logo (1).png" alt="TeethRepair Logo" style="width: 100%; height: auto;">
 </div>
 
+<div style="text-align: center;">
+    <img src="images/TEETHREPAIR.png" alt="TeethRepair screen collage" style="width: 100%; height: auto;">
+</div>
+
 ## Table of Content 
 
 [[_TOC_]] 
@@ -39,15 +43,49 @@
 
 Please follow the installation guide to set up the project.
 
-### Setting up the Services
-
-### Setting up the Application 
-
-1) Clone the project with the following command
+Before setting up either of the installations, please clone the project.
 
 ~~~ 
 git clone git@git.chalmers.se:courses/dit355/2024/student_teams/dit356_2024_20/dit-356-project-group-20.git 
 ~~~
+
+### Setting up the Services
+
+1) Make sure you are in the root directory in the command line
+
+2) Through the bash command line, write the following command
+
+~~~
+docker swarm init
+docker login
+~~~
+
+3) After this, you will be prompted to login to the container registry to pull images from our repository's container registry.
+
+4) After succesfully logging in, run the following command.
+
+In Linux,
+
+~~~
+bash automated_build.sh
+~~~
+
+In Windows, make sure you run this through **Git Bash**,
+
+~~~
+chmod +x automated_build.sh
+./automated_build.sh
+~~~
+
+5) You have succesfully run the services! If you decide to close the services please run the following command.
+
+~~~
+docker stack rm microservices_stack
+docker stop $(docker ps -q)
+~~~
+
+### Setting up the Application 
+
 
 2) Install client dependencies
 
