@@ -128,6 +128,20 @@ In the **Sprint Review**, the team would showcase and review each others  tasks 
 
 During the week, members would use the **Issue Board** to track their issues between Open, In-Progress, and Closed as well as open additional code meetings if the members need help or are pair-programming.
 
+## System Features
+
+ToothRepair's layered-microservices architecture paired with pub-sub architecture allows for it to be a featured-packed system. 
+
+The system implementes dockerised services which allows the developers to run the services in different platforms. Due to dockers, the developers do not need to ensure that all the dependencies for the services are installed within their respective system.
+
+Docker-compose allows the system to use replica services, ensuring availability at all times. When a service fails or shuts down, the replicas take over while the service tries to restart itself.
+
+The services also implement load balancer, making ToothRepair a high-performing and fast system.
+
+Continuous Integration (CI) is ensured with the help of gitlab's pipeline. Each commit triggers the pipeline where each service is built, test cases are ran, and dockers are built and pushed to container registry with their new changes. This ensures that only tested code/feature is integrated into the system.
+
+The system also features script files to ensure that building and running the containers for the services can be easily done with only one command.
+
 ## Contributors
 
 |  Name  | username |
