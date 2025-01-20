@@ -270,6 +270,10 @@ export default {
         }
         return
       }
+      if (appointment.status === 'pending' && appointment.dentist === JSON.parse(this.userId) && !(appointment.patient === null)) {
+        alert('This slot is pending, it might soon be booked so check other appointments')
+        return
+      }
       if (this.selectedAppointmentId !== null && !(appointment.dentist === JSON.parse(this.userId))) {
         alert('Please unselect your pending appointment')
         return
